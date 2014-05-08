@@ -13,9 +13,9 @@
 
 // DEBUGP5
 
-unsigned int user_price0 = 100 ;
-unsigned int user_price1 = 741000 ;
-unsigned int user_price2 = 742000 ;
+volatile unsigned int user_price0 = 100 ;
+volatile unsigned int user_price1 = 741000 ;
+volatile unsigned int user_price2 = 742000 ;
 
 typedef struct {
 	char number[16];
