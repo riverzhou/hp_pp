@@ -106,7 +106,7 @@ void main_signal(void)
 
 	sleep(t);
 
-	DEBUGP1("发出login和trigger退出信号\n");
+	DEBUGP1("\n发出login和trigger退出信号\n\n");
 
 	flag_login_quit 	= 1;
 	flag_trigger_quit 	= 1;

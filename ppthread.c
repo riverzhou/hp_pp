@@ -28,16 +28,16 @@ int ppthread_image(int user_id, int bid_id)
 
 	err = proc_image(user_id, bid_id, 1); 						// 获取验证码图片，开始预热，正式请求由事件触发。阻塞等待返回。第三个参数为是否预热
 	if(err != 0) {
-		fprintf(stderr, "ppthread_image : user_id=%d , bid_id=%d : proc_image error! \n", user_id, bid_id);
-		LOGT1("ppthread_image : user_id=%d , bid_id=%d : proc_image error! \n", user_id, bid_id);
+		fprintf(stderr, "%s : user_id=%d , bid_id=%d : proc_image error! \n", __func__, user_id, bid_id);
+		LOGT1("%s : user_id=%d , bid_id=%d : proc_image error! \n", __func__, user_id, bid_id);
 		pp_user[user_id].price[bid_id] = 0;
 		return -1;
 	}
 
 	err = proc_decode(user_id, bid_id, dm_fd);					// 向解码服务器发送验证码图片，阻塞等待返回解码结果
 	if(err != 0) {
-		fprintf(stderr, "ppthread_image : user_id=%d , bid_id=%d : proc_decode error! \n", user_id, bid_id);
-		LOGT1("ppthread_image : user_id=%d , bid_id=%d : proc_decode error! \n", user_id, bid_id);
+		fprintf(stderr, "%s : user_id=%d , bid_id=%d : proc_decode error! \n", __func__, user_id, bid_id);
+		LOGT1("%s : user_id=%d , bid_id=%d : proc_decode error! \n", __func__, user_id, bid_id);
 		pp_user[user_id].price[bid_id] = 0;
 		return -1;
 	}
@@ -54,8 +54,8 @@ void ppthread_price(int user_id, int bid_id)
 
 	err = proc_price(user_id, bid_id, 1); 						// 出价，先预热，正式出价请求由事件触发。阻塞等待返回。第三个参数为是否预热
 	if(err != 0) {
-		fprintf(stderr, "ppthread_price : user_id=%d , bid_id=%d : proc_price error! \n", user_id, bid_id);
-		LOGT1("ppthread_price : user_id=%d , bid_id=%d : proc_price error! \n", user_id, bid_id);
+		fprintf(stderr, "%s : user_id=%d , bid_id=%d : proc_price error! \n", __func__, user_id, bid_id);
+		LOGT1("%s : user_id=%d , bid_id=%d : proc_price error! \n", __func__, user_id, bid_id);
 	}
 }
 
