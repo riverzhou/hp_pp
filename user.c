@@ -16,40 +16,44 @@
 
 //---------------------------------------------------------
 
-volatile unsigned int 	flag_login_quit 	= 0;				// login线程退出信号
-volatile unsigned int 	flag_trigger_quit 	= 0;				// trigger线程退出信号
+volatile unsigned int 	flag_login_quit 	= 0;					// login线程退出信号
+volatile unsigned int 	flag_trigger_quit 	= 0;					// trigger线程退出信号
 
-volatile unsigned int 	user_amount 	= 0;					// 用户数，从xml配置文件中统计得到
+volatile unsigned int 	user_amount 		= 0;					// 用户数，从xml配置文件中统计得到
 
-volatile unsigned int 	user_price0 	= PRICE0 ;				// 上半场的投标价格
-volatile unsigned int 	user_price1 	= PRICE1 ;				// 下半场的策略1的投标价格
-volatile unsigned int 	user_price2 	= PRICE2 ;				// 下半场的策略2的投标价格
+volatile unsigned int 	user_price0 		= PRICE0 ;				// 上半场的投标价格
+volatile unsigned int 	user_price1 		= PRICE1 ;				// 下半场的策略1的投标价格
+volatile unsigned int 	user_price2 		= PRICE2 ;				// 下半场的策略2的投标价格
 
-EVENT		_ev_login_start;
-EVENT		_ev_first_begin;
-EVENT		_ev_second_begin;
-EVENT		_ev_second_end;	
-EVENT		_ev_bid0_image_shoot;	
-EVENT		_ev_bid1_image_shoot;	
-EVENT		_ev_bid1_image_warmup;	
-EVENT		_ev_bid1_price_warmup;
-EVENT		_ev_bid2_image_shoot;	
-EVENT		_ev_bid2_image_warmup;	
-EVENT		_ev_bid2_price_warmup;
+EVENT			_ev_login_start;
+EVENT			_ev_first_begin;
+EVENT			_ev_second_begin;
+EVENT			_ev_second_end;
+EVENT			_ev_bid0_image_shoot;
+EVENT			_ev_bid1_image_shoot;
+EVENT			_ev_bid1_image_warmup;
+EVENT			_ev_bid1_price_warmup;
+EVENT			_ev_bid2_image_shoot;
+EVENT			_ev_bid2_image_warmup;
+EVENT			_ev_bid2_price_warmup;
 
-EVENT*		ev_login_start   	= &_ev_login_start;			// 开始登录
-EVENT*		ev_first_begin   	= &_ev_first_begin;			// 上半场开始
-EVENT*		ev_second_begin  	= &_ev_second_begin;			// 下半场开始
-EVENT*		ev_second_end    	= &_ev_second_end;			// 全场结束
-EVENT*		ev_bid0_image_shoot    	= &_ev_bid0_image_shoot;		// 上半场出价
-EVENT*		ev_bid1_image_shoot    	= &_ev_bid1_image_shoot;		// 下半场策略1出价
-EVENT*		ev_bid1_image_warmup   	= &_ev_bid1_image_warmup;		// 下半场策略1预热
-EVENT*		ev_bid1_price_warmup   	= &_ev_bid1_price_warmup;		// 下半场策略1预热
-EVENT*		ev_bid2_image_shoot    	= &_ev_bid2_image_shoot;		// 下半场策略2出价
-EVENT*		ev_bid2_image_warmup   	= &_ev_bid2_image_warmup;		// 下半场策略2预热
-EVENT*		ev_bid2_price_warmup   	= &_ev_bid2_price_warmup;		// 下半场策略2预热
+EVENT*			ev_login_start   	= &_ev_login_start;			// 开始登录
+EVENT*			ev_first_begin   	= &_ev_first_begin;			// 上半场开始
+EVENT*			ev_second_begin  	= &_ev_second_begin;			// 下半场开始
+EVENT*			ev_second_end    	= &_ev_second_end;			// 全场结束
+EVENT*			ev_bid0_image_shoot    	= &_ev_bid0_image_shoot;		// 上半场出价
+EVENT*			ev_bid1_image_shoot    	= &_ev_bid1_image_shoot;		// 下半场策略1出价
+EVENT*			ev_bid1_image_warmup   	= &_ev_bid1_image_warmup;		// 下半场策略1预热
+EVENT*			ev_bid1_price_warmup   	= &_ev_bid1_price_warmup;		// 下半场策略1预热
+EVENT*			ev_bid2_image_shoot    	= &_ev_bid2_image_shoot;		// 下半场策略2出价
+EVENT*			ev_bid2_image_warmup   	= &_ev_bid2_image_warmup;		// 下半场策略2预热
+EVENT*			ev_bid2_price_warmup   	= &_ev_bid2_price_warmup;		// 下半场策略2预热
 
-PP_USER 	pp_user[MAX_USER];
+PP_USER 		pp_user[MAX_USER];
+
+//------------------------------------------------------------------------------------------------
+
+static USER_DICT 	user_dict[MAX_USER];
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -122,7 +126,6 @@ int user_readconf(void)
 	char* 	cwd  		= NULL;
 	int 	number 		= 0;
 
-	USER_DICT user_dict[MAX_USER];
 	memset(&user_dict, 0, sizeof(user_dict));
 
 	cwd = getcwd(filename, sizeof(filename) - sizeof(USER_FILE) - 1);
@@ -161,6 +164,8 @@ int user_readconf(void)
 	user_amount = number - blank;
 
 	DEBUGP5("user.xml acount : %d , user_amount: %d \n", number, user_amount);
+
+	fprintf(stderr,"user.xml acount : %d , user_amount: %d \n", number, user_amount);
 
 	return 0 ;
 }

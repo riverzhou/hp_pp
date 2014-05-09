@@ -54,7 +54,10 @@ int proc_login(int user_id, int delay)
 			proto);
 
 	channel_id = channel_findfree();
-	if(channel_id < 0 )	return -1;
+	if(channel_id < 0 ) {
+		fprintf(stderr,"proc_login : channel_findfree error \n");
+		return -1;
+	}
 
 	if(pp_user[user_id].session_login.event_login_req != NULL){
 		DEBUGT2("wait for conn to LOGIN server... \n");
@@ -68,6 +71,7 @@ int proc_login(int user_id, int delay)
 	LOGT4("conn to LOGIN server... \n");
 
 	if(myssl_connect(channel_id, server) < 0 ){
+		fprintf(stderr,"proc_login : myssl_connect error \n");
 		myssl_close(channel_id);
 		return -1;
 	}
@@ -139,13 +143,17 @@ int proc_image(int user_id, int bid_id, int delay)
 		server = TOUBIAO_B;
 
 	channel_id = channel_findfree();
-	if(channel_id < 0 )	return -1;
+	if(channel_id < 0 ) {
+		fprintf(stderr,"proc_image : channel_findfree error \n");
+		return -1;
+	}
 
 	// connect
 	DEBUGT2("conn to IMAGE server... \n");
 	LOGT4("conn to IMAGE server... \n");
 
 	if(myssl_connect(channel_id, server) < 0 ){
+		fprintf(stderr,"proc_image : myssl_connect error \n");
 		myssl_close(channel_id);
 		return -1;
 	}
@@ -169,6 +177,10 @@ int proc_image(int user_id, int bid_id, int delay)
 			break;
 		default:
 			bidamount	= user_price1;
+	}
+
+	if(bidamount == 0) {
+		fprintf(stderr, "proc_image : bidamount == 0 (get from user_priceX) user_id=%d, bid_id=%d\n", user_id, bid_id);
 	}
 
 	pp_user[user_id].price[bid_id]	= bidamount;
@@ -234,7 +246,7 @@ int proc_price(int user_id, int bid_id, int delay)
 	int 		group		= pp_user[user_id].group;
 	unsigned int 	bidnumber	= pp_user[user_id].bidnumber;
 	unsigned int 	bidpassword	= pp_user[user_id].bidpassword;
-	unsigned int 	bidamount	= pp_user[user_id].price[bid_id];
+	unsigned int 	bidamount	= 0;
 	unsigned int 	imagenumber	= pp_user[user_id].session_bid[bid_id].image;
 	char* 		machinecode	= pp_user[user_id].machinecode;
 	char* 		sessionid	= pp_user[user_id].session_bid[bid_id].result_image.sid;
@@ -245,19 +257,26 @@ int proc_price(int user_id, int bid_id, int delay)
 	char proto[SEND_BUFF_SIZE] 	={0};
 	char buff[RECV_BUFF_SIZE]  	={0};
 
-	if(group == 0)
+
+	if(group == 0) {
 		server = TOUBIAO_A;
-	else
+	}
+	else {
 		server = TOUBIAO_B;
+	}
 
 	channel_id = channel_findfree();
-	if(channel_id < 0 )	return -1;
+	if(channel_id < 0 ) {
+		fprintf(stderr,"proc_price : channel_findfree error \n");
+		return -1;
+	}
 
 	// connect
 	DEBUGT2("conn to PRICE server... \n");
 	LOGT4("conn to PRICE server... \n");
 
 	if(myssl_connect(channel_id, server) < 0 ){
+		fprintf(stderr,"proc_price : myssl_connect error \n");
 		myssl_close(channel_id);
 		return -1;
 	}
@@ -268,6 +287,12 @@ int proc_price(int user_id, int bid_id, int delay)
 
 		myevent_wait(pp_user[user_id].session_bid[bid_id].event_image_ack);	// 等待图片解码成功
 	}
+
+	bidamount = pp_user[user_id].price[bid_id];
+	if(bidamount == 0) {
+		fprintf(stderr, "proc_price : bidamount == 0 : user_id=%d, bid_id=%d\n", user_id, bid_id);
+		return -1;
+	};
 
 	memset(proto, 0, sizeof(proto));
 	proto_makeprice(								// 先wait后造协议是为了取更加新的价格

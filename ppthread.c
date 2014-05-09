@@ -14,8 +14,10 @@
 
 // ====================================================================
 
-void ppthread_image(int user_id, int bid_id)
+int ppthread_image(int user_id, int bid_id)
 {
+	int err = -1;
+
 	if(pp_user[user_id].session_bid[bid_id].event_image_prereq != NULL) {
 		myevent_wait(pp_user[user_id].session_bid[bid_id].event_image_prereq); 	// 等待验证码图片请求的预热信号
 	}
@@ -24,18 +26,34 @@ void ppthread_image(int user_id, int bid_id)
 
 	dm_fd = proc_decode_connect();							// 连接解码服务器，预连接
 
-	proc_image(user_id, bid_id, 1); 						// 获取验证码图片，开始预热，正式请求由事件触发。阻塞等待返回。第三个参数为是否预热
+	err = proc_image(user_id, bid_id, 1); 						// 获取验证码图片，开始预热，正式请求由事件触发。阻塞等待返回。第三个参数为是否预热
+	if(err != 0) {
+		fprintf(stderr, "ppthread_image : user_id=%d , bid_id=%d : proc_image error! \n", user_id, bid_id);
+		pp_user[user_id].price[bid_id] = 0;
+		return -1;
+	}
 
-	proc_decode(user_id, bid_id, dm_fd);						// 向解码服务器发送验证码图片，阻塞等待返回解码结果
+	err = proc_decode(user_id, bid_id, dm_fd);					// 向解码服务器发送验证码图片，阻塞等待返回解码结果
+	if(err != 0) {
+		fprintf(stderr, "ppthread_image : user_id=%d , bid_id=%d : proc_decode error! \n", user_id, bid_id);
+		pp_user[user_id].price[bid_id] = 0;
+		return -1;
+	}
+
+	return 0;
 }
 
 void ppthread_price(int user_id, int bid_id)
 {
+	int err = -1;
 	if(pp_user[user_id].session_bid[bid_id].event_price_prereq != NULL) {
 		myevent_wait(pp_user[user_id].session_bid[bid_id].event_price_prereq); 	// 等待出价请求的预热信号
 	}
 
-	proc_price(user_id, bid_id, 1); 						// 出价，先预热，正式出价请求由事件触发。阻塞等待返回。第三个参数为是否预热
+	err = proc_price(user_id, bid_id, 1); 						// 出价，先预热，正式出价请求由事件触发。阻塞等待返回。第三个参数为是否预热
+	if(err != 0) {
+		fprintf(stderr, "ppthread_price : user_id=%d , bid_id=%d : proc_price error! \n", user_id, bid_id);
+	}
 }
 
 // --------------------------------------------------------------------

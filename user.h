@@ -9,7 +9,7 @@
 
 #define USER_FILE	"/user.xml"
 
-#define MAX_USER	256
+#define MAX_USER	512
 
 //=============================================================
 

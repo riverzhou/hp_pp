@@ -62,7 +62,7 @@ int main_start_client(int user_id)
 void main_signal(void)
 {
 #if 1
-	int t = 1 ;
+	int t = 5 ;
 
 	sleep(t);
 
@@ -88,33 +88,21 @@ void main_signal(void)
 
 	myevent_set(ev_bid1_image_warmup);		// *** 开始第一次出价预热_图片
 
-	sleep(t);
-
 	myevent_set(ev_bid1_price_warmup);		// *** 开始第一次出价预热_价格
+
+	myevent_set(ev_bid2_image_warmup);		// *** 开始第二次出价预热_图片
+
+	myevent_set(ev_bid2_price_warmup);		// *** 开始第二次出价预热_价格
 
 	sleep(t);
 
 	user_price1 = 74500;				// 设置第一次出价的价格
 
-	sleep(t);
+	user_price2 = 74600;				// 设置第二次出价的价格
 
 	myevent_set(ev_bid1_image_shoot);		// *** 开始第一次出价_图片
 
-	sleep(t);
-
-	myevent_set(ev_bid2_image_warmup);		// *** 开始第二次出价预热_图片
-
-	sleep(t);				
-
-	myevent_set(ev_bid2_price_warmup);		// *** 开始第二次出价预热_价格
-
-	sleep(t);				
-
-	user_price2 = 74600;				// 设置第二次出价的价格
-
-	sleep(t);
-
-	myevent_set(ev_bid2_image_shoot); 		// *** 开始第二次出价
+	myevent_set(ev_bid2_image_shoot); 		// *** 开始第二次出价_图片
 
 	sleep(t);
 
@@ -144,9 +132,9 @@ int main(int argc, char** argv)
 
 	main_signal();					// 开始模拟各种事件
 
-	for(int i = 0; i < user; i++) {
-		user_print(i);
-	}
+//	for(int i = 0; i < user; i++) {
+//		user_print(i);
+//	}
 
 	for(int i = 0; i < user; i++) {
 		pthread_join(pp_user[i].pid_client, NULL); 
