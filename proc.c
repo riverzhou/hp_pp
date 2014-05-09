@@ -56,6 +56,7 @@ int proc_login(int user_id, int delay)
 	channel_id = channel_findfree();
 	if(channel_id < 0 ) {
 		fprintf(stderr,"proc_login : channel_findfree error \n");
+		LOGT1("proc_login : channel_findfree error \n");
 		return -1;
 	}
 
@@ -72,6 +73,7 @@ int proc_login(int user_id, int delay)
 
 	if(myssl_connect(channel_id, server) < 0 ){
 		fprintf(stderr,"proc_login : myssl_connect error \n");
+		LOGT1("proc_login : myssl_connect error \n");
 		myssl_close(channel_id);
 		return -1;
 	}
@@ -98,7 +100,7 @@ int proc_login(int user_id, int delay)
 		ret = myssl_dataread(channel_id, buff + rcv, sizeof(buff) - rcv);
 		if(ret < 0) {
 			DEBUGP2("myssl_dataread error in proc_login\n");
-			LOGT4("myssl_dataread error in proc_login\n");
+			LOGT1("myssl_dataread error in proc_login\n");
 			myssl_close(channel_id);
 			return -1;
 		}
@@ -145,6 +147,7 @@ int proc_image(int user_id, int bid_id, int delay)
 	channel_id = channel_findfree();
 	if(channel_id < 0 ) {
 		fprintf(stderr,"proc_image : channel_findfree error \n");
+		LOGT1("proc_image : channel_findfree error \n");
 		return -1;
 	}
 
@@ -154,6 +157,7 @@ int proc_image(int user_id, int bid_id, int delay)
 
 	if(myssl_connect(channel_id, server) < 0 ){
 		fprintf(stderr,"proc_image : myssl_connect error \n");
+		LOGT1("proc_image : myssl_connect error \n");
 		myssl_close(channel_id);
 		return -1;
 	}
@@ -181,6 +185,7 @@ int proc_image(int user_id, int bid_id, int delay)
 
 	if(bidamount == 0) {
 		fprintf(stderr, "proc_image : bidamount == 0 (get from user_priceX) user_id=%d, bid_id=%d\n", user_id, bid_id);
+		LOGT1("proc_image : bidamount == 0 (get from user_priceX) user_id=%d, bid_id=%d\n", user_id, bid_id);
 	}
 
 	pp_user[user_id].price[bid_id]	= bidamount;
@@ -216,7 +221,7 @@ int proc_image(int user_id, int bid_id, int delay)
 		ret = myssl_dataread(channel_id, buff + rcv, sizeof(buff) - rcv);
 		if(ret < 0) {
 			DEBUGP2("myssl_dataread error in proc_image\n");
-			LOGT4("myssl_dataread error in proc_image\n");
+			LOGT1("myssl_dataread error in proc_image\n");
 			myssl_close(channel_id);
 			return -1;
 		}
@@ -268,6 +273,7 @@ int proc_price(int user_id, int bid_id, int delay)
 	channel_id = channel_findfree();
 	if(channel_id < 0 ) {
 		fprintf(stderr,"proc_price : channel_findfree error \n");
+		LOGT1("proc_price : channel_findfree error \n");
 		return -1;
 	}
 
@@ -277,6 +283,7 @@ int proc_price(int user_id, int bid_id, int delay)
 
 	if(myssl_connect(channel_id, server) < 0 ){
 		fprintf(stderr,"proc_price : myssl_connect error \n");
+		LOGT1("proc_price : myssl_connect error \n");
 		myssl_close(channel_id);
 		return -1;
 	}
@@ -291,6 +298,7 @@ int proc_price(int user_id, int bid_id, int delay)
 	bidamount = pp_user[user_id].price[bid_id];
 	if(bidamount == 0) {
 		fprintf(stderr, "proc_price : bidamount == 0 : user_id=%d, bid_id=%d\n", user_id, bid_id);
+		LOGT1("proc_price : bidamount == 0 : user_id=%d, bid_id=%d\n", user_id, bid_id);
 		return -1;
 	};
 
@@ -327,7 +335,7 @@ int proc_price(int user_id, int bid_id, int delay)
 		ret = myssl_dataread(channel_id, buff + rcv, sizeof(buff) - rcv);
 		if(ret < 0) {
 			DEBUGP2("myssl_dataread error in proc_price\n");
-			LOGT4("myssl_dataread error in proc_price\n");
+			LOGT1("myssl_dataread error in proc_price\n");
 			myssl_close(channel_id);
 			return -1;
 		}
@@ -420,4 +428,5 @@ void proc_trigger(void)
 		sleep(1);
 	}
 }
+
 
