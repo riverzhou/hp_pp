@@ -22,7 +22,7 @@
 #define TOUBIAO_PORT        	443
 #define RESULT_PORT         	443
 #define QUERY_PORT          	80
-#define UDP_PORT            	59139
+#define UDP_PORT            	999
 
 #define LOGIN_SERVER_A      	"tblogin.alltobid.com"
 #define TOUBIAO_SERVER_A    	"toubiao.alltobid.com"
