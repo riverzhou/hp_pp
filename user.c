@@ -22,7 +22,7 @@ typedef struct {
 	char pass[8];
 } USER_DICT;
 
-unsigned int user_amount = 0;
+volatile unsigned int user_amount = 0;
 
 void user_parseNode(xmlNode* node, xmlDoc* doc, USER_DICT* user_dict, int* number, int max_number)
 {

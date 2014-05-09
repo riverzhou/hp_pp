@@ -82,11 +82,14 @@ typedef struct {
 	unsigned int    image;			// 图片解码结果
 	RESULT_IMAGE	result_image;
 	RESULT_PRICE	result_price;
+	EVENT* 		event_image_prereq;	// 发送图片请求预热
 	EVENT* 		event_image_req;	// 发送图片请求
 	EVENT* 		event_image_ack;	// 得到图片确认
-	EVENT* 		event_image_decoded;	// 图片解码成功
+	EVENT*		event_price_prereq;	// 发送出价请求预热
 	EVENT*		event_price_req;	// 发送出价请求
 	EVENT*		event_price_ack;	// 出价成功确认
+	EVENT		_event_image_ack;	// 私有的ack存储空间，初始化时将指针指入，访问由指针访问
+	EVENT		_event_price_ack:	// 私有的ack存储空间，初始化时将指针指入，访问由指针访问
 }SESSION_BID;
 
 //-------------------------------------------------------------
@@ -116,7 +119,7 @@ typedef struct {
 #endif	
 } PP_USER ;
 
-PP_USER pp_user[MAX_USER];
+volatile PP_USER pp_user[MAX_USER];
 
 //-------------------------------------------------------------
 
