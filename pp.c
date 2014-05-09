@@ -131,7 +131,7 @@ int main(int argc, char** argv)
 {
 	main_init();
 
-	sleep(5);
+	sleep(2);
 
 	flag_login_quit 	= 0;			// 设置退出信号为0
 	flag_trigger_quit 	= 0;			// 设置退出信号为0

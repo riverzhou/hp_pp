@@ -269,6 +269,8 @@ void *ppthread_client(void* arg_thread)							// 每个客户使用一个私有�
 	pthread_join(pid_login, NULL);							// 确认login线程已退出
 	DEBUGT1("client %d : login退出\n", arg->user_id);
 
+	DEBUGT1("client %d : 正常退出\n", arg->user_id);
+
 	pthread_exit(NULL);								// 使用自然方式退出
 	return NULL;
 }

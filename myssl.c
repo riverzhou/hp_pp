@@ -8,6 +8,7 @@
 #include <stdlib.h>
 
 #include <pthread.h>
+#include <openssl/crypto.h>
 
 #include "myssl.h"
 #include "server.h"
@@ -18,8 +19,65 @@
 
 //==========================================================================
 
-pthread_mutex_t channel_mutex ;
+static pthread_mutex_t 	channel_mutex ;
 
+static pthread_mutex_t*	ssl_lock = NULL;
+
+//==========================================================================
+
+void locking_function(int mode, int type, char *file, int line)
+{
+	// 根据第1个参数mode来判断是加锁还是解锁
+	// 第2个参数是数组下标
+	if(mode & CRYPTO_LOCK) {
+		pthread_mutex_lock(&(ssl_lock[type]));
+	}
+	else{
+		pthread_mutex_unlock(&(ssl_lock[type]));
+	}
+}
+
+unsigned long id_function(void)
+{
+	return 	(unsigned long)pthread_self();
+}
+
+int ssl_lock_create(void)
+{
+	// 申请空间，锁的个数是：CRYPTO_num_locks()，
+	ssl_lock = OPENSSL_malloc(CRYPTO_num_locks() * sizeof(pthread_mutex_t));
+	if(!ssl_lock) {
+		return -1;
+	}
+
+	for(int i = 0 ; i < CRYPTO_num_locks(); i++){
+		pthread_mutex_init(&(ssl_lock[i]), NULL);
+	}
+
+	// 设置回调函数，获取当前线程id
+	CRYPTO_set_id_callback((unsigned long (*)())id_function);
+
+	// 设置回调函数，加锁和解锁
+	CRYPTO_set_locking_callback((void (*)())locking_function);
+
+	return 0;
+}
+
+void ssl_lock_cleanup(void)
+{
+	if(!ssl_lock){
+		return;
+	}
+
+	CRYPTO_set_locking_callback(NULL);
+	for(int i = 0; i < CRYPTO_num_locks(); i++){
+		pthread_mutex_destroy(&(ssl_lock[i]));
+	}
+	OPENSSL_free(ssl_lock);
+	ssl_lock = NULL;
+}
+
+//==========================================================================
 
 int channel_findfree(void)
 {
@@ -69,6 +127,11 @@ void myssl_init(void)
 	OpenSSL_add_all_algorithms();
 	SSL_load_error_strings();
 
+	if(ssl_lock_create()){
+		DEBUGP2("create ssl lock buffer err: %m\n");
+		LOGT5("create ssl lock buffer err: %m\n");
+	}
+
 	pthread_mutex_init(&channel_mutex, NULL);
 
 	pthread_mutex_lock(&channel_mutex);
@@ -78,6 +141,7 @@ void myssl_init(void)
 
 void myssl_clean(void)
 {
+	ssl_lock_cleanup();
 	pthread_mutex_destroy(&channel_mutex);
 }
 
@@ -120,6 +184,7 @@ int myssl_connect(int channel_id, int server_id)
 
 	return 0;
 }
+
 int myssl_close(int channel_id)
 {
 	if(channel[channel_id].ssl != NULL)
