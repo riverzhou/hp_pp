@@ -9,5 +9,9 @@ typedef struct {
         EVENT* event;
 } ARG_THREAD;
 
+void *ppthread_trigger(void* arg_thread);
+
+void *ppthread_client(void* arg_thread);
+
 #endif // PPTHREAD_H_INCLUDED
 
