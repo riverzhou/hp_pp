@@ -16,7 +16,7 @@
 #include "log.h"
 
 // DEBUGP2
-// LOGP3
+// LOGP5
 
 //==========================================================================
 
@@ -43,11 +43,11 @@ void ShowCerts(SSL * ssl)
 	if (cert != NULL) {
 		line = X509_NAME_oneline(X509_get_subject_name(cert), 0, 0);
 		DEBUGP2("证书: %s\n", line);
-		LOGP3("证书: %s\n", line);
+		LOGP5("证书: %s\n", line);
 		free(line);
 		line = X509_NAME_oneline(X509_get_issuer_name(cert), 0, 0);
 		DEBUGP2("颁发者: %s\n", line);
-		LOGP3("颁发者: %s\n", line);
+		LOGP5("颁发者: %s\n", line);
 		free(line);
 		X509_free(cert);
 	} else
@@ -77,7 +77,7 @@ int myssl_connect(int channel_id, int server_id)
 		return -1;
 
 	DEBUGT2("try to connect to %d : %s : %s \n", server_id, server[server_id].domain, inet_ntoa(*(struct in_addr *)(&server[server_id].addr.sin_addr)));
-	LOGT3("try to connect to %d : %s : %s \n", server_id, server[server_id].domain, inet_ntoa(*(struct in_addr *)(&server[server_id].addr.sin_addr)));
+	LOGT5("try to connect to %d : %s : %s \n", server_id, server[server_id].domain, inet_ntoa(*(struct in_addr *)(&server[server_id].addr.sin_addr)));
 
 	channel[channel_id].fd = socket(AF_INET, SOCK_STREAM, 0);
 	if ( channel[channel_id].fd < 0 ) {

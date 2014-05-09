@@ -10,19 +10,48 @@
 #include "user.h"
 #include "log.h"
 
+#define PRICE0		100
+#define PRICE1		74100
+#define PRICE2		74200
 
-// DEBUGP5
+//---------------------------------------------------------
 
-volatile unsigned int user_price0 = 100 ;
-volatile unsigned int user_price1 = 741000 ;
-volatile unsigned int user_price2 = 742000 ;
+volatile unsigned int 	flag_login_quit 	= 0;				// login线程退出信号
+volatile unsigned int 	flag_trigger_quit 	= 0;				// trigger线程退出信号
 
-typedef struct {
-	char number[16];
-	char pass[8];
-} USER_DICT;
+volatile unsigned int 	user_amount 	= 0;					// 用户数，从xml配置文件中统计得到
 
-volatile unsigned int user_amount = 0;
+volatile unsigned int 	user_price0 	= PRICE0 ;				// 上半场的投标价格
+volatile unsigned int 	user_price1 	= PRICE1 ;				// 下半场的策略1的投标价格
+volatile unsigned int 	user_price2 	= PRICE2 ;				// 下半场的策略2的投标价格
+
+EVENT		_ev_login_start;
+EVENT		_ev_first_begin;
+EVENT		_ev_second_begin;
+EVENT		_ev_second_end;	
+EVENT		_ev_bid0_image_shoot;	
+EVENT		_ev_bid1_image_shoot;	
+EVENT		_ev_bid1_image_warmup;	
+EVENT		_ev_bid1_price_warmup;
+EVENT		_ev_bid2_image_shoot;	
+EVENT		_ev_bid2_image_warmup;	
+EVENT		_ev_bid2_price_warmup;
+
+EVENT*		ev_login_start   	= &_ev_login_start;			// 开始登录
+EVENT*		ev_first_begin   	= &_ev_first_begin;			// 上半场开始
+EVENT*		ev_second_begin  	= &_ev_second_begin;			// 下半场开始
+EVENT*		ev_second_end    	= &_ev_second_end;			// 全场结束
+EVENT*		ev_bid0_image_shoot    	= &_ev_bid0_image_shoot;		// 上半场出价
+EVENT*		ev_bid1_image_shoot    	= &_ev_bid1_image_shoot;		// 下半场策略1出价
+EVENT*		ev_bid1_image_warmup   	= &_ev_bid1_image_warmup;		// 下半场策略1预热
+EVENT*		ev_bid1_price_warmup   	= &_ev_bid1_price_warmup;		// 下半场策略1预热
+EVENT*		ev_bid2_image_shoot    	= &_ev_bid2_image_shoot;		// 下半场策略2出价
+EVENT*		ev_bid2_image_warmup   	= &_ev_bid2_image_warmup;		// 下半场策略2预热
+EVENT*		ev_bid2_price_warmup   	= &_ev_bid2_price_warmup;		// 下半场策略2预热
+
+PP_USER 	pp_user[MAX_USER];
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------
 
 void user_parseNode(xmlNode* node, xmlDoc* doc, USER_DICT* user_dict, int* number, int max_number)
 {
@@ -136,14 +165,6 @@ int user_readconf(void)
 	return 0 ;
 }
 
-int user_initmem_group(int max)
-{
-	for(int i = 0; i < max; i++){
-		pp_user[i].group = i % 2;
-	}
-	return 0;
-}
-
 // S0Z3NEAC850055
 int user_initmem_machinecode(int max)
 {
@@ -158,39 +179,49 @@ int user_initmem_machinecode(int max)
 	return 0;
 }
 
-int user_initmem_loginimage(int max)
+int user_initmem_event(int max)					// 初始化事件指针
 {
-	unsigned int val = 0;
+	for(int i = 0; i < max; i++){ 
+		pp_user[i].session_login.event_login_req 	= ev_login_start;
+		pp_user[i].session_login.event_login_ack	= &(pp_user[i].session_login._event_login_ack);
 
-	for(int i = 0; i < max; i++){
-		val = myrand_getint(999999 - 100000);
-		pp_user[i].session_login.image = val + 100000;
+		pp_user[i].session_bid[0].event_image_req 	= ev_bid0_image_shoot;
+		pp_user[i].session_bid[0].event_image_prereq 	= NULL;
+		pp_user[i].session_bid[0].event_price_prereq 	= NULL;
+		pp_user[i].session_bid[0].event_image_ack	= &(pp_user[i].session_bid[0]._event_image_ack);
+		pp_user[i].session_bid[0].event_price_ack	= &(pp_user[i].session_bid[0]._event_price_ack);
+
+		pp_user[i].session_bid[1].event_image_req 	= ev_bid1_image_shoot;
+		pp_user[i].session_bid[1].event_image_prereq 	= ev_bid1_image_warmup;
+		pp_user[i].session_bid[1].event_price_prereq 	= ev_bid1_price_warmup;
+		pp_user[i].session_bid[1].event_image_ack	= &(pp_user[i].session_bid[1]._event_image_ack);
+		pp_user[i].session_bid[1].event_price_ack	= &(pp_user[i].session_bid[1]._event_price_ack);
+
+		pp_user[i].session_bid[2].event_image_req 	= ev_bid2_image_shoot;
+		pp_user[i].session_bid[2].event_image_prereq 	= ev_bid2_image_warmup;
+		pp_user[i].session_bid[2].event_price_prereq 	= ev_bid2_price_warmup;
+		pp_user[i].session_bid[2].event_image_ack	= &(pp_user[i].session_bid[2]._event_image_ack);
+		pp_user[i].session_bid[2].event_price_ack	= &(pp_user[i].session_bid[2]._event_price_ack);
 	}
 
 	return 0;
 }
 
-int user_initmem_price(int max)
+int user_initmem_group(int max)
 {
-
 	for(int i = 0; i < max; i++){
-		pp_user[i].price[0]             = &user_price0;
-		pp_user[i].price[1]             = &user_price1;
-		pp_user[i].price[2]             = &user_price2;
+		pp_user[i].group = i % 2;
 	}
-
 	return 0;
 }
 
-int user_initmem(void)
+int user_initmem(int max)
 {
-	user_initmem_group(MAX_USER);
+	user_initmem_machinecode(max);
 
-	user_initmem_machinecode(MAX_USER);
+	user_initmem_event(max);
 
-	user_initmem_loginimage(MAX_USER);
-
-	user_initmem_price(MAX_USER);
+	user_initmem_group(max);
 
 	return 0;
 }
@@ -199,7 +230,7 @@ int user_init(void)
 {
 	memset(&pp_user,   0, sizeof(pp_user));
 
-	user_initmem();
+	user_initmem(MAX_USER);
 	user_readconf();
 
 	return 0;
@@ -213,9 +244,9 @@ int user_print(int user_id)
 	fprintf(stdout, "machinecode                                = %s \n", pp_user[user_id].machinecode);
 	fprintf(stdout, "bidnumber                                  = %d \n", pp_user[user_id].bidnumber);
 	fprintf(stdout, "bidpassword                                = %d \n", pp_user[user_id].bidpassword);
-	fprintf(stdout, "price[0]                                   = %d \n", *pp_user[user_id].price[0]);
-	fprintf(stdout, "price[1]                                   = %d \n", *pp_user[user_id].price[1]);
-	fprintf(stdout, "price[2]                                   = %d \n", *pp_user[user_id].price[2]);
+	fprintf(stdout, "price[0]                                   = %d \n", pp_user[user_id].price[0]);
+	fprintf(stdout, "price[1]                                   = %d \n", pp_user[user_id].price[1]);
+	fprintf(stdout, "price[2]                                   = %d \n", pp_user[user_id].price[2]);
 	fprintf(stdout, "session_login.image                        = %d \n", pp_user[user_id].session_login.image);
 	fprintf(stdout, "session_login.result_login.sid             = %s \n", pp_user[user_id].session_login.result_login.sid);
 	fprintf(stdout, "session_login.result_login.name            = %s \n", pp_user[user_id].session_login.result_login.name);

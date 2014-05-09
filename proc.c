@@ -1,9 +1,5 @@
 
-#ifdef _MINGW_
-#include <windows.h>
-#else
 #include <pthread.h>
-#endif
 
 #include <stdio.h>
 #include <string.h>
@@ -17,9 +13,11 @@
 #include "proto_parse.h"
 #include "server.h"
 #include "proc.h"
+#include "myevent.h"
+#include "myrand.h"
 
 // DEBUGP2
-// LOGP2
+// LOGP4
 
 #define SEND_BUFF_SIZE 	4096
 #define RECV_BUFF_SIZE  8192
@@ -27,30 +25,19 @@
 //================================================================
 //----------------------------------------------------------------
 
-#ifdef _MINGW_
-int proc_wait(EVENT* event)
+int proc_login(int user_id, int delay)
 {
-	return 	0;
-}
-#else
-int proc_wait(EVENT* event)
-{
-	return 	pthread_cond_wait(event->cond, event->mutex);
-}
-#endif
+	int             group 		= pp_user[user_id].group;
+	unsigned int    bidnumber 	= pp_user[user_id].bidnumber;
+	unsigned int    bidpassword 	= pp_user[user_id].bidpassword;
+	unsigned int    imagenumber 	= pp_user[user_id].session_login.image;
+	char*           machinecode 	= pp_user[user_id].machinecode;
+	RESULT_LOGIN*   result_login 	= &pp_user[user_id].session_login.result_login;
 
-int proc_login(
-		int		group,
-		unsigned int	bidnumber,
-		unsigned int	bidpassword,
-		unsigned int	imagenumber,
-		char*		machinecode,
-		RESULT_LOGIN* 	result_login)
-{
-	int channel_id 	=-1 ;
-	int server	=-1 ;	
-	char proto[SEND_BUFF_SIZE] ={0};
-	char buff[RECV_BUFF_SIZE]  ={0};
+	int channel_id 			=-1 ;
+	int server			=-1 ;	
+	char proto[SEND_BUFF_SIZE] 	={0};
+	char buff[RECV_BUFF_SIZE]  	={0};
 
 	if(group == 0)
 		server = LOGIN_A;
@@ -68,9 +55,16 @@ int proc_login(
 
 	channel_id = channel_findfree();
 
+	if(pp_user[user_id].session_login.event_login_req != NULL){
+		DEBUGT2("wait for conn to LOGIN server... \n");
+		LOGT4("wait for conn to LOGIN server... \n");
+
+		myevent_wait(pp_user[user_id].session_login.event_login_req);
+	}
+
 	// connect
 	DEBUGT2("conn to LOGIN server... \n");
-	LOGT2("conn to LOGIN server... \n");
+	LOGT4("conn to LOGIN server... \n");
 
 	if(myssl_connect(channel_id, server) < 0 ){
 		myssl_close(channel_id);
@@ -79,27 +73,27 @@ int proc_login(
 
 	// write
 	DEBUGT2("send to LOGIN server... \n");
-	LOGT2("send to LOGIN server... \n");
+	LOGT4("send to LOGIN server... \n");
 
 	myssl_datawrite(channel_id, proto, strlen(proto));
 	DEBUGP2("%s\n", proto);
-	LOGT2("datawrite done:\n");
-	LOGP2("%s\n", proto);
-	LOGT2("---------------------------------------------------------------\n");
+	LOGT4("datawrite done:\n");
+	LOGP4("%s\n", proto);
+	LOGT4("---------------------------------------------------------------\n");
 	DEBUGP2("---------------------------------------------------------------\n");
 
 	// read 
-        DEBUGT2("recv from LOGIN server... \n");
-        LOGT2("recv from LOGIN server... \n");
+	DEBUGT2("recv from LOGIN server... \n");
+	LOGT4("recv from LOGIN server... \n");
 
-        memset(buff, 0, sizeof(buff));
+	memset(buff, 0, sizeof(buff));
 	int ret = 0; 
 	int rcv = 0;
 	do{
 		ret = myssl_dataread(channel_id, buff + rcv, sizeof(buff) - rcv);
 		if(ret < 0) {
 			DEBUGP2("myssl_dataread error in proc_login\n");
-			LOGT2("myssl_dataread error in proc_login\n");
+			LOGT4("myssl_dataread error in proc_login\n");
 			myssl_close(channel_id);
 			return -1;
 		}
@@ -108,13 +102,15 @@ int proc_login(
 	buff[sizeof(buff)-1] = 0;
 
 	DEBUGP2("%s\n", buff);
-	LOGT2("dataread done:\n");
-	LOGP2("%s\n", buff);
-	LOGT2("---------------------------------------------------------------\n");
+	LOGT4("dataread done:\n");
+	LOGP4("%s\n", buff);
+	LOGT4("---------------------------------------------------------------\n");
 	DEBUGP2("---------------------------------------------------------------\n");
 
 	// parse
 	proto_parselogin(buff, result_login);
+
+	myevent_set(pp_user[user_id].session_login.event_login_ack);		// 登录完成
 
 	// done
 	myssl_close(channel_id);
@@ -122,19 +118,19 @@ int proc_login(
 	return 0;
 }
 
-int proc_image(
-		int 		group,
-		unsigned int 	bidnumber,
-		unsigned int 	bidpassword,
-		unsigned int* 	bidamount,
-		char* 		sessionid,
-		RESULT_IMAGE* 	result_image,
-		EVENT*		event)
+int proc_image(int user_id, int bid_id, int delay)
 {
-	int channel_id 	=-1 ;
-	int server	=-1 ;	
-	char proto[SEND_BUFF_SIZE] ={0};
-	char buff[RECV_BUFF_SIZE]  ={0};
+	int             group		= pp_user[user_id].group;
+	unsigned int    bidnumber	= pp_user[user_id].bidnumber;
+	unsigned int    bidpassword	= pp_user[user_id].bidpassword;
+	char*           sessionid	= pp_user[user_id].session_login.result_login.sid;	// 应该无用
+	RESULT_IMAGE*   result_image	= &pp_user[user_id].session_bid[bid_id].result_image;
+	unsigned int 	bidamount	= 0;
+
+	int channel_id 			=-1 ;
+	int server			=-1 ;	
+	char proto[SEND_BUFF_SIZE] 	={0};
+	char buff[RECV_BUFF_SIZE]  	={0};
 
 	if(group == 0)
 		server = TOUBIAO_A;
@@ -145,43 +141,59 @@ int proc_image(
 
 	// connect
 	DEBUGT2("conn to IMAGE server... \n");
-	LOGT2("conn to IMAGE server... \n");
+	LOGT4("conn to IMAGE server... \n");
 
 	if(myssl_connect(channel_id, server) < 0 ){
 		myssl_close(channel_id);
 		return -1;
 	}
 
-	if(event != NULL){
+	if(delay != 0 && pp_user[user_id].session_bid[bid_id].event_image_req != NULL){
 		DEBUGT2("wait for sent to IMAGE server... \n");
-		LOGT2("wait for sent to IMAGE server... \n");
+		LOGT4("wait for sent to IMAGE server... \n");
 
-		proc_wait(event);
+		myevent_wait(pp_user[user_id].session_bid[bid_id].event_image_req);
 	}
 
+	switch(bid_id) {
+		case 0:
+			bidamount 	= user_price0;
+			break;
+		case 1:
+			bidamount	= user_price1;
+			break;
+		case 2:
+			bidamount	= user_price2;
+			break;
+		default:
+			bidamount	= user_price1;
+	}
+
+	pp_user[user_id].price[bid_id]	= bidamount;
+
 	memset(proto, 0, sizeof(proto));
-	proto_makeimage(
+	proto_makeimage(								// 先wait后造协议是为了取更加新的价格
 			group,
 			bidnumber,
 			bidpassword,
-			*bidamount,
+			bidamount,
 			sessionid,
 			proto);
 
 	// write
 	DEBUGT2("send to IMAGE server... \n");
-	LOGT2("send to IMAGE server... \n");
+	LOGT4("send to IMAGE server... \n");
 
 	myssl_datawrite(channel_id, proto, strlen(proto));
 	DEBUGP2("%s\n", proto);
-	LOGT2("datawrite done:\n");
-	LOGP2("%s\n", proto);
-	LOGT2("---------------------------------------------------------------\n");
+	LOGT4("datawrite done:\n");
+	LOGP4("%s\n", proto);
+	LOGT4("---------------------------------------------------------------\n");
 	DEBUGP2("---------------------------------------------------------------\n");
 
 	// read 
 	DEBUGT2("recv from IMAGE server... \n");
-	LOGT2("recv from IMAGE server... \n");
+	LOGT4("recv from IMAGE server... \n");
 
 	memset(buff, 0, sizeof(buff));
 	int ret = 0; 
@@ -190,7 +202,7 @@ int proc_image(
 		ret = myssl_dataread(channel_id, buff + rcv, sizeof(buff) - rcv);
 		if(ret < 0) {
 			DEBUGP2("myssl_dataread error in proc_image\n");
-			LOGT2("myssl_dataread error in proc_image\n");
+			LOGT4("myssl_dataread error in proc_image\n");
 			myssl_close(channel_id);
 			return -1;
 		}
@@ -199,13 +211,15 @@ int proc_image(
 	buff[sizeof(buff)-1] = 0;
 
 	DEBUGP2("%s\n", buff);
-	LOGT2("dataread done:\n");
-	LOGP2("%s\n", buff);
-	LOGT2("---------------------------------------------------------------\n");
+	LOGT4("dataread done:\n");
+	LOGP4("%s\n", buff);
+	LOGT4("---------------------------------------------------------------\n");
 	DEBUGP2("---------------------------------------------------------------\n");
 
 	// parse
 	proto_parseimage(buff, result_image); 
+
+	//myevent_set(pp_user[user_id].session_bid[bid_id].event_image_ack);		// 验证码请求完成信号放到解码函数中
 
 	// done
 	myssl_close(channel_id);
@@ -213,21 +227,21 @@ int proc_image(
 	return 0;
 }
 
-int proc_price(
-		int 		group,
-		unsigned int 	bidnumber,
-		unsigned int 	bidpassword,
-		unsigned int* 	bidamount,
-		unsigned int 	imagenumber,
-		char* 		machinecode,
-		char* 		sessionid,
-		RESULT_PRICE*   result_price,
-		EVENT*		event)
+int proc_price(int user_id, int bid_id, int delay)
 {
-	int channel_id 	=-1 ;
-	int server	=-1 ;	
-	char proto[SEND_BUFF_SIZE] ={0};
-	char buff[RECV_BUFF_SIZE]  ={0};
+	int 		group		= pp_user[user_id].group;
+	unsigned int 	bidnumber	= pp_user[user_id].bidnumber;
+	unsigned int 	bidpassword	= pp_user[user_id].bidpassword;
+	unsigned int 	bidamount	= pp_user[user_id].price[bid_id];
+	unsigned int 	imagenumber	= pp_user[user_id].session_bid[bid_id].image;
+	char* 		machinecode	= pp_user[user_id].machinecode;
+	char* 		sessionid	= pp_user[user_id].session_bid[bid_id].result_image.sid;
+	RESULT_PRICE*   result_price	= &pp_user[user_id].session_bid[bid_id].result_price;
+
+	int channel_id 			=-1 ;
+	int server			=-1 ;	
+	char proto[SEND_BUFF_SIZE] 	={0};
+	char buff[RECV_BUFF_SIZE]  	={0};
 
 	if(group == 0)
 		server = TOUBIAO_A;
@@ -238,26 +252,26 @@ int proc_price(
 
 	// connect
 	DEBUGT2("conn to PRICE server... \n");
-	LOGT2("conn to PRICE server... \n");
+	LOGT4("conn to PRICE server... \n");
 
 	if(myssl_connect(channel_id, server) < 0 ){
 		myssl_close(channel_id);
 		return -1;
 	}
 
-	if(event != NULL){
-		DEBUGT2("wait for sent to IMAGE server... \n");
-		LOGT2("wait for sent to IMAGE server... \n");
+	if(delay != 0 && pp_user[user_id].session_bid[bid_id].event_image_ack != NULL){
+		DEBUGT2("wait for sent to PRICE server... \n");
+		LOGT4("wait for sent to PRICE server... \n");
 
-		proc_wait(event);
+		myevent_wait(pp_user[user_id].session_bid[bid_id].event_image_ack);	// 等待图片解码成功
 	}
 
 	memset(proto, 0, sizeof(proto));
-	proto_makeprice(
+	proto_makeprice(								// 先wait后造协议是为了取更加新的价格
 			group,
 			bidnumber,
 			bidpassword,
-			*bidamount,
+			bidamount,
 			imagenumber,
 			machinecode,
 			sessionid,
@@ -265,18 +279,18 @@ int proc_price(
 
 	// write
 	DEBUGT2("send to PRICE server... \n");
-	LOGT2("send to PRICE server... \n");
+	LOGT4("send to PRICE server... \n");
 
 	myssl_datawrite(channel_id, proto, strlen(proto));
 	DEBUGP2("%s\n", proto);
-	LOGT2("datawrite done:\n");
-	LOGP2("%s\n", proto);
-	LOGT2("---------------------------------------------------------------\n");
+	LOGT4("datawrite done:\n");
+	LOGP4("%s\n", proto);
+	LOGT4("---------------------------------------------------------------\n");
 	DEBUGP2("---------------------------------------------------------------\n");
 
 	// read 
 	DEBUGP2("recv from PRICE server... \n");
-	LOGT2("recv from PRICE server... \n");
+	LOGT4("recv from PRICE server... \n");
 
 	memset(buff, 0, sizeof(buff));
 	int ret = 0; 
@@ -285,7 +299,7 @@ int proc_price(
 		ret = myssl_dataread(channel_id, buff + rcv, sizeof(buff) - rcv);
 		if(ret < 0) {
 			DEBUGP2("myssl_dataread error in proc_price\n");
-			LOGT2("myssl_dataread error in proc_price\n");
+			LOGT4("myssl_dataread error in proc_price\n");
 			myssl_close(channel_id);
 			return -1;
 		}
@@ -294,13 +308,15 @@ int proc_price(
 	buff[sizeof(buff)-1] = 0;
 
 	DEBUGP2("%s\n", buff);
-	LOGT2("dataread done:\n");
-	LOGP2("%s\n", buff);
-	LOGT2("---------------------------------------------------------------\n");
+	LOGT4("dataread done:\n");
+	LOGP4("%s\n", buff);
+	LOGT4("---------------------------------------------------------------\n");
 	DEBUGP2("---------------------------------------------------------------\n");
 
 	// parse
 	proto_parseprice(buff, result_price);
+
+	myevent_set(pp_user[user_id].session_bid[bid_id].event_price_ack);		// 设置完成信号
 
 	// done
 	myssl_close(channel_id);
@@ -308,12 +324,72 @@ int proc_price(
 	return 0;
 }
 
-int proc_decode(
-		char* 		pic, 
-		unsigned int* 	image ,
-		EVENT*          event)
+
+int proc_decode_connect(void)
 {
+
+
+	return 2014;
+}
+
+int proc_decode_close(int dm_fd)
+{
+	if(dm_fd < 1) {
+		return -1;
+	}
+
+	//
+
 	return 0;
 }
 
+int proc_decode(int user_id, int bid_id, int dm_fd)
+{
+	int fd = dm_fd;
+
+	if(fd < 1) {
+		fd = proc_decode_connect();
+	}
+
+	if(fd < 1) {
+		return -1;
+	}
+
+	//
+	pp_user[user_id].session_bid[bid_id].image  = myrand_getint(999999 - 100000);
+
+	myevent_set(pp_user[user_id].session_bid[bid_id].event_image_ack);		// 验证码请求完成并解码完成
+
+	proc_decode_close(dm_fd);
+
+	return 0;
+}
+
+
+int proc_login_udp(int user_id, int option)
+{
+
+	return 0;
+}
+
+void proc_status_udp(int user_id, int option)
+{
+	while(flag_login_quit == 0) {
+		sleep(1);
+	}
+}
+
+
+int proc_logout_udp(int user_id, int option)
+{
+
+	return 0;
+}
+
+void proc_trigger(void)
+{
+	while(flag_trigger_quit == 0) {
+		sleep(1);
+	}
+}
 

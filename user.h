@@ -2,30 +2,23 @@
 #ifndef USER_H_INCLUDED
 #define USER_H_INCLUDED
 
-#ifndef _MINGW_
 #include <pthread.h>
-#endif
 
-#ifdef _MINGW_
-#define USER_FILE	"\\user.xml"
-#else
+#include "myevent.h"
+#include "ppthread.h"
+
 #define USER_FILE	"/user.xml"
-#endif
 
 #define MAX_USER	256
 
+//=============================================================
 
-unsigned int user_amount;
+typedef struct {
+	char number[16];
+	char pass[8];
+} USER_DICT;
 
-#ifdef _MINGW_
-typedef HANDLE 	EVENT;
-#else
-typedef struct{
-	pthread_cond_t*		cond; 
-	pthread_mutex_t*	mutex;
-}
-EVENT;
-#endif
+//-------------------------------------------------------------
 
 typedef struct {
 	/*
@@ -33,9 +26,9 @@ typedef struct {
 	   CLIENTNAME 		ZhangSan
 	   PID			332627197611242029
 	 */
-	char            sid[128];
-	char		name[64];
-	char		pid[64];
+	char            	sid[128];
+	char			name[64];
+	char			pid[64];
 }RESULT_LOGIN;
 
 typedef struct {
@@ -45,12 +38,11 @@ typedef struct {
 	   ERRORSTRING		OK！
 	   IMAGE_CONTENT	xxxxxx...
 	 */
-	char            sid[128];
-	char            errcode[8];
-	char            errstr[128];
-	char		pic[4096];
+	char            	sid[128];
+	char            	errcode[8];
+	char            	errstr[128];
+	char			pic[4096];
 }RESULT_IMAGE;
-
 
 typedef struct {
 	/*
@@ -60,72 +52,89 @@ typedef struct {
 	   BIDNUMBER		52203709
 	   BIDCOUNT		1
 	   BIDAMOUNT		200
-	   BIDTIME			2014-04-19 10:42:20
+	   BIDTIME		2014-04-19 10:42:20
 	 */
-	char            sid[128];
-	char            name[64];
-	char            pid[64];
-	char		number[16];
-	char		count[16];
-	char		price[32];
-	char		time[32];
+	char            	sid[128];
+	char            	name[64];
+	char            	pid[64];
+	char			number[16];
+	char			count[16];
+	char			price[32];
+	char			time[32];
 }RESULT_PRICE;
 
-
 typedef struct {
-	unsigned int    image;
-	RESULT_LOGIN	result_login;
+	volatile unsigned int  	image;
+	RESULT_LOGIN		result_login;
+	EVENT* 			event_login_req;	// 开始登录
+	EVENT*			event_login_ack;	// 登录成功确认
+	EVENT			_event_login_ack;	// 私有的ack存储空间，初始化时将指针指入，访问由指针访问
 }SESSION_LOGIN;
 
-
 typedef struct {
-	unsigned int    image;			// 图片解码结果
-	RESULT_IMAGE	result_image;
-	RESULT_PRICE	result_price;
-	EVENT* 		event_image_prereq;	// 发送图片请求预热
-	EVENT* 		event_image_req;	// 发送图片请求
-	EVENT* 		event_image_ack;	// 得到图片确认
-	EVENT*		event_price_prereq;	// 发送出价请求预热
-	EVENT*		event_price_req;	// 发送出价请求
-	EVENT*		event_price_ack;	// 出价成功确认
-	EVENT		_event_image_ack;	// 私有的ack存储空间，初始化时将指针指入，访问由指针访问
-	EVENT		_event_price_ack:	// 私有的ack存储空间，初始化时将指针指入，访问由指针访问
+	volatile unsigned int 	image;			// 图片解码结果
+	RESULT_IMAGE		result_image;
+	RESULT_PRICE		result_price;
+	EVENT* 			event_image_prereq;	// 发送图片请求预热
+	EVENT* 			event_image_req;	// 发送图片请求
+	EVENT* 			event_image_ack;	// 得到图片确认
+	EVENT*			event_price_prereq;	// 发送出价请求预热
+//	EVENT*			event_price_req;	// 发送出价请求		// 不需要这个事件，等同event_image_ack
+	EVENT*			event_price_ack;	// 出价成功确认
+	EVENT			_event_image_ack;	// 私有的ack存储空间，初始化时将指针指入，访问由指针访问
+	EVENT			_event_price_ack;	// 私有的ack存储空间，初始化时将指针指入，访问由指针访问
 }SESSION_BID;
 
 //-------------------------------------------------------------
 
 typedef struct {
-	int             group;		
+	int             	group;		
 
-	char 	        machinecode[256];
-	unsigned int    bidnumber;
-	unsigned int    bidpassword;
+	char 	        	machinecode[256];
+	unsigned int    	bidnumber;
+	unsigned int    	bidpassword;
 
-	unsigned int*	price[3];		// 第一次出价
+	volatile unsigned int	price[3];
 
-	SESSION_LOGIN	session_login;
-	SESSION_BID	session_bid[3];
+	pthread_t		pid_client;
+	ARG_THREAD		arg_client;
 
-#ifdef _MINGW_
+	SESSION_LOGIN		session_login;
+	SESSION_BID		session_bid[3];
 
-#else
-	pthread_t	threadid_proc1;
-	pthread_t	threadid_image1;
-	pthread_t	threadid_price1;
-
-	pthread_t	threadid_proc2;
-	pthread_t	threadid_image2;
-	pthread_t	threadid_price2;
-#endif	
 } PP_USER ;
 
-volatile PP_USER pp_user[MAX_USER];
+//=============================================================
+extern volatile unsigned int 	flag_login_quit;	// login线程退出信号
+extern volatile unsigned int 	flag_trigger_quit;	// trigger线程退出信号
+
+extern volatile unsigned int   	user_amount ;     	// 用户数，从xml配置文件中统计得到
+
+extern volatile unsigned int   	user_price0 ;         	// 上半场的投标价格
+extern volatile unsigned int   	user_price1 ;         	// 下半场的策略1的投标价格
+extern volatile unsigned int   	user_price2 ;         	// 下半场的策略2的投标价格
+
+extern EVENT*			ev_login_start;		// 开始登录
+extern EVENT*			ev_first_begin;		// 上半场开始
+extern EVENT*			ev_second_begin;	// 下半场开始
+extern EVENT*			ev_second_end;		// 全场结束
+extern EVENT*			ev_bid0_image_shoot;	// 上半场出价
+extern EVENT*			ev_bid1_image_shoot;	// 下半场策略1出价
+extern EVENT*			ev_bid1_image_warmup;	// 下半场策略1预热
+extern EVENT*			ev_bid1_price_warmup;	// 下半场策略1预热
+extern EVENT*			ev_bid2_image_shoot;	// 下半场策略2出价
+extern EVENT*			ev_bid2_image_warmup;	// 下半场策略2预热
+extern EVENT*			ev_bid2_price_warmup;	// 下半场策略2预热
+
+extern PP_USER        		pp_user[MAX_USER];	// 用户数据中心
 
 //-------------------------------------------------------------
 
 int user_init(void);
 
 int user_print(int user_id);
+
+//=============================================================
 
 #endif // USER_H_INCLUDED
 
