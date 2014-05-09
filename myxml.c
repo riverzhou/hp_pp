@@ -54,7 +54,6 @@ int myxml_parseMemory(char* buff, XML_DICT* xml_dict, int* number, int max_numbe
 	myxml_parseNode(root, doc, xml_dict, number, max_number);
 
 	xmlFreeDoc(doc);
-	xmlCleanupParser(); 
 
 	return 0;
 }
@@ -82,7 +81,6 @@ int myxml_parseFile(char* filename, XML_DICT* xml_dict, int* number, int max_num
 	myxml_parseNode(root, doc, xml_dict, number, max_number);
 
 	xmlFreeDoc(doc);
-	xmlCleanupParser(); 
 
 	return 0;
 }
@@ -90,5 +88,10 @@ int myxml_parseFile(char* filename, XML_DICT* xml_dict, int* number, int max_num
 void myxml_init(void)
 {
 	xmlInitParser();
+}
+
+void myxml_clean(void)
+{
+	xmlCleanupParser(); 
 }
 

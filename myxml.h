@@ -18,5 +18,7 @@ int myxml_parseFile(char* filename, XML_DICT* xml_dict, int* number, int max_num
 
 void myxml_init(void);
 
+void myxml_clean(void);
+
 #endif // MYXML_H_INCLUDED
 

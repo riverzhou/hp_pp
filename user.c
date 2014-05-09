@@ -118,9 +118,9 @@ int user_parseFile(char* filename, USER_DICT* user_dict, int* number, int max_nu
 
 int user_readconf(void)
 {
-	char  filename[4096] = {0};
-	char* cwd  = NULL;
-	int number = 0;
+	char  	filename[4096] 	={0};
+	char* 	cwd  		= NULL;
+	int 	number 		= 0;
 
 	USER_DICT user_dict[MAX_USER];
 	memset(&user_dict, 0, sizeof(user_dict));

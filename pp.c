@@ -38,13 +38,12 @@ void main_init(void)
 }
 
 void main_close(void)
-{
-	myssl_clean();
+{				// 顺序很重要
 	user_clean();
+	myssl_clean();
+	myxml_clean();
 	log_close();
 }
-
-// ---------------------------------------------------------
 
 // ---------------------------------------------------------
 
@@ -132,11 +131,12 @@ int main(int argc, char** argv)
 {
 	main_init();
 
+	sleep(5);
+
 	flag_login_quit 	= 0;			// 设置退出信号为0
 	flag_trigger_quit 	= 0;			// 设置退出信号为0
 
 	int user = user_amount ;
-//	int user = 1;
 
 	for(int i = 0; i < user; i++) {
 		main_start_client(i);
