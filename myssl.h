@@ -35,22 +35,19 @@
 
 #include "user.h"
 
-#define MAX_CHANNEL	MAX_USER*6 + 20 
+#define MAX_CHANNEL	MAX_USER*8 + 20 
 
 typedef struct{
-    int fd;
-    SSL_CTX *ctx;
-    SSL *ssl;
+	int flag_use;
+	int fd;
+	SSL_CTX *ctx;
+	SSL *ssl;
 }CHANNEL ;
 
 CHANNEL channel[MAX_CHANNEL];
 
-#ifdef _MINGW_
-void net_init(void);
-#endif
-
-
 void myssl_init(void);
+void myssl_clean(void);
 
 int myssl_connect(int channel_id, int server_id);
 int myssl_close(int channel_id);

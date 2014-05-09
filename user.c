@@ -181,7 +181,21 @@ int user_initmem_machinecode(int max)
 
 int user_initmem_event(int max)					// 初始化事件指针
 {
+
+	myevent_init(ev_login_start);
+	myevent_init(ev_first_begin);
+	myevent_init(ev_second_begin);
+	myevent_init(ev_second_end);
+	myevent_init(ev_bid0_image_shoot);
+	myevent_init(ev_bid1_image_shoot);
+	myevent_init(ev_bid1_image_warmup);
+	myevent_init(ev_bid1_price_warmup);
+	myevent_init(ev_bid2_image_shoot);
+	myevent_init(ev_bid2_image_warmup);
+	myevent_init(ev_bid2_price_warmup);
+
 	for(int i = 0; i < max; i++){ 
+	
 		pp_user[i].session_login.event_login_req 	= ev_login_start;
 		pp_user[i].session_login.event_login_ack	= &(pp_user[i].session_login._event_login_ack);
 
@@ -202,9 +216,49 @@ int user_initmem_event(int max)					// 初始化事件指针
 		pp_user[i].session_bid[2].event_price_prereq 	= ev_bid2_price_warmup;
 		pp_user[i].session_bid[2].event_image_ack	= &(pp_user[i].session_bid[2]._event_image_ack);
 		pp_user[i].session_bid[2].event_price_ack	= &(pp_user[i].session_bid[2]._event_price_ack);
+
+		myevent_init(pp_user[i].session_login.event_login_ack);
+
+		myevent_init(pp_user[i].session_bid[0].event_image_ack);
+		myevent_init(pp_user[i].session_bid[0].event_price_ack);
+
+		myevent_init(pp_user[i].session_bid[1].event_image_ack);
+		myevent_init(pp_user[i].session_bid[1].event_price_ack);
+
+		myevent_init(pp_user[i].session_bid[2].event_image_ack);
+		myevent_init(pp_user[i].session_bid[2].event_price_ack);
+
 	}
 
 	return 0;
+}
+
+void user_clean_event(int max)
+{
+	myevent_clean(ev_login_start);
+	myevent_clean(ev_first_begin);
+	myevent_clean(ev_second_begin);
+	myevent_clean(ev_second_end);
+	myevent_clean(ev_bid0_image_shoot);
+	myevent_clean(ev_bid1_image_shoot);
+	myevent_clean(ev_bid1_image_warmup);
+	myevent_clean(ev_bid1_price_warmup);
+	myevent_clean(ev_bid2_image_shoot);
+	myevent_clean(ev_bid2_image_warmup);
+	myevent_clean(ev_bid2_price_warmup);
+
+	for(int i = 0; i < max; i++){ 
+		myevent_clean(pp_user[i].session_login.event_login_ack);
+
+		myevent_clean(pp_user[i].session_bid[0].event_image_ack);
+		myevent_clean(pp_user[i].session_bid[0].event_price_ack);
+
+		myevent_clean(pp_user[i].session_bid[1].event_image_ack);
+		myevent_clean(pp_user[i].session_bid[1].event_price_ack);
+
+		myevent_clean(pp_user[i].session_bid[2].event_image_ack);
+		myevent_clean(pp_user[i].session_bid[2].event_price_ack);
+	}
 }
 
 int user_initmem_group(int max)
@@ -230,10 +284,15 @@ int user_init(void)
 {
 	memset(&pp_user,   0, sizeof(pp_user));
 
-	user_initmem(MAX_USER);
 	user_readconf();
+	user_initmem(user_amount);
 
 	return 0;
+}
+
+void user_clean(void)
+{
+	user_clean_event(user_amount);
 }
 
 int user_print(int user_id)

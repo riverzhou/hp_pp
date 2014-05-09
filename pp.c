@@ -18,6 +18,7 @@
 #include "user.h"
 #include "myevent.h"
 #include "ppthread.h"
+#include "myxml.h"
 
 // DEBUGP1
 
@@ -28,6 +29,8 @@
 void main_init(void)
 {				// 顺序很重要
 	log_init();
+	myxml_init();
+
 	server_init();
 	myssl_init();
 	myrand_init();
@@ -36,6 +39,8 @@ void main_init(void)
 
 void main_close(void)
 {
+	myssl_clean();
+	user_clean();
 	log_close();
 }
 
@@ -127,18 +132,25 @@ int main(int argc, char** argv)
 {
 	main_init();
 
-	int user_id = myrand_getint(user_amount - 1) ;
-
 	flag_login_quit 	= 0;			// 设置退出信号为0
 	flag_trigger_quit 	= 0;			// 设置退出信号为0
 
-	main_start_client(user_id);
+	int user = user_amount ;
+//	int user = 1;
+
+	for(int i = 0; i < user; i++) {
+		main_start_client(i);
+	}
 
 	main_signal();					// 开始模拟各种事件
 
-	pthread_join(pp_user[user_id].pid_client, NULL); 
+	for(int i = 0; i < user; i++) {
+		user_print(i);
+	}
 
-	user_print(user_id);
+	for(int i = 0; i < user; i++) {
+		pthread_join(pp_user[i].pid_client, NULL); 
+	}
 
 	main_close();
 

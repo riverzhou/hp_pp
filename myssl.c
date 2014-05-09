@@ -1,15 +1,13 @@
 
-#ifdef _MINGW_
-#include <windows.h>
-#else 
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
-#endif
 
 #include <stdio.h>
 #include <stdlib.h>
+
+#include <pthread.h>
 
 #include "myssl.h"
 #include "server.h"
@@ -20,17 +18,28 @@
 
 //==========================================================================
 
+pthread_mutex_t channel_mutex ;
+
+
 int channel_findfree(void)
 {
-	int id = -1;
+	int id =-1;
 
+	pthread_mutex_lock(&channel_mutex);
 	for(int i = 0 ; i < MAX_CHANNEL ; i++ ) {
-		if(channel[i].fd == 0 ){
+		if(channel[i].flag_use == 0 ){
+			channel[i].flag_use = 1;
 			id = i ;
 			break;
 		}
-
 	}
+	pthread_mutex_unlock(&channel_mutex);
+
+	if(id == -1) {
+		DEBUGP2("no free ssl channel \n");
+		LOGT1("no free ssl channel \n");
+	}
+
 	return id;
 }
 
@@ -54,21 +63,22 @@ void ShowCerts(SSL * ssl)
 		DEBUGP2("无证书信息！\n");
 }
 
-#ifdef _MINGW_
-void net_init(void)
-{
-	WSADATA wsa;
-	WSAStartup(MAKEWORD(2,2), &wsa);
-}
-#endif
-
 void myssl_init(void)
 {
 	SSL_library_init();
 	OpenSSL_add_all_algorithms();
 	SSL_load_error_strings();
 
+	pthread_mutex_init(&channel_mutex, NULL);
+
+	pthread_mutex_lock(&channel_mutex);
 	memset(channel, 0, sizeof(channel[MAX_CHANNEL]));
+	pthread_mutex_unlock(&channel_mutex);
+}
+
+void myssl_clean(void)
+{
+	pthread_mutex_destroy(&channel_mutex);
 }
 
 int myssl_connect(int channel_id, int server_id)
@@ -120,17 +130,15 @@ int myssl_close(int channel_id)
 
 	if(channel[channel_id].fd > 0){
 		shutdown(channel[channel_id].fd, SHUT_RDWR);
-#ifdef _MINGW_
-		closesocket(channel[channel_id].fd);
-#else
 		close(channel[channel_id].fd);
-#endif
 	}
 
 	if(channel[channel_id].ctx != NULL)
 		SSL_CTX_free(channel[channel_id].ctx);
 
+	pthread_mutex_lock(&channel_mutex);
 	memset(&(channel[channel_id]), 0, sizeof(CHANNEL) );
+	pthread_mutex_unlock(&channel_mutex);
 
 	return 0;
 }

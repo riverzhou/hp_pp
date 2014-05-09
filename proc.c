@@ -54,6 +54,7 @@ int proc_login(int user_id, int delay)
 			proto);
 
 	channel_id = channel_findfree();
+	if(channel_id < 0 )	return -1;
 
 	if(pp_user[user_id].session_login.event_login_req != NULL){
 		DEBUGT2("wait for conn to LOGIN server... \n");
@@ -138,6 +139,7 @@ int proc_image(int user_id, int bid_id, int delay)
 		server = TOUBIAO_B;
 
 	channel_id = channel_findfree();
+	if(channel_id < 0 )	return -1;
 
 	// connect
 	DEBUGT2("conn to IMAGE server... \n");
@@ -249,6 +251,7 @@ int proc_price(int user_id, int bid_id, int delay)
 		server = TOUBIAO_B;
 
 	channel_id = channel_findfree();
+	if(channel_id < 0 )	return -1;
 
 	// connect
 	DEBUGT2("conn to PRICE server... \n");

@@ -16,5 +16,7 @@ int myxml_parseMemory(char* buff, XML_DICT* xml_dict, int* number, int max_numbe
 
 int myxml_parseFile(char* filename, XML_DICT* xml_dict, int* number, int max_number);
 
+void myxml_init(void);
+
 #endif // MYXML_H_INCLUDED
 

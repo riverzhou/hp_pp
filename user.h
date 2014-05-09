@@ -131,6 +131,7 @@ extern PP_USER        		pp_user[MAX_USER];	// 用户数据中心
 //-------------------------------------------------------------
 
 int user_init(void);
+void user_clean(void);
 
 int user_print(int user_id);
 

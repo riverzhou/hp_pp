@@ -87,5 +87,8 @@ int myxml_parseFile(char* filename, XML_DICT* xml_dict, int* number, int max_num
 	return 0;
 }
 
-
+void myxml_init(void)
+{
+	xmlInitParser();
+}
 
