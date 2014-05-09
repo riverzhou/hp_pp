@@ -226,7 +226,7 @@ void *ppthread_trigger(void* arg_thread)						// 整个程序公用一个trigger
 
 	proc_trigger();									// 一个带flag_trigger_quit退出信号变量和sleep(0)的死循环，监控server发回的UDP信息
 
-	DEBUGT1("ppthread_trigger quit\n");
+	DEBUGT4("ppthread_trigger quit\n");
 
 	pthread_exit(NULL);								// 使用信号变量，自然方式退出
 	return NULL;
@@ -273,21 +273,21 @@ void *ppthread_client(void* arg_thread)							// 每个客户使用一个私有�
 	pthread_create(&pid_bid2, NULL, ppthread_bid2, &arg_bid2);			// 下半场开始后，启动投标线程2
 
 	myevent_wait(ev_second_end);							// 全场结束
-	DEBUGT1("client %d : 收到全场结束信号\n", arg->user_id);
+	DEBUGT4("client %d : 收到全场结束信号\n", arg->user_id);
 
 	pthread_join(pid_bid0, 	NULL);							// 确认bid0线程已退出
-	DEBUGT1("client %d : bid0退出\n", arg->user_id);
+	DEBUGT4("client %d : bid0退出\n", arg->user_id);
 
 	pthread_join(pid_bid1, 	NULL);							// 确认bid1线程已退出
-	DEBUGT1("client %d : bid1退出\n", arg->user_id);
+	DEBUGT4("client %d : bid1退出\n", arg->user_id);
 
 	pthread_join(pid_bid2, 	NULL);							// 确认bid2线程已退出
-	DEBUGT1("client %d : bid2退出\n", arg->user_id);
+	DEBUGT4("client %d : bid2退出\n", arg->user_id);
 
 	pthread_join(pid_login, NULL);							// 确认login线程已退出
-	DEBUGT1("client %d : login退出\n", arg->user_id);
+	DEBUGT4("client %d : login退出\n", arg->user_id);
 
-	DEBUGT1("client %d : 正常退出\n", arg->user_id);
+	DEBUGT4("client %d : 正常退出\n", arg->user_id);
 
 	pthread_exit(NULL);								// 使用自然方式退出
 	return NULL;

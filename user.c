@@ -163,9 +163,7 @@ int user_readconf(void)
 
 	user_amount = number - blank;
 
-	DEBUGP5("user.xml acount : %d , user_amount: %d \n", number, user_amount);
-
-	fprintf(stderr,"user.xml acount : %d , user_amount: %d \n", number, user_amount);
+	DEBUGP1("\nuser.xml acount : %d , user_amount: %d \n\n", number, user_amount);
 
 	return 0 ;
 }
