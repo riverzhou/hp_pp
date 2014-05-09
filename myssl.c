@@ -8,7 +8,6 @@
 #include <stdlib.h>
 
 #include <pthread.h>
-#include <openssl/crypto.h>
 
 #include "myssl.h"
 #include "server.h"
