@@ -9,21 +9,10 @@
 #include <sys/socket.h>
 #include <netinet/tcp.h>
 
-#define MAX_IMAGELEN	4096 
+#include "dm_client.h"
 
 #define SERVER_PORT	9999
 #define SERVER_IP	"127.0.0.1"
-
-typedef struct{
-	unsigned short 	priority;
-	unsigned short 	userid;
-	unsigned int 	imagelen;
-	unsigned char 	image[MAX_IMAGELEN];
-} PROTO_SEND;
-
-typedef struct{
-	unsigned int 	number;
-} PROTO_RECV;
 
 void proto_make(PROTO_SEND* proto_send, unsigned short priority, unsigned short userid, unsigned char image[], unsigned int imagelen)
 {
