@@ -7,7 +7,7 @@ from traceback    import print_exc
 
 HOST    = ''
 PORT    = 9999
-BUFSIZE = 4096
+BUFSIZE = 65535
 
 class MyBaseRequestHandlerr(BaseRequestHandler):  
         def my_init(self):
