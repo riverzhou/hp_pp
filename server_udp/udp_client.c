@@ -16,29 +16,44 @@
 
 #define MAX_BUFFLEN	8192 
 
-
 void proto_udp_encode(char* buff, int len)
 {
-	for(int i = 0; i < len && buff[i] != 0; i++) {
-		buff[i] = ~buff[i];
+	int  len1 = len >> 2;
+	int  len2 = len &  3;
+	int  *p1  = (int*) buff;
+	char *p2  = &(buff[len1*4]);
+
+	for(int i = 0; i < len1 ; i++) {
+		p1[i] = ~p1[i];
+	}
+	for(int n = 0; n < len2 ; n++) {
+		p2[n] = ~p2[n];
 	}
 }
 
 void proto_udp_decode(char* buff, int len)
 {
-	for(int i = 0; i < len && buff[i] != 0; i++) {
-		buff[i] = ~buff[i];
+	int  len1 = len >> 2;
+	int  len2 = len &  3;
+	int  *p1  = (int*) buff;
+	char *p2  = &(buff[len1*4]);
+
+	for(int i = 0; i < len1 ; i++) {
+		p1[i] = ~p1[i];
+	}
+	for(int n = 0; n < len2 ; n++) {
+		p2[n] = ~p2[n];
 	}
 }
 
-void proto_print(char* buff)
+void proto_print(char* buff, int len)
 {
 	if(buff == NULL)
 		return;
 
-	proto_udp_decode(buff, MAX_BUFFLEN);
+	proto_udp_decode(buff, len);
 
-	buff[MAX_BUFFLEN-1] = 0;
+	buff[len] = 0;
 
 	printf("buff : \n%s\n", buff);
 }
@@ -50,9 +65,9 @@ int proto_init(char* buff, int len)
 
 	int buff_len = strnlen(LOGIN_STRING, len);;
 
-	snprintf(buff, len, "%s", LOGIN_STRING);
+	snprintf(buff, buff_len + 1, "%s", LOGIN_STRING);
 
-	proto_udp_encode(buff, len);
+	proto_udp_encode(buff, buff_len);
 
 	return buff_len ;
 }
@@ -140,7 +155,7 @@ void udp_recv(int fd)
 		return ;
 	}
 
-	proto_print(buff);
+	proto_print(buff, ret);
 }
 
 void udp_close(int fd)

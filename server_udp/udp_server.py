@@ -16,7 +16,7 @@ class MyBaseRequestHandlerr(BaseRequestHandler):
                 return
 
         def my_init(self):
-                self.sent_data  = '<TYPE>INFO</TYPE><BIDNO>98765432</BIDNO>'
+                self.info       = '<TYPE>INFO</TYPE><BIDNO>98765432</BIDNO>'
                 self.user       = {}
                 return
 
@@ -64,12 +64,12 @@ class MyBaseRequestHandlerr(BaseRequestHandler):
                 socket  = self.request[1]
                 if( not buff) :
                         return False
-                self.user[socket] = bytes.decode(self.decode_data(buff))
+                self.user[socket] = self.decode_data(buff)
                 print(self.user[socket])
                 return True
 
         def send_data(self):
-                buff    = self.encode_data(str.encode(self.sent_data))
+                buff    = self.encode_data(str.encode(self.info))
                 socket  = self.request[1]
                 self.request[1].sendto(buff, self.client_address)
                 return True
