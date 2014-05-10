@@ -65,7 +65,7 @@ class MyBaseRequestHandlerr(BaseRequestHandler):
                 if( not buff) :
                         return False
                 self.user[socket] = self.decode_data(buff)
-                print(self.user[socket])
+                print(self.client_address, self.user[socket])
                 return True
 
         def send_data(self):
