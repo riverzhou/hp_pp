@@ -199,7 +199,7 @@ int user_initmem_event(int max)					// 初始化事件指针
 	myevent_init(ev_bid2_price_warmup);
 
 	for(int i = 0; i < max; i++){ 
-	
+
 		pp_user[i].session_login.event_login_req 	= ev_login_start;
 		pp_user[i].session_login.event_login_ack	= &(pp_user[i].session_login._event_login_ack);
 

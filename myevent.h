@@ -5,9 +5,9 @@
 #include <pthread.h>
 
 typedef struct {
-        int signal;
-        pthread_mutex_t mutex;
-        pthread_cond_t cond;
+	int signal;
+	pthread_mutex_t mutex;
+	pthread_cond_t cond;
 
 } EVENT;
 

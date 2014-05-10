@@ -2,11 +2,7 @@
 #ifndef PROC_H_INCLUDED
 #define PROC_H_INCLUDED
 
-#ifdef _MINGW_
-#include <windows.h>
-#else
 #include <pthread.h>
-#endif
 
 //#include "user.h"
 

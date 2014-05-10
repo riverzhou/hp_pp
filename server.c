@@ -1,13 +1,9 @@
 
-#ifdef _MINGW_
-#include <windows.h>
-#else
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <string.h>
-#endif
 
 #include <stdio.h>
 #include <stdlib.h>

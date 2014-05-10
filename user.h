@@ -25,7 +25,7 @@ typedef struct {
 	   JSESSIONID		8899CF08D15BE46A7872A443D865A5D5
 	   CLIENTNAME 		ZhangSan
 	   PID			332627197611242029
-	 */
+	   */
 	char            	sid[128];
 	char			name[64];
 	char			pid[64];
@@ -37,7 +37,7 @@ typedef struct {
 	   ERRORCODE 		0
 	   ERRORSTRING		OK！
 	   IMAGE_CONTENT	xxxxxx...
-	 */
+	   */
 	char            	sid[128];
 	char            	errcode[8];
 	char            	errstr[128];
@@ -53,7 +53,7 @@ typedef struct {
 	   BIDCOUNT		1
 	   BIDAMOUNT		200
 	   BIDTIME		2014-04-19 10:42:20
-	 */
+	   */
 	char            	sid[128];
 	char            	name[64];
 	char            	pid[64];
@@ -79,7 +79,6 @@ typedef struct {
 	EVENT* 			event_image_req;	// 发送图片请求
 	EVENT* 			event_image_ack;	// 得到图片确认
 	EVENT*			event_price_prereq;	// 发送出价请求预热
-//	EVENT*			event_price_req;	// 发送出价请求		// 不需要这个事件，等同event_image_ack
 	EVENT*			event_price_ack;	// 出价成功确认
 	EVENT			_event_image_ack;	// 私有的ack存储空间，初始化时将指针指入，访问由指针访问
 	EVENT			_event_price_ack;	// 私有的ack存储空间，初始化时将指针指入，访问由指针访问

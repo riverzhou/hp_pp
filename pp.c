@@ -157,7 +157,7 @@ void main_client_printerror(void)
 			user_print(i);
 		}
 	}
-	
+
 	DEBUGP1("%d clients error. \n", err_client_amount);
 	LOGT1("%d clients error. \n", err_client_amount);
 }

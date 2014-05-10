@@ -224,7 +224,7 @@ void *ppthread_bid2(void* arg_thread)							// 下半场出价线程2，使用�
 
 void *ppthread_trigger(void* arg_thread)						// 整个程序公用一个trigger线程
 {
-//	ARG_THREAD *arg = (ARG_THREAD*)arg_thread;
+	//ARG_THREAD *arg = (ARG_THREAD*)arg_thread;
 
 	proc_trigger();									// 一个带flag_trigger_quit退出信号变量和sleep(0)的死循环，监控server发回的UDP信息
 
