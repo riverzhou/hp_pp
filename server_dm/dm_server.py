@@ -10,16 +10,21 @@ PORT    = 9999
 BUFSIZE = 65535
 
 class MyBaseRequestHandlerr(BaseRequestHandler):  
+
+        def __init__(self, request, client_address, server):
+                self.my_init()
+                BaseRequestHandler.__init__(self, request, client_address, server)
+                return
+
         def my_init(self):
                 self.priority   = 0
                 self.userid     = 0
                 self.imagelen   = 0
                 self.image      = b''
                 self.result     = 654321
+                return
 
         def handle(self):  
-                self.my_init()
-
                 try: 
                         if( self.recv_head()   == False ):
                                 return
@@ -72,7 +77,7 @@ class MyBaseRequestHandlerr(BaseRequestHandler):
 
         def send_result(self):
                 buff = pack('I', self.result)
-        
+
                 self.request.send(buff)
 
                 return True
@@ -81,6 +86,6 @@ class MyBaseRequestHandlerr(BaseRequestHandler):
 
 
 if __name__ == "__main__": 
+        ThreadingTCPServer.allow_reuse_address = True
         server = ThreadingTCPServer((HOST, PORT), MyBaseRequestHandlerr)
-        server.allow_reuse_address = True
         server.serve_forever() 

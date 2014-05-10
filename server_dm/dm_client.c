@@ -61,10 +61,10 @@ int tcp_create(void)
 	return fd;
 }
 
-void tcp_connect(int fd)
+int tcp_connect(int fd)
 {
-	struct sockaddr_in  	client_addr; 	//client stock struct
-	struct sockaddr_in  	server_addr; 	//server stock struct
+	struct sockaddr_in  		client_addr;
+	struct sockaddr_in  		server_addr;
 
 	client_addr.sin_family          = AF_INET ;
 	client_addr.sin_addr.s_addr     = INADDR_ANY ;
@@ -72,16 +72,29 @@ void tcp_connect(int fd)
 
 	server_addr.sin_family 		= AF_INET ;
 	server_addr.sin_port 		= htons(SERVER_PORT);
-	inet_aton(SERVER_IP, &server_addr.sin_addr);
+	inet_aton(SERVER_IP, 		&server_addr.sin_addr);
 
 	if( bind   (fd, (struct sockaddr *) &client_addr, sizeof(struct sockaddr) ) < 0 ) {
 		perror("tcp socket bind");
+		return -1 ;
 	}
+
 	if( connect(fd, (struct sockaddr *) &server_addr, sizeof(struct sockaddr) ) < 0 ) {
 		perror("tcp socket connect");
+		return -1 ;
 	}
 
 	printf("connect server ip is %s, port is %d .\n", inet_ntoa(server_addr.sin_addr), ntohs(server_addr.sin_port));
+
+	socklen_t addr_size = 0;
+	if( getsockname(fd, (struct sockaddr *) &client_addr, &addr_size ) < 0 ) {
+		perror("tcp socket getsockname") ;
+		return -1 ;
+	}
+
+	printf("tcp bind  port is %d .\n", ntohs(client_addr.sin_port));
+
+	return 0;
 }
 
 void tcp_send(int fd)
@@ -91,14 +104,14 @@ void tcp_send(int fd)
 
 	memset(proto_send, 0, sizeof(PROTO_SEND));
 	int len = proto_init(proto_send);
-	if(len < 0 ) {
+	if(len <= 0 ) {
 		printf("tcp_send : init");
 		return ;
 	}
 
 	int ret = send(fd, buff, len, 0);
 
-	if(ret < 0 ) {
+	if(ret <= 0 ) {
 		perror("tcp_send : send");
 		return ;
 	}
