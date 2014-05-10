@@ -88,6 +88,8 @@ typedef struct {
 //-------------------------------------------------------------
 
 typedef struct {
+	int			flag_running;
+
 	int             	group;		
 
 	char 	        	machinecode[256];

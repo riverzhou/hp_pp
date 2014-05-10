@@ -21,5 +21,5 @@ all:
 	strip pp
 
 clean:
-	$(rm) pp pp.log
+	$(rm) pp pp.log core
 

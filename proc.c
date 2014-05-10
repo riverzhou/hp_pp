@@ -61,14 +61,14 @@ int proc_login(int user_id, int delay)
 	}
 
 	if(pp_user[user_id].session_login.event_login_req != NULL){
-		DEBUGT2("wait for conn to LOGIN server... \n");
+		DEBUGP2("wait for conn to LOGIN server... \n");
 		LOGT4("wait for conn to LOGIN server... \n");
 
 		myevent_wait(pp_user[user_id].session_login.event_login_req);
 	}
 
 	// connect
-	DEBUGT2("conn to LOGIN server... \n");
+	DEBUGP2("conn to LOGIN server... \n");
 	LOGT4("conn to LOGIN server... \n");
 
 	if(myssl_connect(channel_id, server) < 0 ){
@@ -80,7 +80,7 @@ int proc_login(int user_id, int delay)
 
 	int ret = 0;
 	// write
-	DEBUGT2("send to LOGIN server... \n");
+	DEBUGP2("send to LOGIN server... \n");
 	LOGT4("send to LOGIN server... \n");
 
 	ret = myssl_datawrite(channel_id, proto, strlen(proto));
@@ -98,7 +98,7 @@ int proc_login(int user_id, int delay)
 	DEBUGP2("---------------------------------------------------------------\n");
 
 	// read 
-	DEBUGT2("recv from LOGIN server... \n");
+	DEBUGP2("recv from LOGIN server... \n");
 	LOGT4("recv from LOGIN server... \n");
 
 	memset(buff, 0, sizeof(buff));
@@ -159,7 +159,7 @@ int proc_image(int user_id, int bid_id, int delay)
 	}
 
 	// connect
-	DEBUGT2("conn to IMAGE server... \n");
+	DEBUGP2("conn to IMAGE server... \n");
 	LOGT4("conn to IMAGE server... \n");
 
 	if(myssl_connect(channel_id, server) < 0 ){
@@ -170,7 +170,7 @@ int proc_image(int user_id, int bid_id, int delay)
 	}
 
 	if(delay != 0 && pp_user[user_id].session_bid[bid_id].event_image_req != NULL){
-		DEBUGT2("wait for sent to IMAGE server... \n");
+		DEBUGP2("wait for sent to IMAGE server... \n");
 		LOGT4("wait for sent to IMAGE server... \n");
 
 		myevent_wait(pp_user[user_id].session_bid[bid_id].event_image_req);
@@ -208,7 +208,7 @@ int proc_image(int user_id, int bid_id, int delay)
 
 	int ret = 0;
 	// write
-	DEBUGT2("send to IMAGE server... \n");
+	DEBUGP2("send to IMAGE server... \n");
 	LOGT4("send to IMAGE server... \n");
 
 	ret = myssl_datawrite(channel_id, proto, strlen(proto));
@@ -226,7 +226,7 @@ int proc_image(int user_id, int bid_id, int delay)
 	DEBUGP2("---------------------------------------------------------------\n");
 
 	// read 
-	DEBUGT2("recv from IMAGE server... \n");
+	DEBUGP2("recv from IMAGE server... \n");
 	LOGT4("recv from IMAGE server... \n");
 
 	memset(buff, 0, sizeof(buff));
@@ -292,7 +292,7 @@ int proc_price(int user_id, int bid_id, int delay)
 	}
 
 	// connect
-	DEBUGT2("conn to PRICE server... \n");
+	DEBUGP2("conn to PRICE server... \n");
 	LOGT4("conn to PRICE server... \n");
 
 	if(myssl_connect(channel_id, server) < 0 ){
@@ -303,7 +303,7 @@ int proc_price(int user_id, int bid_id, int delay)
 	}
 
 	if(delay != 0 && pp_user[user_id].session_bid[bid_id].event_image_ack != NULL){
-		DEBUGT2("wait for sent to PRICE server... \n");
+		DEBUGP2("wait for sent to PRICE server... \n");
 		LOGT4("wait for sent to PRICE server... \n");
 
 		myevent_wait(pp_user[user_id].session_bid[bid_id].event_image_ack);	// 等待图片解码成功
@@ -329,7 +329,7 @@ int proc_price(int user_id, int bid_id, int delay)
 
 	int ret = 0;
 	// write
-	DEBUGT2("send to PRICE server... \n");
+	DEBUGP2("send to PRICE server... \n");
 	LOGT4("send to PRICE server... \n");
 
 	ret = myssl_datawrite(channel_id, proto, strlen(proto));

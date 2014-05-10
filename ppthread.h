@@ -2,6 +2,8 @@
 #ifndef PPTHREAD_H_INCLUDED
 #define PPTHREAD_H_INCLUDED
 
+#include <pthread.h>
+
 #include "myevent.h"
 
 typedef struct {

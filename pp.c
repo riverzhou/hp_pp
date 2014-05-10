@@ -3,12 +3,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-//#include <errno.h>
-//#include <ctype.h>
-//#include <openssl/md5.h>
-
-#include <pthread.h>
-
 #include "myrand.h"
 #include "log.h"  
 #include "myssl.h"  
@@ -114,6 +108,59 @@ void main_signal(void)
 #endif	
 }
 
+static char err_client[MAX_USER] ={0};
+static int  err_client_amount 	 = 0;
+
+void main_client_waitquit(void)
+{
+	int retry = 5;
+	int cycle = 5;
+	int not_quit_yet = 0;
+
+	for(int n = 0; n < retry; n++) {
+		sleep(cycle);
+		not_quit_yet = 0;
+		for(int i = 0; i < user_amount; i++) {
+			if(pp_user[i].flag_running != 0) {
+				not_quit_yet++;
+			}
+		}
+		DEBUGP1("%d clients not quit yet. \n", not_quit_yet);
+		LOGT1("%d clients not quit yet. \n", not_quit_yet);
+		if(not_quit_yet == 0 ) {
+			break;
+		};
+	}
+}
+
+void main_client_printerror(void)
+{
+
+	for(int i = 0; i < user_amount; i++) {
+		for(int n = 0; n < 3; n++) {
+			if(pp_user[i].price[n] == 0) {
+				err_client[i] = 1 ;
+				break;
+			}
+
+			if(pp_user[i].session_bid[n].event_price_ack->signal == 0) {
+				err_client[i] = 2 ;
+				break;
+			}
+		}
+	}
+
+	err_client_amount = 0;
+	for(int i = 0; i < user_amount; i++) {
+		if(err_client[i] != 0) {
+			err_client_amount++;
+			user_print(i);
+		}
+	}
+	
+	DEBUGP1("%d clients error. \n", err_client_amount);
+	LOGT1("%d clients error. \n", err_client_amount);
+}
 
 int main(int argc, char** argv)
 {
@@ -132,13 +179,9 @@ int main(int argc, char** argv)
 
 	main_signal();					// 开始模拟各种事件
 
-//	for(int i = 0; i < user; i++) {
-//		user_print(i);
-//	}
+	main_client_waitquit();
 
-	for(int i = 0; i < user; i++) {
-		pthread_join(pp_user[i].pid_client, NULL); 
-	}
+	main_client_printerror();
 
 	main_close();
 

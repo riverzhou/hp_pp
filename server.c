@@ -54,27 +54,16 @@ void server_init(void)
 				memcpy(&server[i].addr.sin_addr, host->h_addr_list[0], sizeof(server[i].addr.sin_addr)) ;
 				server[i].addr.sin_family = AF_INET;
 				server[i].addr.sin_port = htons(server[i].port);
-				DEBUGP1("%d :\t %24s : %.6d : %16s \n", i, server[i].domain, server[i].port, inet_ntoa(server[i].addr.sin_addr));
+				DEBUGP1("%d : %-24s : %-6d : %-16s \n", i, server[i].domain, server[i].port, inet_ntoa(server[i].addr.sin_addr));
+				LOGT1("%d : %-24s : %-6d : %-16s \n", i, server[i].domain, server[i].port, inet_ntoa(server[i].addr.sin_addr));
 			}
 			else{
-#ifdef _MINGW_
-				LPVOID lpMsgBuf;
-				FormatMessage(
-						FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-						NULL,
-						WSAGetLastError(),
-						MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-						(LPTSTR) &lpMsgBuf,
-						0,
-						NULL );
-				MessageBox( NULL, (LPCTSTR)lpMsgBuf, "Error", MB_OK | MB_ICONINFORMATION );
-				LocalFree( lpMsgBuf );
-#else
 				perror("gethostbyname");
-#endif
 			}
 		}
 	}
+	DEBUGP1("\n");
+	LOGP1("\n");
 }
 
 

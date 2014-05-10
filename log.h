@@ -23,109 +23,47 @@
 #define DEBUGP4(templt, args...) 
 #define DEBUGP5(templt, args...) 
 
-#define DEBUGT1(templt, args...) 
-#define DEBUGT2(templt, args...) 
-#define DEBUGT3(templt, args...) 
-#define DEBUGT4(templt, args...) 
-#define DEBUGT5(templt, args...) 
-
 #ifdef _DEBUG1_
 #undef 	DEBUGP1
-#undef 	DEBUGT1
 #define DEBUGP1(templt, args...) \
 	do {\
 		fprintf(DEB_FILE, templt,##args);\
-		fflush(DEB_FILE);\
-	}while(0)
-#define DEBUGT1(templt, args...) \
-	do {\
-		time_t	deb_now;\
-		char	deb_time[25] ={0};\
-		time(&deb_now);\
-		ctime_r(&deb_now, deb_time);\
-		deb_time[24] = 0;\
-		fprintf(DEB_FILE,"%s ->|"templt,deb_time,##args);\
 		fflush(DEB_FILE);\
 	}while(0)
 #endif
 
 #ifdef _DEBUG2_
 #undef 	DEBUGP2
-#undef 	DEBUGT2
 #define DEBUGP2(templt, args...) \
 	do {\
 		fprintf(DEB_FILE, templt,##args);\
-		fflush(DEB_FILE);\
-	}while(0)
-#define DEBUGT2(templt, args...) \
-	do {\
-		time_t	deb_now;\
-		char	deb_time[25] ={0};\
-		time(&deb_now);\
-		ctime_r(&deb_now, deb_time);\
-		deb_time[24] = 0;\
-		fprintf(DEB_FILE,"%s ->|"templt,deb_time,##args);\
 		fflush(DEB_FILE);\
 	}while(0)
 #endif
 
 #ifdef _DEBUG3_
 #undef 	DEBUGP3
-#undef 	DEBUGT3
 #define DEBUGP3(templt, args...) \
 	do {\
 		fprintf(DEB_FILE, templt,##args);\
-		fflush(DEB_FILE);\
-	}while(0)
-
-#define DEBUGT3(templt, args...) \
-	do {\
-		time_t	deb_now;\
-		char	deb_time[25] ={0};\
-		time(&deb_now);\
-		ctime_r(&deb_now, deb_time);\
-		deb_time[24] = 0;\
-		fprintf(DEB_FILE,"%s ->|"templt,deb_time,##args);\
 		fflush(DEB_FILE);\
 	}while(0)
 #endif
 
 #ifdef _DEBUG4_
 #undef 	DEBUGP4
-#undef 	DEBUGT4
 #define DEBUGP4(templt, args...) \
 	do {\
 		fprintf(DEB_FILE, templt,##args);\
-		fflush(DEB_FILE);\
-	}while(0)
-#define DEBUGT4(templt, args...) \
-	do {\
-		time_t	deb_now;\
-		char	deb_time[25] ={0};\
-		time(&deb_now);\
-		ctime_r(&deb_now, deb_time);\
-		deb_time[24] = 0;\
-		fprintf(DEB_FILE,"%s ->|"templt,deb_time,##args);\
 		fflush(DEB_FILE);\
 	}while(0)
 #endif
 
 #ifdef _DEBUG5_
 #undef 	DEBUGP5
-#undef 	DEBUGT5
 #define DEBUGP5(templt, args...) \
 	do {\
 		fprintf(DEB_FILE, templt,##args);\
-		fflush(DEB_FILE);\
-	}while(0)
-#define DEBUGT5(templt, args...) \
-	do {\
-		time_t	deb_now;\
-		char	deb_time[25] ={0};\
-		time(&deb_now);\
-		ctime_r(&deb_now, deb_time);\
-		deb_time[24] = 0;\
-		fprintf(DEB_FILE,"%s ->|"templt,deb_time,##args);\
 		fflush(DEB_FILE);\
 	}while(0)
 #endif

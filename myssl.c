@@ -152,7 +152,7 @@ int myssl_connect(int channel_id, int server_id)
 	int retry = 3;
 	int err   = 0;
 
-	DEBUGT2("try to connect to %d : %s : %s \n", server_id, server[server_id].domain, inet_ntoa(*(struct in_addr *)(&server[server_id].addr.sin_addr)));
+	DEBUGP2("try to connect to %d : %s : %s \n", server_id, server[server_id].domain, inet_ntoa(*(struct in_addr *)(&server[server_id].addr.sin_addr)));
 	LOGT5("try to connect to %d : %s : %s \n", server_id, server[server_id].domain, inet_ntoa(*(struct in_addr *)(&server[server_id].addr.sin_addr)));
 
 	channel[channel_id].fd = socket(AF_INET, SOCK_STREAM, 0);
