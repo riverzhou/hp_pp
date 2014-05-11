@@ -15,6 +15,7 @@
 #include "proc.h"
 #include "myevent.h"
 #include "myrand.h"
+#include "dm_client.h"
 
 // DEBUGP2
 // LOGP4
@@ -381,47 +382,37 @@ int proc_price(int user_id, int bid_id, int delay)
 	return 0;
 }
 
+//--------------------------------------------------------------
 
 int proc_decode_connect(void)
 {
-
-
-	return 2014;
-}
-
-int proc_decode_close(int dm_fd)
-{
-	if(dm_fd < 1) {
-		return -1;
-	}
-
-	//
-
-	return 0;
+	return dm_connect();
 }
 
 int proc_decode(int user_id, int bid_id, int dm_fd)
 {
 	int fd = dm_fd;
 
-	if(fd < 1) {
-		fd = proc_decode_connect();
+	if(fd <= 0) {
+		fd = dm_connect();
 	}
 
-	if(fd < 1) {
+	if(fd <= 0) {
 		return -1;
 	}
 
-	//
-	pp_user[user_id].session_bid[bid_id].image  = myrand_getint(999999 - 100000);
+	int len = dm_64_to_bin(	pp_user[user_id].session_bid[bid_id].result_image.pic_64,
+				pp_user[user_id].session_bid[bid_id].result_image.pic_bin);
+
+	pp_user[user_id].session_bid[bid_id].image  =
+			dm_getimage(fd, 0, user_id, pp_user[user_id].session_bid[bid_id].result_image.pic_bin, len) % 1000000;
 
 	myevent_set(pp_user[user_id].session_bid[bid_id].event_image_ack);		// 验证码请求完成并解码完成
-
-	proc_decode_close(dm_fd);
 
 	return 0;
 }
 
+//--------------------------------------------------------------
 
 int proc_login_udp(int user_id, int option)
 {
@@ -442,6 +433,8 @@ int proc_logout_udp(int user_id, int option)
 
 	return 0;
 }
+
+//--------------------------------------------------------------
 
 void proc_trigger(void)
 {

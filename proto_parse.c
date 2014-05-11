@@ -137,7 +137,7 @@ int proto_parseimage_body(
 		}
 
 		if(strcmp(xml_dict[i].key, "IMAGE_CONTENT") == 0) {
-			strncpy(result_image->pic, xml_dict[i].val, sizeof(result_image->pic) - 1);
+			strncpy(result_image->pic_64, xml_dict[i].val, sizeof(result_image->pic_64) - 1);
 			continue;
 		}
 	}

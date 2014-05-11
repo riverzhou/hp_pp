@@ -11,6 +11,8 @@
 
 #define MAX_USER	512
 
+#define MAX_IMAGELEN	8192
+
 //=============================================================
 
 typedef struct {
@@ -41,7 +43,8 @@ typedef struct {
 	char            	sid[128];
 	char            	errcode[8];
 	char            	errstr[128];
-	char			pic[4096];
+	char			pic_64[MAX_IMAGELEN];
+	char			pic_bin[MAX_IMAGELEN];
 }RESULT_IMAGE;
 
 typedef struct {

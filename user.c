@@ -318,7 +318,7 @@ int user_print(int user_id)
 	fprintf(stdout, "session_bid[0].result_image.sid            = %s \n", pp_user[user_id].session_bid[0].result_image.sid); 
 	fprintf(stdout, "session_bid[0].result_image.errcode        = %s \n", pp_user[user_id].session_bid[0].result_image.errcode);
 	fprintf(stdout, "session_bid[0].result_image.errstr         = %s \n", pp_user[user_id].session_bid[0].result_image.errstr);
-	//	fprintf(stdout, "session_bid[0].result_image.pic            = %s \n", pp_user[user_id].session_bid[0].result_image.pic);
+	//fprintf(stdout, "session_bid[0].result_image.pic_64 	    = %s \n", pp_user[user_id].session_bid[0].result_image.pic_64);
 	fprintf(stdout, "session_bid[0].result_price.sid            = %s \n", pp_user[user_id].session_bid[0].result_price.sid);
 	fprintf(stdout, "session_bid[0].result_price.name           = %s \n", pp_user[user_id].session_bid[0].result_price.name);
 	fprintf(stdout, "session_bid[0].result_price.pid            = %s \n", pp_user[user_id].session_bid[0].result_price.pid);
@@ -330,7 +330,7 @@ int user_print(int user_id)
 	fprintf(stdout, "session_bid[1].result_image.sid            = %s \n", pp_user[user_id].session_bid[1].result_image.sid); 
 	fprintf(stdout, "session_bid[1].result_image.errcode        = %s \n", pp_user[user_id].session_bid[1].result_image.errcode);
 	fprintf(stdout, "session_bid[1].result_image.errstr         = %s \n", pp_user[user_id].session_bid[1].result_image.errstr);
-	//	fprintf(stdout, "session_bid[1].result_image.pic            = %s \n", pp_user[user_id].session_bid[1].result_image.pic);
+	//fprintf(stdout, "session_bid[1].result_image.pic_64       = %s \n", pp_user[user_id].session_bid[1].result_image.pic_64);
 	fprintf(stdout, "session_bid[1].result_price.sid            = %s \n", pp_user[user_id].session_bid[1].result_price.sid);
 	fprintf(stdout, "session_bid[1].result_price.name           = %s \n", pp_user[user_id].session_bid[1].result_price.name);
 	fprintf(stdout, "session_bid[1].result_price.pid            = %s \n", pp_user[user_id].session_bid[1].result_price.pid);
@@ -342,7 +342,7 @@ int user_print(int user_id)
 	fprintf(stdout, "session_bid[2].result_image.sid            = %s \n", pp_user[user_id].session_bid[2].result_image.sid); 
 	fprintf(stdout, "session_bid[2].result_image.errcode        = %s \n", pp_user[user_id].session_bid[2].result_image.errcode);
 	fprintf(stdout, "session_bid[2].result_image.errstr         = %s \n", pp_user[user_id].session_bid[2].result_image.errstr);
-	//	fprintf(stdout, "session_bid[2].result_image.pic            = %s \n", pp_user[user_id].session_bid[2].result_image.pic);
+	//fprintf(stdout, "session_bid[2].result_image.pic_64       = %s \n", pp_user[user_id].session_bid[2].result_image.pic_64);
 	fprintf(stdout, "session_bid[2].result_price.sid            = %s \n", pp_user[user_id].session_bid[2].result_price.sid);
 	fprintf(stdout, "session_bid[2].result_price.name           = %s \n", pp_user[user_id].session_bid[2].result_price.name);
 	fprintf(stdout, "session_bid[2].result_price.pid            = %s \n", pp_user[user_id].session_bid[2].result_price.pid);

@@ -126,7 +126,7 @@ void tcp_recv(int fd)
 
 	int len = 0 , ret = 0;
 	do {
-		ret = recv(fd, buff, sizeof(buff) - len, 0);
+		ret = recv(fd, &(buff[len]), sizeof(buff) - len, 0);
 		if(ret < 0 ) {
 			perror("tcp_recv : recv");
 			return ;

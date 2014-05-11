@@ -9,7 +9,7 @@ debug_number	= -D_DEBUG1_
 
 log_level 	= -D_LOG_LEVEL_=2
 
-files 		= log.c  myevent.c  myrand.c  myssl.c  myudp.c  myxml.c  pp.c  ppthread.c  proc.c  proto_checkcode.c  proto_make.c  proto_parse.c  server.c  user.c
+files 		= dm_client.c  log.c  myevent.c  myrand.c  myssl.c  myudp.c  myxml.c  pp.c  ppthread.c  proc.c  proto_checkcode.c  proto_make.c  proto_parse.c  server.c  user.c
 
 all:
 	$(cc) $(def) $(debug_number) $(log_level) -O2 -Wall -std=gnu99 ${files} -lxml2 -lssl -lcrypto -pthread -I/usr/include/libxml2 -o pp
