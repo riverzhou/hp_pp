@@ -1,3 +1,4 @@
+*.swp
 udp_client
 udp_server.pyo
 udp_server.pyc
