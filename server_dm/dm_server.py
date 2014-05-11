@@ -6,7 +6,8 @@ from socketserver import ThreadingTCPServer, BaseRequestHandler
 from traceback    import print_exc
 
 HOST    = ''
-PORT    = 9999
+#PORT    = 9999
+PORT    = 2000
 BUFSIZE = 65535
 
 class MyBaseRequestHandlerr(BaseRequestHandler):  
@@ -17,8 +18,8 @@ class MyBaseRequestHandlerr(BaseRequestHandler):
                 return
 
         def my_init(self):
-                self.priority   = 0
-                self.userid     = 0
+                self.pkglen     = 0
+                self.proto      = 0
                 self.imagelen   = 0
                 self.image      = b''
                 self.result     = 654321
@@ -37,20 +38,22 @@ class MyBaseRequestHandlerr(BaseRequestHandler):
                         return
 
         def recv_head(self):
+                head_len = 10
                 head = b''
                 buff = b''
                 recv = 0
 
-                while(recv < 8):
-                        buff = self.request.recv(8 - recv)
+                while(recv < head_len):
+                        buff = self.request.recv(head_len - recv)
                         if not buff:
                                 return False
                         head += buff
                         recv += len(buff)
 
-                self.priority, self.userid, self.imagelen = unpack('HHI', head)
+                self.pkglen, self.proto, self.imagelen = unpack('=IHI', head)
+                self.pkglen += 4
 
-                print('priority =', self.priority, ' , self.userid =', self.userid, ' , imagelen =', self.imagelen)
+                print('pkglen =', self.pkglen, ' , proto =', self.proto, ' , imagelen =', self.imagelen)
 
                 if( self.imagelen == 0 ) :
                         return False
@@ -71,18 +74,16 @@ class MyBaseRequestHandlerr(BaseRequestHandler):
 
                 self.image = body
 
-                print('image :' , self.image )
+                #print('image :' , self.image )
 
                 return True
 
         def send_result(self):
-                buff = pack('I', self.result)
+                buff = pack('=IHII', 10, 10001, 4, self.result)
 
                 self.request.send(buff)
 
                 return True
-
-
 
 
 if __name__ == "__main__": 

@@ -11,39 +11,33 @@
 
 #include "dm_client.h"
 
-#define SERVER_PORT	9999
+//#define SERVER_PORT	9999
 #define SERVER_IP	"127.0.0.1"
 
-void proto_make(PROTO_SEND* proto_send, unsigned short priority, unsigned short userid, unsigned char image[], unsigned int imagelen)
-{
-	if(proto_send == NULL || imagelen >= MAX_IMAGELEN)
-		return ;
+#define SERVER_PORT	2000
+//#define SERVER_IP	"192.168.1.112"
 
-	proto_send->priority 	= priority;
-	proto_send->userid	= userid;
-	proto_send->imagelen 	= imagelen;
-	memcpy(proto_send->image, image, imagelen);
+void proto_make(PROTO_SEND* proto_send, int user_id, char* image, int imagelen)
+{
+	proto_send->nTotalLen           = imagelen + 6 ;
+	proto_send->nProtocolID         = DM_PROTO_ID + user_id ;
+	proto_send->nBodyLen            = imagelen ;
+	memcpy(proto_send->arBody,      image, imagelen);
 }
 
 void proto_print(PROTO_RECV* proto_recv)
 {
-	if(proto_recv == NULL)
-		return;
-
-	printf("proto_recv->number : %-6u \n", proto_recv->number);
+	printf("proto_recv->nCodeNum : %-6u \n", proto_recv->nCodeNum);
 }
 
 int proto_init(PROTO_SEND* proto_send)
 {
-	if(proto_send == NULL)
-		return -1 ;
+	char  image[] 	= "1234567890" ;
+	int   imagelen	= 10 ;
 
-	unsigned char  image[] 	= "1234567890" ;
-	unsigned short imagelen	= 10 ;
+	proto_make(proto_send, 127, image, imagelen);
 
-	proto_make(proto_send, 0, 127, image, imagelen);
-
-	return 2 + 2 + 4 + imagelen ;
+	return 4 + 2 + 4 + imagelen ;
 }
 
 int tcp_create(void)
@@ -99,10 +93,9 @@ int tcp_connect(int fd)
 
 void tcp_send(int fd)
 {
-	unsigned char buff[MAX_IMAGELEN + 8] = {0};
+	unsigned char buff[MAX_IMAGELEN + 12] = {0};
 	PROTO_SEND* proto_send = (PROTO_SEND*) buff;
 
-	memset(proto_send, 0, sizeof(PROTO_SEND));
 	int len = proto_init(proto_send);
 	if(len <= 0 ) {
 		printf("tcp_send : init");
@@ -110,6 +103,8 @@ void tcp_send(int fd)
 	}
 
 	int ret = send(fd, buff, len, 0);
+
+	fprintf(stderr,"%u , %u , %u \n", proto_send->nTotalLen, proto_send->nProtocolID, proto_send->nBodyLen);
 
 	if(ret <= 0 ) {
 		perror("tcp_send : send");
@@ -119,10 +114,8 @@ void tcp_send(int fd)
 
 void tcp_recv(int fd)
 {
-	unsigned char buff[MAX_IMAGELEN + 8] = {0};
+	unsigned char buff[MAX_IMAGELEN + 12] = {0};
 	PROTO_RECV* proto_recv = (PROTO_RECV*) buff;
-
-	memset(proto_recv, 0, sizeof(PROTO_RECV));
 
 	int len = 0 , ret = 0;
 	do {
