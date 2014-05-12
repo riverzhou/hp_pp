@@ -7,7 +7,6 @@
 
 #include "log.h"  
 #include "myssl.h"  
-#include "myudp.h"  
 #include "proto_checkcode.h"  
 #include "proto_make.h"  
 #include "proto_parse.h"
@@ -16,6 +15,7 @@
 #include "myevent.h"
 #include "myrand.h"
 #include "dm_client.h"
+#include "udp_client.h"  
 
 // DEBUGP2
 // LOGP4

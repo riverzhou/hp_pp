@@ -6,7 +6,6 @@
 #include "myrand.h"
 #include "log.h"  
 #include "myssl.h"  
-#include "myudp.h"  
 #include "server.h"
 #include "proc.h"
 #include "user.h"
