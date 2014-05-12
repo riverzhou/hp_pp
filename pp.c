@@ -56,7 +56,7 @@ void main_signal(void)
 {
 #if 1
 	int t1 = 5 ;
-	int t2 = 60 ;
+	int t2 = 5 ;
 
 	sleep(t1);
 
@@ -162,6 +162,13 @@ void main_client_printerror(void)
 	LOGT1("%d clients error. \n", err_client_amount);
 }
 
+void main_client_print(void)
+{
+	for(int i = 0; i < user_amount; i++) {
+		user_print(i);
+	}
+}
+
 int main(int argc, char** argv)
 {
 	main_init();
@@ -182,6 +189,8 @@ int main(int argc, char** argv)
 	main_client_waitquit();
 
 	main_client_printerror();
+
+	main_client_print();
 
 	main_close();
 
