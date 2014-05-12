@@ -56,29 +56,30 @@ int main_start_client(int user_id)
 void main_signal(void)
 {
 #if 1
-	int t = 5 ;
+	int t1 = 5 ;
+	int t2 = 60 ;
 
-	sleep(t);
+	sleep(t1);
 
 	myevent_set(ev_login_start);			// *** 开始登录
 
-	sleep(t);
+	sleep(t1);
 
 	myevent_set(ev_first_begin);			// 上半场开始
 
-	sleep(t);
+	sleep(t1);
 
 	user_price0 = 500;	 			// 设置上半场价格
 
-	sleep(t);
+	sleep(t1);
 
 	myevent_set(ev_bid0_image_shoot); 		// *** 开始上半场出价
 
-	sleep(t);
+	sleep(t2);
 
 	myevent_set(ev_second_begin);			// 下半场开始
 
-	sleep(t);
+	sleep(t1);
 
 	myevent_set(ev_bid1_image_warmup);		// *** 开始第一次出价预热_图片
 
@@ -88,7 +89,7 @@ void main_signal(void)
 
 	myevent_set(ev_bid2_price_warmup);		// *** 开始第二次出价预热_价格
 
-	sleep(t);
+	sleep(t1);
 
 	user_price1 = 74500;				// 设置第一次出价的价格
 
@@ -98,7 +99,7 @@ void main_signal(void)
 
 	myevent_set(ev_bid2_image_shoot); 		// *** 开始第二次出价_图片
 
-	sleep(t);
+	sleep(t2);
 
 	DEBUGP1("\n发出login和trigger退出信号\n\n");
 

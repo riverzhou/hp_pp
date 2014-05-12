@@ -11,7 +11,7 @@
 
 #define MAX_USER	512
 
-#define MAX_IMAGELEN	8192
+#define MAX_IMAGELEN	4096
 
 //=============================================================
 

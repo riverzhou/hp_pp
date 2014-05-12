@@ -402,10 +402,10 @@ int proc_decode(int user_id, int bid_id, int dm_fd)
 	}
 
 	int len = dm_64_to_bin(	pp_user[user_id].session_bid[bid_id].result_image.pic_64,
-				pp_user[user_id].session_bid[bid_id].result_image.pic_bin);
+			pp_user[user_id].session_bid[bid_id].result_image.pic_bin);
 
 	pp_user[user_id].session_bid[bid_id].image  =
-			dm_getimage(fd, 0, user_id, pp_user[user_id].session_bid[bid_id].result_image.pic_bin, len) % 1000000;
+		dm_getimage(fd, user_id, pp_user[user_id].session_bid[bid_id].result_image.pic_bin, len) % 1000000;
 
 	myevent_set(pp_user[user_id].session_bid[bid_id].event_image_ack);		// 验证码请求完成并解码完成
 
