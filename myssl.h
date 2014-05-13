@@ -58,5 +58,7 @@ int myssl_dataread(int channel_id, char* buf, int len);
 
 int channel_findfree(void);
 
+char* get_md5string(char* output, char* intput);
+
 #endif // MYSSL_H_INCLUDED
 

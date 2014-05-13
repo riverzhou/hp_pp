@@ -16,31 +16,6 @@
 
 //-------------------------------------------------
 
-char* get_md5string(
-		char* input, 
-		char* output)
-{
-	unsigned char md[17] = {0};
-
-	if(input == NULL)
-		return NULL;
-
-	MD5_CTX ctx;
-	MD5_Init(&ctx);
-	MD5_Update(&ctx, input, strlen(input));
-	MD5_Final(md,&ctx);
-
-	for( int i = 0 ; i < 16 ; i++ ){
-		char tmp[3] = {0};
-		sprintf(tmp,"%02x",md[i]);
-		strcat(output,tmp);
-	}
-
-	output[32] = 0;
-
-	return output;
-}
-
 //-------------------------------------------------
 
 int proto_bidcode(
@@ -104,7 +79,7 @@ char* proto_makecode(
 
 	DEBUGP3("%s\n", bid);
 
-	if(get_md5string(bid, md) == NULL)
+	if(get_md5string(md, bid) == NULL)
 		return NULL;	
 
 	proto_bidmd(md, bidmd);
@@ -118,7 +93,7 @@ char* proto_makecode(
 
 	DEBUGP3("%s\n", buff);
 
-	if(get_md5string(buff, checkcode) == NULL)
+	if(get_md5string(checkcode, buff) == NULL)
 		return NULL;	
 
 	DEBUGP3("%s\n", checkcode);
@@ -142,7 +117,7 @@ char* proto_makeimagecode(
 
 	DEBUGP3("%s\n", buff);
 
-	if(get_md5string(buff, checkcode) == NULL)
+	if(get_md5string(checkcode, buff) == NULL)
 		return NULL;
 
 	DEBUGP3("%s\n", checkcode);

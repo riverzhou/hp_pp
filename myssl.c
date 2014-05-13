@@ -24,6 +24,31 @@ static pthread_mutex_t*	ssl_lock = NULL;
 
 //==========================================================================
 
+char* get_md5string(char* output, char* input)
+{
+	unsigned char md[17] = {0};
+
+	if(input == NULL)
+		return NULL;
+
+	MD5_CTX ctx;
+	MD5_Init(&ctx);
+	MD5_Update(&ctx, input, strlen(input));
+	MD5_Final(md,&ctx);
+
+	for( int i = 0 ; i < 16 ; i++ ){
+		char tmp[3] = {0};
+		sprintf(tmp,"%02x",md[i]);
+		strcat(output,tmp);
+	}
+
+	output[32] = 0;
+
+	return output;
+}
+
+//==========================================================================
+//
 void locking_function(int mode, int type, char *file, int line)
 {
 	// 根据第1个参数mode来判断是加锁还是解锁
