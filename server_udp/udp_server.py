@@ -23,7 +23,8 @@ class user():
                 if not uid in id_dict:
                         id_dict[uid] = ps_id
 
-                self.order          = ('FORMAT','INFO','MSG','RELOGIN','ADDSERV','MARQUEE')
+                #self.order         = ['FORMAT','INFO','MSG','ADDSERV','MARQUEE','RELOGIN']
+                self.order          = ['FORMAT','MSG','MARQUEE','INFO']
                 self.ack            = {}
                 #self.ack['INFO']   = '<TYPE>INFO</TYPE><BIDNO>98765432</BIDNO><VCODE>7AD4010132285769C8496849089947CA</VCODE>'
                 self.ack['INFO']    =    '<TYPE>INFO</TYPE><BIDNO>'+uid+'</BIDNO><VCODE>'+self.get_vcode(uid)+'</VCODE>'
@@ -34,8 +35,8 @@ class user():
                 self.ack['MARQUEE'] = '<TYPE>MARQUEE</TYPE><BIDNO>'+uid+'</BIDNO><VCODE>'+self.get_vcode(uid)+'</VCODE>'
                 self.req            = []
                 self.req_parse      = []
-                self.feq            = 0
-                self.feq_test       = 2
+                self.feq            = -1
+                self.feq_test       = 1
                 self.keys           = ('TYPE','BIDNO','VCODE')
                 return
 
@@ -53,9 +54,9 @@ class user():
 
         def getack(self):
                 feq = self.feq
-                if feq > 5 :
+                if feq > len(self.order) - 1 :
                         feq = self.feq_test                                      
-
+                print('feq', feq)
                 return self.ack[self.order[feq]]
 
         @staticmethod                                      
