@@ -274,6 +274,16 @@ int user_initmem_group(int max)
 	return 0;
 }
 
+int user_initmem_login(int max)
+{
+	unsigned int val = 0;
+	for(int i = 0; i < max; i++){
+		val = myrand_getint(999999 - 100000);
+		pp_user[i].session_login.image = val + 100000;
+	}
+	return 0;
+}
+
 int user_initmem(int max)
 {
 	user_initmem_machinecode(max);
@@ -281,6 +291,8 @@ int user_initmem(int max)
 	user_initmem_event(max);
 
 	user_initmem_group(max);
+
+	user_initmem_login(max);
 
 	return 0;
 }

@@ -1,5 +1,6 @@
 *.swp
 pp
 pp.log
+pp.debug
 pp_test
 core

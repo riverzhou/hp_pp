@@ -65,7 +65,7 @@ int proc_login(int user_id, int delay)
 		DEBUGP2("wait for conn to LOGIN server... \n");
 		LOGT4("wait for conn to LOGIN server... \n");
 
-		myevent_wait(pp_user[user_id].session_login.event_login_req);
+		myevent_wait(pp_user[user_id].session_login.event_login_req);			// 等待发送信号
 	}
 
 	// connect
@@ -125,7 +125,7 @@ int proc_login(int user_id, int delay)
 	// parse
 	proto_parselogin(buff, result_login);
 
-	myevent_set(pp_user[user_id].session_login.event_login_ack);		// 登录完成
+	myevent_set(pp_user[user_id].session_login.event_login_ack);				// 登录完成
 
 	// done
 	myssl_close(channel_id);
@@ -140,7 +140,7 @@ int proc_image(int user_id, int bid_id, int delay)
 	unsigned int    bidpassword	= pp_user[user_id].bidpassword;
 	char*           sessionid	= pp_user[user_id].session_login.result_login.sid;	// 应该无用
 	RESULT_IMAGE*   result_image	= &pp_user[user_id].session_bid[bid_id].result_image;
-	unsigned int 	bidamount	= 0;
+	unsigned int 	bidamount	= 0;							// 延迟赋值
 
 	int channel_id 			=-1 ;
 	int server			=-1 ;	
@@ -177,7 +177,7 @@ int proc_image(int user_id, int bid_id, int delay)
 		myevent_wait(pp_user[user_id].session_bid[bid_id].event_image_req);
 	}
 
-	switch(bid_id) {
+	switch(bid_id) {									// 延迟赋值
 		case 0:
 			bidamount 	= user_price0;
 			break;
@@ -199,7 +199,7 @@ int proc_image(int user_id, int bid_id, int delay)
 	pp_user[user_id].price[bid_id]	= bidamount;
 
 	memset(proto, 0, sizeof(proto));
-	proto_makeimage(								// 先wait后造协议是为了取更加新的价格
+	proto_makeimage(									// 先wait后造协议是为了取更加新的价格
 			group,
 			bidnumber,
 			bidpassword,
@@ -253,7 +253,7 @@ int proc_image(int user_id, int bid_id, int delay)
 	// parse
 	proto_parseimage(buff, result_image); 
 
-	//myevent_set(pp_user[user_id].session_bid[bid_id].event_image_ack);		// 验证码请求完成信号放到解码函数中
+	//myevent_set(pp_user[user_id].session_bid[bid_id].event_image_ack);			// 验证码请求完成信号放到解码函数中
 
 	// done
 	myssl_close(channel_id);
@@ -266,8 +266,8 @@ int proc_price(int user_id, int bid_id, int delay)
 	int 		group		= pp_user[user_id].group;
 	unsigned int 	bidnumber	= pp_user[user_id].bidnumber;
 	unsigned int 	bidpassword	= pp_user[user_id].bidpassword;
-	unsigned int 	bidamount	= 0;
-	unsigned int 	imagenumber	= pp_user[user_id].session_bid[bid_id].image;
+	unsigned int 	bidamount	= 0;							// 延迟赋值
+	unsigned int 	imagenumber	= 0;							// 延迟赋值
 	char* 		machinecode	= pp_user[user_id].machinecode;
 	char* 		sessionid	= pp_user[user_id].session_bid[bid_id].result_image.sid;
 	RESULT_PRICE*   result_price	= &pp_user[user_id].session_bid[bid_id].result_price;
@@ -307,10 +307,11 @@ int proc_price(int user_id, int bid_id, int delay)
 		DEBUGP2("wait for sent to PRICE server... \n");
 		LOGT4("wait for sent to PRICE server... \n");
 
-		myevent_wait(pp_user[user_id].session_bid[bid_id].event_image_ack);	// 等待图片解码成功
+		myevent_wait(pp_user[user_id].session_bid[bid_id].event_image_ack);		// 等待图片解码成功
 	}
 
-	bidamount = pp_user[user_id].price[bid_id];
+	imagenumber	= pp_user[user_id].session_bid[bid_id].image;				// 延迟赋值
+	bidamount 	= pp_user[user_id].price[bid_id];					// 延迟赋值
 	if(bidamount == 0) {
 		fprintf(stderr, "%s : bidamount == 0 : user_id=%d, bid_id=%d\n", __func__, user_id, bid_id);
 		LOGT1("%s : bidamount == 0 : user_id=%d, bid_id=%d\n", __func__, user_id, bid_id);
@@ -318,7 +319,7 @@ int proc_price(int user_id, int bid_id, int delay)
 	};
 
 	memset(proto, 0, sizeof(proto));
-	proto_makeprice(								// 先wait后造协议是为了取更加新的价格
+	proto_makeprice(									// 先wait后造协议是为了取更加新的价格
 			group,
 			bidnumber,
 			bidpassword,
@@ -374,7 +375,7 @@ int proc_price(int user_id, int bid_id, int delay)
 	// parse
 	proto_parseprice(buff, result_price);
 
-	myevent_set(pp_user[user_id].session_bid[bid_id].event_price_ack);		// 设置完成信号
+	myevent_set(pp_user[user_id].session_bid[bid_id].event_price_ack);			// 设置完成信号
 
 	// done
 	myssl_close(channel_id);

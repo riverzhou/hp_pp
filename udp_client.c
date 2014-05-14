@@ -184,11 +184,11 @@ int udp_proto_format(int user_id, char* buff, int buff_len)
 	char vcode_seed[40] = {0};	// 18 + 8
 	char vcode[40]	    = {0};	// 32
 
-	snprintf(vcode_seed, sizeof(vcode_seed)-1, "%s%.8d", pp_user[user_id].session_login.result_login.pid, user_id);
+	snprintf(vcode_seed, sizeof(vcode_seed)-1, "%s%.8d", pp_user[user_id].session_login.result_login.pid, pp_user[user_id].bidnumber);
 
 	get_md5string(vcode, vcode_seed);
 
-	snprintf(buff, buff_len, UDP_FORMAT, user_id, vcode);
+	snprintf(buff, buff_len, UDP_FORMAT, pp_user[user_id].bidnumber, vcode);
 
 	return strnlen(buff, buff_len - 1);;
 }
@@ -198,11 +198,11 @@ int udp_proto_logoff(int user_id, char* buff, int buff_len)
 	char vcode_seed[40] = {0};	// 18 + 8
 	char vcode[40]	    = {0};	// 32
 
-	snprintf(vcode_seed, sizeof(vcode_seed)-1, "%s%.8d", pp_user[user_id].session_login.result_login.pid, user_id);
+	snprintf(vcode_seed, sizeof(vcode_seed)-1, "%s%.8d", pp_user[user_id].session_login.result_login.pid, pp_user[user_id].bidnumber);
 
 	get_md5string(vcode, vcode_seed);
 
-	snprintf(buff, buff_len, UDP_LOGOFF, user_id, vcode);
+	snprintf(buff, buff_len, UDP_LOGOFF, pp_user[user_id].bidnumber, vcode);
 
 	return strnlen(buff, buff_len - 1);;
 }
@@ -250,6 +250,8 @@ int udp_login(int user_id)
 
 	int len = udp_proto_format(user_id, buff, sizeof(buff));
 
+	DEBUGP2("%s : %s\n", __func__, buff);
+
 	udp_data_encode(buff, len);
 
 	int ret = udp_send(user_id, buff, len);
@@ -262,6 +264,8 @@ int udp_logout(int user_id)
 	char buff[MAX_UDP_BUFFLEN] = {0};
 
 	int len = udp_proto_logoff(user_id, buff, sizeof(buff));
+
+	DEBUGP2("%s : %s\n", __func__, buff);
 
 	udp_data_encode(buff, len);
 
@@ -282,6 +286,8 @@ int udp_getinfo(int user_id)
 	}
 
 	udp_data_decode(buff, len);
+
+	DEBUGP2("%s : %s\n", __func__, buff);
 
 	int info = udp_proto_parse(user_id, buff, len);
 
