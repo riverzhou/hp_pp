@@ -42,13 +42,27 @@ char* get_md5string(char* output, char* input)
 		strcat(output,tmp);
 	}
 
-	output[32] = 0;
+	output[32] = 0;					// output buff 长度一定要开够
+
+	return output;
+}
+
+char* get_md5string_up(char* output, char* input)
+{
+	get_md5string(output,input);
+
+	for(int i = 0; i < strlen(output); i++) 
+	{ 
+		if((output[i] >= 'a') && (output[i] <= 'z')) {
+			output[i] += 32;
+		}
+	} 
 
 	return output;
 }
 
 //==========================================================================
-//
+
 void locking_function(int mode, int type, char *file, int line)
 {
 	// 根据第1个参数mode来判断是加锁还是解锁

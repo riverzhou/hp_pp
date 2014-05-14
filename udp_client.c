@@ -186,7 +186,7 @@ int udp_proto_format(int user_id, char* buff, int buff_len)
 
 	snprintf(vcode_seed, sizeof(vcode_seed)-1, "%s%.8d", pp_user[user_id].session_login.result_login.pid, pp_user[user_id].bidnumber);
 
-	get_md5string(vcode, vcode_seed);
+	get_md5string_up(vcode, vcode_seed);
 
 	snprintf(buff, buff_len, UDP_FORMAT, pp_user[user_id].bidnumber, vcode);
 
@@ -200,7 +200,7 @@ int udp_proto_logoff(int user_id, char* buff, int buff_len)
 
 	snprintf(vcode_seed, sizeof(vcode_seed)-1, "%s%.8d", pp_user[user_id].session_login.result_login.pid, pp_user[user_id].bidnumber);
 
-	get_md5string(vcode, vcode_seed);
+	get_md5string_up(vcode, vcode_seed);
 
 	snprintf(buff, buff_len, UDP_LOGOFF, pp_user[user_id].bidnumber, vcode);
 
