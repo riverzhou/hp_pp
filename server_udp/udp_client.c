@@ -112,7 +112,7 @@ int udp_connect(int fd)
 
 	printf("connect server ip is %s, port is %d .\n", inet_ntoa(server_addr.sin_addr), ntohs(server_addr.sin_port));
 
-	socklen_t addr_size = 0;
+	socklen_t addr_size = sizeof(struct sockaddr_in);
 	if( getsockname(fd, (struct sockaddr *) &client_addr, &addr_size ) < 0 ) {
 		perror("udp socket getsockname") ;
 		return -1 ;
