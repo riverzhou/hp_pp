@@ -56,8 +56,8 @@ int proc_login(int user_id, int delay)
 
 	channel_id = channel_findfree();
 	if(channel_id < 0 ) {
-		fprintf(stderr,"%s : channel_findfree error \n", __func__);
-		LOGT1("%s : channel_findfree error \n", __func__);
+		fprintf(stderr, FUNC_NAME_HEAD"channel_findfree error \n", __func__);
+		LOGT1(FUNC_NAME_HEAD"channel_findfree error \n", __func__);
 		return -1;
 	}
 
@@ -73,8 +73,8 @@ int proc_login(int user_id, int delay)
 	LOGT4("conn to LOGIN server... \n");
 
 	if(myssl_connect(channel_id, server) < 0 ){
-		fprintf(stderr,"%s : myssl_connect error \n", __func__);
-		LOGT1("%s : myssl_connect error \n", __func__);
+		fprintf(stderr, FUNC_NAME_HEAD"myssl_connect error \n", __func__);
+		LOGT1(FUNC_NAME_HEAD"myssl_connect error \n", __func__);
 		myssl_close(channel_id);
 		return -1;
 	}
@@ -86,8 +86,8 @@ int proc_login(int user_id, int delay)
 
 	ret = myssl_datawrite(channel_id, proto, strlen(proto));
 	if(ret < 0) {
-		fprintf(stderr,"%s : myssl_datawrite error \n", __func__);
-		LOGT1("%s : myssl_datawrite error \n", __func__);
+		fprintf(stderr, FUNC_NAME_HEAD"myssl_datawrite error \n", __func__);
+		LOGT1(FUNC_NAME_HEAD"myssl_datawrite error \n", __func__);
 		myssl_close(channel_id);
 		return -1;
 	}
@@ -107,8 +107,8 @@ int proc_login(int user_id, int delay)
 	do{
 		ret = myssl_dataread(channel_id, buff + rcv, sizeof(buff) - rcv);
 		if(ret < 0) {
-			fprintf(stderr,"%s : myssl_dataread error \n", __func__);
-			LOGT1("%s : myssl_dataread error \n", __func__);
+			fprintf(stderr, FUNC_NAME_HEAD"myssl_dataread error \n", __func__);
+			LOGT1(FUNC_NAME_HEAD"myssl_dataread error \n", __func__);
 			myssl_close(channel_id);
 			return -1;
 		}
@@ -154,8 +154,8 @@ int proc_image(int user_id, int bid_id, int delay)
 
 	channel_id = channel_findfree();
 	if(channel_id < 0 ) {
-		fprintf(stderr,"%s : channel_findfree error \n", __func__);
-		LOGT1("%s : channel_findfree error \n", __func__);
+		fprintf(stderr, FUNC_NAME_HEAD"channel_findfree error \n", __func__);
+		LOGT1(FUNC_NAME_HEAD"channel_findfree error \n", __func__);
 		return -1;
 	}
 
@@ -164,8 +164,8 @@ int proc_image(int user_id, int bid_id, int delay)
 	LOGT4("conn to IMAGE server... \n");
 
 	if(myssl_connect(channel_id, server) < 0 ){
-		fprintf(stderr,"%s : myssl_connect error \n", __func__);
-		LOGT1("%s : myssl_connect error \n", __func__);
+		fprintf(stderr, FUNC_NAME_HEAD"myssl_connect error \n", __func__);
+		LOGT1(FUNC_NAME_HEAD"myssl_connect error \n", __func__);
 		myssl_close(channel_id);
 		return -1;
 	}
@@ -192,8 +192,8 @@ int proc_image(int user_id, int bid_id, int delay)
 	}
 
 	if(bidamount == 0) {
-		fprintf(stderr, "%s : bidamount == 0 (get from user_priceX) user_id=%d, bid_id=%d\n", __func__, user_id, bid_id);
-		LOGT1("%s : bidamount == 0 (get from user_priceX) user_id=%d, bid_id=%d\n", __func__, user_id, bid_id);
+		fprintf(stderr, FUNC_NAME_HEAD"bidamount == 0 (get from user_priceX) user_id=%d, bid_id=%d\n", __func__, user_id, bid_id);
+		LOGT1(FUNC_NAME_HEAD"bidamount == 0 (get from user_priceX) user_id=%d, bid_id=%d\n", __func__, user_id, bid_id);
 	}
 
 	pp_user[user_id].price[bid_id]	= bidamount;
@@ -214,8 +214,8 @@ int proc_image(int user_id, int bid_id, int delay)
 
 	ret = myssl_datawrite(channel_id, proto, strlen(proto));
 	if(ret < 0) {
-		fprintf(stderr,"%s : myssl_datawrite error \n", __func__);
-		LOGT1("%s : myssl_datawrite error \n", __func__);
+		fprintf(stderr, FUNC_NAME_HEAD"myssl_datawrite error \n", __func__);
+		LOGT1(FUNC_NAME_HEAD"myssl_datawrite error \n", __func__);
 		myssl_close(channel_id);
 		return -1;
 	}
@@ -235,8 +235,8 @@ int proc_image(int user_id, int bid_id, int delay)
 	do{
 		ret = myssl_dataread(channel_id, buff + rcv, sizeof(buff) - rcv);
 		if(ret < 0) {
-			fprintf(stderr,"%s : myssl_dataread error \n", __func__);
-			LOGT1("%s : myssl_dataread error \n", __func__);
+			fprintf(stderr, FUNC_NAME_HEAD"myssl_dataread error \n", __func__);
+			LOGT1(FUNC_NAME_HEAD"myssl_dataread error \n", __func__);
 			myssl_close(channel_id);
 			return -1;
 		}
@@ -287,8 +287,8 @@ int proc_price(int user_id, int bid_id, int delay)
 
 	channel_id = channel_findfree();
 	if(channel_id < 0 ) {
-		fprintf(stderr,"%s : channel_findfree error \n", __func__);
-		LOGT1("%s : channel_findfree error \n", __func__);
+		fprintf(stderr, FUNC_NAME_HEAD"channel_findfree error \n", __func__);
+		LOGT1(FUNC_NAME_HEAD"channel_findfree error \n", __func__);
 		return -1;
 	}
 
@@ -297,8 +297,8 @@ int proc_price(int user_id, int bid_id, int delay)
 	LOGT4("conn to PRICE server... \n");
 
 	if(myssl_connect(channel_id, server) < 0 ){
-		fprintf(stderr,"%s : myssl_connect error \n", __func__);
-		LOGT1("%s : myssl_connect error \n", __func__);
+		fprintf(stderr, FUNC_NAME_HEAD"myssl_connect error \n", __func__);
+		LOGT1(FUNC_NAME_HEAD"myssl_connect error \n", __func__);
 		myssl_close(channel_id);
 		return -1;
 	}
@@ -313,8 +313,8 @@ int proc_price(int user_id, int bid_id, int delay)
 	imagenumber	= pp_user[user_id].session_bid[bid_id].image;				// 延迟赋值
 	bidamount 	= pp_user[user_id].price[bid_id];					// 延迟赋值
 	if(bidamount == 0) {
-		fprintf(stderr, "%s : bidamount == 0 : user_id=%d, bid_id=%d\n", __func__, user_id, bid_id);
-		LOGT1("%s : bidamount == 0 : user_id=%d, bid_id=%d\n", __func__, user_id, bid_id);
+		fprintf(stderr, FUNC_NAME_HEAD"bidamount == 0 : user_id=%d, bid_id=%d\n", __func__, user_id, bid_id);
+		LOGT1(FUNC_NAME_HEAD"bidamount == 0 : user_id=%d, bid_id=%d\n", __func__, user_id, bid_id);
 		return -1;
 	};
 
@@ -336,8 +336,8 @@ int proc_price(int user_id, int bid_id, int delay)
 
 	ret = myssl_datawrite(channel_id, proto, strlen(proto));
 	if(ret < 0) {
-		fprintf(stderr,"%s : myssl_datawrite error \n", __func__);
-		LOGT1("%s : myssl_datawrite error \n", __func__);
+		fprintf(stderr, FUNC_NAME_HEAD"myssl_datawrite error \n", __func__);
+		LOGT1(FUNC_NAME_HEAD"myssl_datawrite error \n", __func__);
 		myssl_close(channel_id);
 		return -1;
 	}
@@ -357,8 +357,8 @@ int proc_price(int user_id, int bid_id, int delay)
 	do{
 		ret = myssl_dataread(channel_id, buff + rcv, sizeof(buff) - rcv);
 		if(ret < 0) {
-			fprintf(stderr,"%s : myssl_dataread error \n", __func__);
-			LOGT1("%s : myssl_dataread error \n", __func__);
+			fprintf(stderr, FUNC_NAME_HEAD"myssl_dataread error \n", __func__);
+			LOGT1(FUNC_NAME_HEAD"myssl_dataread error \n", __func__);
 			myssl_close(channel_id);
 			return -1;
 		}

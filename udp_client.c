@@ -46,7 +46,7 @@ int udp_create(void)
 		perror("udp socket getsockname") ;
 		return -1 ;
 	}
-	DEBUGP2("%s : udp bind port is %d .\n", __func__, ntohs(client_addr.sin_port));
+	DEBUGP2(FUNC_NAME_HEAD"udp bind port is %d .\n", __func__, ntohs(client_addr.sin_port));
 
 	return fd ;
 }
@@ -75,7 +75,7 @@ int udp_send(int user_id, char* buff, int send_size)
 		perror("udp_send : sendto");
 		return -1;
 	}
-	DEBUGP2("%s : udp sent %d : %d .\n", __func__, send_size, ret);
+	DEBUGP2(FUNC_NAME_HEAD"udp sent %d : %d .\n", __func__, send_size, ret);
 
 	return ret;
 }
@@ -113,11 +113,11 @@ int udp_recv(int user_id, char* buff, int buff_size)
 		return -1;
 	}
 	pp_user[user_id].session_udp.flag_timeout = 0;
-	DEBUGP2("%s : udp recv %d .\n", __func__, ret);
+	DEBUGP2(FUNC_NAME_HEAD"udp recv %d .\n", __func__, ret);
 
 	if(server_addr.sin_addr.s_addr != server[server_id].addr.sin_addr.s_addr || server_addr.sin_port != server[server_id].addr.sin_port) {
-		DEBUGP2("%s : udp recv data is not from udp server \n", __func__);
-		DEBUGP2("%s : %u : %u, %u : %u \n", __func__, server_addr.sin_addr.s_addr, server[server_id].addr.sin_addr.s_addr, server_addr.sin_port, server[server_id].addr.sin_port);
+		DEBUGP2(FUNC_NAME_HEAD"udp recv data is not from udp server \n", __func__);
+		DEBUGP2(FUNC_NAME_HEAD"%u : %u, %u : %u \n", __func__, server_addr.sin_addr.s_addr, server[server_id].addr.sin_addr.s_addr, server_addr.sin_port, server[server_id].addr.sin_port);
 		return -1;
 	}
 	pp_user[user_id].session_udp.flag_nodata  = 0;
@@ -222,10 +222,10 @@ int udp_proto_parse(int user_id, char* buff, int len)
 	memset(xml_dict, 0, sizeof(xml_dict));
 	RESULT_UDP* result_udp = &pp_user[user_id].session_udp.result_udp;
 
-	DEBUGP2("%s : %s\n", __func__,  buff);
+	DEBUGP2(FUNC_NAME_HEAD"%s\n", __func__,  buff);
 	myxml_parseMemory(buff, xml_dict, &number, MAX_XML_DICTLEN - 1);
 	for(int i = 0 ; i < number ; i++ ){
-		DEBUGP2("%s : %32s = %s\n", __func__,  xml_dict[i].key, xml_dict[i].val);
+		DEBUGP2(FUNC_NAME_HEAD"%32s = %s\n", __func__,  xml_dict[i].key, xml_dict[i].val);
 
 		if(strcmp(xml_dict[i].key, "TYPE") == 0) {
 			strncpy(result_udp->type, xml_dict[i].val, sizeof(result_udp->type) - 1);
@@ -252,7 +252,7 @@ int udp_login(int user_id)
 
 	int len = udp_proto_format(user_id, buff, sizeof(buff));
 
-	DEBUGP2("%s : %s\n", __func__, buff);
+	DEBUGP2(FUNC_NAME_HEAD"%s\n", __func__, buff);
 
 	udp_data_encode(buff, len);
 
@@ -267,7 +267,7 @@ int udp_logout(int user_id)
 
 	int len = udp_proto_logoff(user_id, buff, sizeof(buff));
 
-	DEBUGP2("%s : %s\n", __func__, buff);
+	DEBUGP2(FUNC_NAME_HEAD"%s\n", __func__, buff);
 
 	udp_data_encode(buff, len);
 
@@ -280,7 +280,8 @@ int udp_logout(int user_id)
 
 int udp_getinfo(int user_id)
 {
-	char buff[MAX_UDP_BUFFLEN] = {0};
+	char buff[MAX_UDP_BUFFLEN] 				= {0};
+	char xml_buff[sizeof(buff) + sizeof("<XML></XML>")] 	= {0};
 
 	int len = udp_recv(user_id, buff, sizeof(buff)); 
 	if(len <= 0 ) {
@@ -289,9 +290,11 @@ int udp_getinfo(int user_id)
 
 	udp_data_decode(buff, len);
 
-	DEBUGP2("%s : %s\n", __func__, buff);
+	DEBUGP2(FUNC_NAME_HEAD"%s\n", __func__, buff);
 
-	int info = udp_proto_parse(user_id, buff, len);
+	snprintf(xml_buff, sizeof(xml_buff)-1, "<XML>%s</XML>", buff);		// 收到的UDP包不是标准XML格式，需要加上XML的头
+
+	int info = udp_proto_parse(user_id, xml_buff, len+sizeof("<XML></XML>"));
 
 	return info;
 }

@@ -6,12 +6,15 @@
 #include <sys/time.h>
 
 #ifdef _MINGW_
-#define LOG_FILE    	"\\pp.log"
+#define LOG_FILE    		"\\pp.log"
 #else
-#define LOG_FILE    	"/pp.log"
+#define LOG_FILE    		"/pp.log"
 #endif
 
-#define DEB_FILE 	stderr
+#define DEB_FILE 		stderr
+
+//#define FUNC_NAME_HEAD	"%-20s : "
+#define FUNC_NAME_HEAD		"%20s : "
 
 //====================================================================================
 
