@@ -163,6 +163,7 @@ int user_readconf(void)
 
 	user_amount = number - blank;
 
+	DEBUGP1("PP_USER : %lu , pp_user %lu \n", sizeof(PP_USER), sizeof(pp_user));
 	DEBUGP1("user.xml acount : %d , user_amount: %d \n\n", number, user_amount);
 	LOGT1("user.xml acount : %d , user_amount: %d \n\n", number, user_amount);
 

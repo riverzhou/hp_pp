@@ -91,10 +91,10 @@ int proto_parselogin_body(
 		RESULT_LOGIN*   result_login)
 {
 	int number = 0;
-	XML_DICT xml_dict[MAX_DICT];
+	XML_DICT xml_dict[MAX_XML_DICTLEN];
 	memset(xml_dict, 0, sizeof(xml_dict));
 
-	myxml_parseMemory(buff, xml_dict, &number, MAX_DICT - 1);
+	myxml_parseMemory(buff, xml_dict, &number, MAX_XML_DICTLEN - 1);
 
 	for(int i = 0 ; i < number ; i++ ){
 		DEBUGP4("%32s = %s \n", xml_dict[i].key, xml_dict[i].val);
@@ -118,10 +118,10 @@ int proto_parseimage_body(
 		RESULT_IMAGE*   result_image)
 {
 	int number = 0;
-	XML_DICT xml_dict[MAX_DICT];
+	XML_DICT xml_dict[MAX_XML_DICTLEN];
 	memset(xml_dict, 0, sizeof(xml_dict));
 
-	myxml_parseMemory(buff, xml_dict, &number, MAX_DICT - 1);
+	myxml_parseMemory(buff, xml_dict, &number, MAX_XML_DICTLEN - 1);
 
 	for(int i = 0 ; i < number ; i++ ){
 		DEBUGP4("%32s = %s \n", xml_dict[i].key, xml_dict[i].val);
@@ -150,10 +150,10 @@ int proto_parseprice_body(
 		RESULT_PRICE*  	result_price)
 {
 	int number = 0;
-	XML_DICT xml_dict[MAX_DICT];
+	XML_DICT xml_dict[MAX_XML_DICTLEN];
 	memset(xml_dict, 0, sizeof(xml_dict));
 
-	myxml_parseMemory(buff, xml_dict, &number, MAX_DICT - 1);
+	myxml_parseMemory(buff, xml_dict, &number, MAX_XML_DICTLEN - 1);
 
 	for(int i = 0 ; i < number ; i++ ){
 		DEBUGP4("%32s = %s \n", xml_dict[i].key, xml_dict[i].val);

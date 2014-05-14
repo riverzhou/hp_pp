@@ -3,7 +3,7 @@
 #define MYXML_H_INCLUDED
 
 
-#define MAX_DICT	32
+#define MAX_XML_DICTLEN	32
 #define LEN_KEY		256
 #define LEN_VAL		4096
 

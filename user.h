@@ -7,17 +7,17 @@
 #include "myevent.h"
 #include "ppthread.h"
 
-#define USER_FILE	"/user.xml"
+#define USER_FILE		"/user.xml"
 
-#define MAX_USER	512
+#define MAX_USER		512
 
-#define MAX_IMAGELEN	4096
+#define MAX_IMAGELEN		4096
 
 //=============================================================
 
 typedef struct {
-	char number[16];
-	char pass[8];
+	char number[20];
+	char pass[10];
 } USER_DICT;
 
 //-------------------------------------------------------------
@@ -67,6 +67,18 @@ typedef struct {
 }RESULT_PRICE;
 
 typedef struct {
+	char			type[256];
+	char			val1[256];		// TODO
+	char			val2[256];		// TODO
+	char			val3[256];		// TODO
+	char			val4[256];		// TODO
+	char			val5[256];		// TODO
+	char			val6[256];		// TODO
+	char			val7[256];		// TODO
+	char			val8[256];		// TODO
+}RESULT_UDP;	
+
+typedef struct {
 	volatile unsigned int  	image;
 	RESULT_LOGIN		result_login;
 	EVENT* 			event_login_req;	// 开始登录
@@ -87,13 +99,19 @@ typedef struct {
 	EVENT			_event_price_ack;	// 私有的ack存储空间，初始化时将指针指入，访问由指针访问
 }SESSION_BID;
 
+typedef struct {
+	int 			fd;
+	int 			flag_nodata;
+	int			flag_timeout;
+	RESULT_UDP		result_udp;
+}SESSION_UDP;
+
 //-------------------------------------------------------------
 
 typedef struct {
 	int			flag_running;
 
-	int             	group;		
-
+	int             	group;
 	char 	        	machinecode[256];
 	unsigned int    	bidnumber;
 	unsigned int    	bidpassword;
@@ -103,6 +121,7 @@ typedef struct {
 	pthread_t		pid_client;
 	ARG_THREAD		arg_client;
 
+	SESSION_UDP		session_udp;
 	SESSION_LOGIN		session_login;
 	SESSION_BID		session_bid[3];
 

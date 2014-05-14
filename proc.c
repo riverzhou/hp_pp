@@ -416,22 +416,40 @@ int proc_decode(int user_id, int bid_id, int dm_fd)
 
 int proc_login_udp(int user_id, int option)
 {
-
-	return 0;
+	return udp_login(user_id);
 }
 
 void proc_status_udp(int user_id, int option)
 {
+	int ret = 0;
 	while(flag_login_quit == 0) {
-		sleep(1);
+		ret = udp_getinfo(user_id);						// 收取UDP包并分析
+
+		if(flag_login_quit != 0) {
+			break;								// 退出循环
+		}
+
+		if(ret < 0) {
+			if(pp_user[user_id].session_udp.flag_timeout != 0) {
+				sleep(0);
+				continue;						// recvfrom 超时，无数据，继续
+			}
+			if(pp_user[user_id].session_udp.flag_nodata != 0) {
+				sleep(0);
+				continue;						// 收到非 UDP SERVER 的数据，不处理
+			}
+			sleep(UDP_TIMEOUT);						// socket 错误，sleep
+			continue;
+		}
+
+		// XXX  do something ? maybe .
+		
 	}
 }
 
-
 int proc_logout_udp(int user_id, int option)
 {
-
-	return 0;
+	return udp_logout(user_id);
 }
 
 //--------------------------------------------------------------
