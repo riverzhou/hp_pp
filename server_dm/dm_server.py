@@ -88,5 +88,6 @@ class MyBaseRequestHandlerr(BaseRequestHandler):
 
 if __name__ == "__main__": 
         ThreadingTCPServer.allow_reuse_address = True
+        ThreadingTCPServer.request_queue_size  = 1024
         server = ThreadingTCPServer((HOST, PORT), MyBaseRequestHandlerr)
         server.serve_forever() 
