@@ -190,7 +190,7 @@ int main(int argc, char** argv)
 
 	main_client_printerror();
 
-	main_client_print();
+	//main_client_print();
 
 	main_close();
 

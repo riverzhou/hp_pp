@@ -5,7 +5,7 @@ rm = rm -f
 
 #debug_number	= -D_DEBUG5_ -D_DEBUG4_ -D_DEBUG3_ -D_DEBUG2_ -D_DEBUG1_ 
 #debug_number	= -D_DEBUG2_ -D_DEBUG5_
-debug_number	= -D_DEBUG1_ -D_DEBUG2_
+debug_number	= -D_DEBUG1_
 
 log_level 	= -D_LOG_LEVEL_=2
 
