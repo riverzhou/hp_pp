@@ -54,7 +54,7 @@ char* get_md5string_up(char* output, char* input)
 	for(int i = 0; i < strlen(output); i++) 
 	{ 
 		if((output[i] >= 'a') && (output[i] <= 'z')) {
-			output[i] += 32;
+			output[i] -= 0x20;
 		}
 	} 
 
