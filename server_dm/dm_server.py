@@ -4,13 +4,17 @@
 from struct       import pack, unpack
 from socketserver import ThreadingTCPServer, BaseRequestHandler  
 from traceback    import print_exc
+from threading    import Lock
 
 HOST    = ''
 #PORT    = 9999
 PORT    = 2000
 BUFSIZE = 65535
 
-class MyBaseRequestHandlerr(BaseRequestHandler):  
+mutex = Lock()
+
+class MyBaseRequestHandler(BaseRequestHandler):  
+        count   = 0
 
         def __init__(self, request, client_address, server):
                 self.my_init()
@@ -27,6 +31,11 @@ class MyBaseRequestHandlerr(BaseRequestHandler):
 
         def handle(self):  
                 try: 
+                        if mutex.acquire():
+                                MyBaseRequestHandler.count += 1
+                                self.count = MyBaseRequestHandler.count
+                                mutex.release()
+
                         if( self.recv_head()   == False ):
                                 return
                         if( self.recv_body()   == False ):
@@ -35,7 +44,6 @@ class MyBaseRequestHandlerr(BaseRequestHandler):
                                 return
                 except: 
                         print_exc() 
-                        return
 
         def recv_head(self):
                 head_len = 10
@@ -53,7 +61,7 @@ class MyBaseRequestHandlerr(BaseRequestHandler):
                 self.pkglen, self.proto, self.imagelen = unpack('=IHI', head)
                 self.pkglen += 4
 
-                print('pkglen =', self.pkglen, ' , proto =', self.proto, ' , imagelen =', self.imagelen)
+                print('count =', MyBaseRequestHandler.count, 'number =', self.count, 'pkglen =', self.pkglen, ' , proto =', self.proto, ' , imagelen =', self.imagelen)
 
                 if( self.imagelen == 0 ) :
                         return False
@@ -89,5 +97,5 @@ class MyBaseRequestHandlerr(BaseRequestHandler):
 if __name__ == "__main__": 
         ThreadingTCPServer.allow_reuse_address = True
         ThreadingTCPServer.request_queue_size  = 1024
-        server = ThreadingTCPServer((HOST, PORT), MyBaseRequestHandlerr)
+        server = ThreadingTCPServer((HOST, PORT), MyBaseRequestHandler)
         server.serve_forever() 
