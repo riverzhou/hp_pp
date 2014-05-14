@@ -128,7 +128,7 @@ int dm_proto_make(PROTO_SEND* proto_send, int user_id, char* image, int imagelen
 
 int dm_proto_parse(PROTO_RECV* proto_recv)
 {
-	DEBUGP1(FUNC_NAME_HEAD"proto_recv->nCodeNum = %d \n", __func__, proto_recv->nCodeNum);
+	DEBUGP2(FUNC_NAME_HEAD"proto_recv->nCodeNum = %d \n", __func__, proto_recv->nCodeNum);
 	return proto_recv->nCodeNum;
 }
 
