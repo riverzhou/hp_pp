@@ -46,30 +46,77 @@ server_ct       = None
 
 #--------------------------------------
 
+class proto_dm():
+        def __init__(self):
+                pass
+
+class proto_ct():
+        def __init__(self):
+                pass
+
+class proto_udp():
+        def __init__(self,client):
+                self.client = client
+ 
+        def decode(self,buff):
+                pass
+
+        def encode(self,buff):
+                return self.decode(buff)
+
+
+class proto_ssl():
+        def __init__(self,client):
+                self.client = client
+
+        def make_req(self):
+                pass
+
+        def parse_ack(self):
+                pass
+
+
+class proto_udp_login(proto_udp):
+        def __init__(self,client):
+                super(proto_udp_login,self).__init__(client)
+
+        def print_ack(self,buff):
+                pass
+
+
+class proto_ssl_login(proto_ssl):
+        def __init__(self,client):
+                super(proto_ssl_login,self).__init__(client)
+
+
+class proto_ssl_image(proto_ssl):
+        def __init__(self,client):
+                super(proto_ssl_image,self).__init__(client)
+
+
+class proto_ssl_price(proto_ssl):
+        def __init__(self,client):
+                super(proto_ssl_price,self).__init__(client)
+
+
 #--------------------------------------
 
 class bid_subthread(Thread):
-        def __init__(self,bidno,bidid):
-                self.bidno = bidno 
-                self.bidid = bidid
+        def __init__(self):
                 self.event_started = Event()
                 self.event_warmup = Event()
                 self.event_shoot = Event()
-                self.ssl_sock = ssl.SSLContext(ssl.PROTOCOL_SSLv23).wrap_socket(socket(AF_INET, SOCK_STREAM))
-                self.ssl_server_addr = pp_client_dict[bidno].server_dict["toubiao"]
                 super(bid_subthread,self).__init__()
 
         def started(self):
                 self.event_started.wait()
 
         def run(self):
-                print('client %s : bid thread %d : %s thread started' % (self.bidno, self.bidid, self.__class__.__name__))
                 self.event_started.set()
                 self.event_warmup.wait()
                 self.do_warmup()
                 self.event_shoot.wait()
                 self.do_shoot()
-                print('client %s : bid thread %d : %s thread stoped' % (self.bidno, self.bidid, self.__class__.__name__))
 
         def warmup(self):
                 self.event_warmup.set()
@@ -84,13 +131,38 @@ class bid_subthread(Thread):
                 pass
 
 class bid_price(bid_subthread):
+        def __init__(self, client, bidid):
+                self.client = client
+                self.bidid  = bidid
+                self.ssl_sock = ssl.SSLContext(ssl.PROTOCOL_SSLv23).wrap_socket(socket(AF_INET, SOCK_STREAM))
+                self.ssl_server_addr = client.server_dict["toubiao"]
+                super(bid_price,self).__init__()
+
+        def run(self):
+                print('client %s : bid thread %d : %s thread started' % (self.client.bidno, self.bidid, self.__class__.__name__))
+                super(bid_price,self).run()
+                print('client %s : bid thread %d : %s thread stoped' % (self.client.bidno, self.bidid, self.__class__.__name__))
+
         def do_warmup(self):
                 self.ssl_sock.connect(self.ssl_server_addr)
 
         def do_shoot(self):
                 pass
 
+
 class bid_image(bid_subthread):
+        def __init__(self, client, bidid):
+                self.client = client
+                self.bidid  = bidid
+                self.ssl_sock = ssl.SSLContext(ssl.PROTOCOL_SSLv23).wrap_socket(socket(AF_INET, SOCK_STREAM))
+                self.ssl_server_addr = client.server_dict["toubiao"]
+                super(bid_image,self).__init__()
+
+        def run(self):
+                print('client %s : bid thread %d : %s thread started' % (self.client.bidno, self.bidid, self.__class__.__name__))
+                super(bid_image,self).run()
+                print('client %s : bid thread %d : %s thread stoped' % (self.client.bidno, self.bidid, self.__class__.__name__))
+
         def do_warmup(self):
                 self.ssl_sock.connect(self.ssl_server_addr)
 
@@ -100,8 +172,7 @@ class bid_image(bid_subthread):
 #--------------------------------------
 
 class client_subthread(Thread):
-        def __init__(self,bidno):
-                self.bidno = bidno
+        def __init__(self):
                 self.event_started = Event()
                 super(client_subthread,self).__init__()
 
@@ -110,40 +181,60 @@ class client_subthread(Thread):
                 self.event_started.clear()
 
 class client_login(client_subthread):
-        def __init__(self,bidno):
+        def __init__(self,client):
+                self.client = client
                 self.event_shoot = Event()
                 self.ssl_sock = ssl.SSLContext(ssl.PROTOCOL_SSLv23).wrap_socket(socket(AF_INET, SOCK_STREAM))
-                self.ssl_server_addr = pp_client_dict[bidno].server_dict["login"]
+                self.ssl_server_addr = self.client.server_dict["login"]
                 self.udp_sock = socket(AF_INET, SOCK_DGRAM)
                 self.udp_sock.bind(('',0))
-                self.udp_server_addr = pp_client_dict[bidno].server_dict["udp"]
-                print('client %s : login bind udp_sock @%s ' % (bidno,self.udp_sock.getsockname()))
-                super(client_login,self).__init__(bidno)
+                self.udp_server_addr = self.client.server_dict["udp"]
+                print('client %s : login bind udp_sock @%s ' % (self.client.bidno,self.udp_sock.getsockname()))
+                super(client_login,self).__init__()
 
         def run(self):
-                print('client %s : login thread started' % (self.bidno))
+                print('client %s : login thread started' % (self.client.bidno))
                 self.event_started.set()
                 self.event_shoot.wait()
                 self.do_shoot()
-                print('client %s : login thread stoped' % (self.bidno))
+                print('client %s : login thread stoped' % (self.client.bidno))
 
         def shoot(self):
                 self.event_shoot.set()
 
+        def logoff(self):
+                self.udp_sock.sendto(self.client.proto_udp.logoff.make_req(),self.udp_server_addr)
+
+        def updat_status(self):
+                self.client.proto_udp_login.print_ack(self.recv_udp())          # XXX XXX XXX
+
         def do_shoot(self):
                 self.ssl_sock.connect(self.ssl_server_addr)
-                #self.ssl_sock.send()
-                pass
+                self.ssl_sock.send(self.client.proto_ssl.login.make_req())
+                self.client.login_ssl_result = self.client.proto_ssl_login.parse_ack(self.ssl_sock.recv(self.client.proto_ssl_login.ack_len()))
+                self.udp_sock.sendto(self.client.proto_udp_login.make_req(),self.udp_server_addr)
+                self.client.login_udp_result = self.client.proto_udp.login.parse_ack(self.recv_udp())
+                while True:
+                        self.updat_status()
+                        sleep(0)
+
+        def recv_udp(self):
+                while True:
+                        udp_result = self.udp_sock.recvfrom(1500)
+                        if udp_result[1] == self.udp_server_addr :
+                                return udp_result[0]
+                        sleep(0)
 
 class client_bid(client_subthread):
-        def __init__(self,bidno,bidid):
+        def __init__(self,client,bidid):
+                self.client = client
                 self.bidid = bidid
-                super(client_bid,self).__init__(bidno)
+                super(client_bid,self).__init__()
 
         def run(self):
-                print('client %s : bid thread %s started' % (self.bidno, self.bidid))
-                self.image = bid_image(self.bidno,self.bidid)
-                self.price = bid_price(self.bidno,self.bidid)
+                print('client %s : bid thread %s started' % (self.client.bidno, self.bidid))
+                self.image = bid_image(self.client,self.bidid)
+                self.price = bid_price(self.client,self.bidid)
                 self.image.start()
                 self.image.started()
                 self.price.start()
@@ -151,7 +242,7 @@ class client_bid(client_subthread):
                 self.event_started.set()
                 self.image.join()
                 self.price.join()
-                print('client %s : bid thread %s stoped' % (self.bidno, self.bidid))
+                print('client %s : bid thread %s stoped' % (self.client.bidno, self.bidid))
 
 #--------------------------------------
 
@@ -218,23 +309,27 @@ class pp_subthread(Thread):
 class pp_client(pp_subthread):
         def __init__(self,bidno_dict,server_dict):
                 self.bidno = bidno_dict[0]
-                self.password = bidno_dict[1]
+                self.passwd = bidno_dict[1]
                 self.server_dict = server_dict
+                self.proto_udp_login = proto_udp_login(self)
+                self.proto_ssl_login = proto_ssl_login(self)
+                self.proto_ssl_image = proto_ssl_image(self)
+                self.proto_ssl_price = proto_ssl_price(self)
                 super(pp_client,self).__init__()
 
         def run(self):
                 print('Thread %s : %s started' % (self.__class__.__name__, self.bidno))
                 self.bid = []
-                self.login = client_login(self.bidno)
+                self.login = client_login(self)
                 self.login.start()
                 for i in range(3):
-                        self.bid.append(client_bid(self.bidno,i))
+                        self.bid.append(client_bid(self,i))
                         self.bid[i].start()
                         self.bid[i].started()
                 self.event_started.set()
-                self.login.join()
                 for i in range(3):
                         self.bid[i].join()
+                self.login.join()
                 print('Thread %s : %s stoped' % (self.__class__.__name__, self.bidno))
 
 #--------------------------------------
