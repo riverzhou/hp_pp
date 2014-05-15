@@ -9,6 +9,8 @@ from traceback                  import print_exc
 from time                       import time, localtime, strftime
 from hashlib                    import md5
 from time                       import sleep
+from socket                     import socket, gethostbyname, AF_INET, SOCK_STREAM, SOCK_DGRAM 
+import ssl
 
 TCPServer.allow_reuse_address = True
 Process.daemon = True
@@ -17,21 +19,22 @@ Thread.daemon  = True
 #--------------------------------------
 
 DM_SERVER = ('', 2000)
-
 CT_SERVER = ('', 9998)
 
-pp_server = { 
-        "login"    : ("tblogin.alltobid.com",   443),
-        "toubiao"  : ("toubiao.alltobid.com",   443),
-        "result"   : ("tbresult.alltobid.com",  443),
-        "query"    : ("tbquery.alltobid.com",   443),
-        "udp"      : ("tbudp.alltobid.com",     999),
+pp_server_dict = { 
+        'login'    : ('tblogin.alltobid.com',   443),
+        'toubiao'  : ('toubiao.alltobid.com',   443),
+        'result'   : ('tbresult.alltobid.com',  443),
+        'query'    : ('tbquery.alltobid.com',   443),
+        'udp'      : ('tbudp.alltobid.com',     999),
+}
 
-        "login2"   : ("tblogin2.alltobid.com",  443),
-        "toubiao2" : ("toubiao2.alltobid.com",  443),
-        "result2"  : ("tbresult2.alltobid.com", 443),
-        "query2"   : ("tbquery2.alltobid.com",  443),
-        "udp2"     : ("tbudp2.alltobid.com",    999),
+pp_server_dict_2 = { 
+        'login'    : ('tblogin2.alltobid.com',  443),
+        'toubiao'  : ('toubiao2.alltobid.com',  443),
+        'result'   : ('tbresult2.alltobid.com', 443),
+        'query'    : ('tbquery2.alltobid.com',  443),
+        'udp'      : ('tbudp2.alltobid.com',    999),
 }
 
 pp_bidno_dict   = {}
@@ -43,11 +46,6 @@ server_ct       = None
 
 #--------------------------------------
 
-class ppuser():
-        def __init(self):
-                self.bidnumber = ''
-                self.bidpass   = ''
-
 #--------------------------------------
 
 class bid_subthread(Thread):
@@ -57,6 +55,8 @@ class bid_subthread(Thread):
                 self.event_started = Event()
                 self.event_warmup = Event()
                 self.event_shoot = Event()
+                self.ssl_sock = ssl.SSLContext(ssl.PROTOCOL_SSLv23).wrap_socket(socket(AF_INET, SOCK_STREAM))
+                self.ssl_server_addr = pp_client_dict[bidno].server_dict["toubiao"]
                 super(bid_subthread,self).__init__()
 
         def started(self):
@@ -85,14 +85,14 @@ class bid_subthread(Thread):
 
 class bid_price(bid_subthread):
         def do_warmup(self):
-                pass
+                self.ssl_sock.connect(self.ssl_server_addr)
 
         def do_shoot(self):
                 pass
 
 class bid_image(bid_subthread):
         def do_warmup(self):
-                pass
+                self.ssl_sock.connect(self.ssl_server_addr)
 
         def do_shoot(self):
                 pass
@@ -112,6 +112,12 @@ class client_subthread(Thread):
 class client_login(client_subthread):
         def __init__(self,bidno):
                 self.event_shoot = Event()
+                self.ssl_sock = ssl.SSLContext(ssl.PROTOCOL_SSLv23).wrap_socket(socket(AF_INET, SOCK_STREAM))
+                self.ssl_server_addr = pp_client_dict[bidno].server_dict["login"]
+                self.udp_sock = socket(AF_INET, SOCK_DGRAM)
+                self.udp_sock.bind(('',0))
+                self.udp_server_addr = pp_client_dict[bidno].server_dict["udp"]
+                print('client %s : login bind udp_sock @%s ' % (bidno,self.udp_sock.getsockname()))
                 super(client_login,self).__init__(bidno)
 
         def run(self):
@@ -125,6 +131,8 @@ class client_login(client_subthread):
                 self.event_shoot.set()
 
         def do_shoot(self):
+                self.ssl_sock.connect(self.ssl_server_addr)
+                #self.ssl_sock.send()
                 pass
 
 class client_bid(client_subthread):
@@ -162,12 +170,10 @@ class check_for_stop(Thread):
                 self.server = server
                 self.event  = event
                 super(check_for_stop,self).__init__()
-                return
 
         def run(self):
                 self.event.wait()
                 self.server.shutdown()
-                return
 
 class pp_subprocess(Process):
         def __init__(self,server,handler):
@@ -176,16 +182,12 @@ class pp_subprocess(Process):
                 self.server = TCPServer(server, handler)
                 self.check = check_for_stop(self.server, self.event_stop)
                 super(pp_subprocess,self).__init__()
-                return
 
         def started(self):
                 self.event_started.wait()
-                self.event_started.clear()
-                return
 
         def stop(self):
                 self.event_stop.set()
-                return
 
         def run(self):
                 print('Process %s started' % (self.__class__.__name__))
@@ -196,31 +198,30 @@ class pp_subprocess(Process):
                 except  KeyboardInterrupt:
                         pass
                 print('Process %s stoped' % (self.__class__.__name__))
-                return
 
 class pp_dama(pp_subprocess):
         def __init__(self):
                 super(pp_dama,self).__init__(DM_SERVER,pp_dama_handler)
-                return
 
 class pp_control(pp_subprocess):
         def __init__(self):
                 super(pp_control,self).__init__(CT_SERVER,pp_control_handler)
-                return
 
 class pp_subthread(Thread):
-        def __init__(self,bidno):
-                self.bidno = bidno
+        def __init__(self):
                 self.event_started = Event()
                 super(pp_subthread,self).__init__()
-                return
 
         def started(self):
                 self.event_started.wait()
-                self.event_started.clear()
-                return
 
 class pp_client(pp_subthread):
+        def __init__(self,bidno_dict,server_dict):
+                self.bidno = bidno_dict[0]
+                self.password = bidno_dict[1]
+                self.server_dict = server_dict
+                super(pp_client,self).__init__()
+
         def run(self):
                 print('Thread %s : %s started' % (self.__class__.__name__, self.bidno))
                 self.bid = []
@@ -235,37 +236,40 @@ class pp_client(pp_subthread):
                 for i in range(3):
                         self.bid[i].join()
                 print('Thread %s : %s stoped' % (self.__class__.__name__, self.bidno))
-                return
 
 #--------------------------------------
 
 def pp_init_config():
         global pp_bidno_dict
-        pp_bidno_dict['98765432'] = '4321'
-        return
+        pp_bidno_dict['98765432']  = ('98765432','4321')
+        pp_bidno_dict['98765431']  = ('98765431','1321')
+
+def pp_init_dns():
+        global pp_server_dict, pp_server_dict_2
+        for s in pp_server_dict :
+                pp_server_dict[s] = (gethostbyname(pp_server_dict[s][0]), pp_server_dict[s][1])
+        for s in pp_server_dict_2 :
+                pp_server_dict_2[s] = (gethostbyname(pp_server_dict_2[s][0]), pp_server_dict_2[s][1])
 
 def pp_init_client():
-        global pp_client_dict
+        global pp_client_dict, pp_bidno_dict
         for bidno in pp_bidno_dict:
                 if not bidno in pp_client_dict:
-                        pp_client_dict[bidno] = pp_client(bidno)
+                        pp_client_dict[bidno] = pp_client(pp_bidno_dict[bidno],pp_server_dict)
                         pp_client_dict[bidno].start()
                         pp_client_dict[bidno].started()
-        return
 
 def pp_init_dama():
         global server_dm
         server_dm = pp_dama()
         server_dm.start()
         server_dm.started()
-        return
 
 def pp_init_control():
         global server_ct
         server_ct = pp_control()
         server_ct.start()
         server_ct.started()
-        return       
 
 def pp_stop_dama():
         global server_dm
@@ -288,10 +292,10 @@ def pp_wait_control():
         server_ct.join()
 
 def pp_quit_wait():
+        global pp_quit
         sleep(5)
         print('pp_quit_wait returned')
         return
-        global pp_quit
         try:
                 pp_quit.wait()
         except: 
@@ -299,6 +303,7 @@ def pp_quit_wait():
 
 def pp_main():
         pp_init_config()
+        pp_init_dns()
         pp_init_client()
         pp_init_dama()
         pp_init_control()
