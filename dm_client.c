@@ -47,11 +47,6 @@ int tcp_connect(int fd)
 	server_addr.sin_port            = htons(DM_SERVER_PORT);
 	inet_aton(DM_SERVER_IP,         &server_addr.sin_addr);
 
-	if( bind   (fd, (struct sockaddr *) &client_addr, sizeof(struct sockaddr) ) < 0 ) {
-		perror("tcp socket bind");
-		return -1 ;
-	}
-
 	if( connect(fd, (struct sockaddr *) &server_addr, sizeof(struct sockaddr) ) < 0 ) {
 		perror("tcp socket connect");
 		return -1 ;
