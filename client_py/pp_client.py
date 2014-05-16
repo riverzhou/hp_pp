@@ -220,7 +220,6 @@ class pp_client(pp_subthread):
                 self.server_dict = server_dict
                 self.mcode = 'S0D123456abcd'
                 self.version = '177'
-                self.loginimage = '001122'
                 self.proto_udp_login = proto_udp_login(self)
                 self.proto_ssl_login = proto_ssl_login(self)
                 self.proto_ssl_image = proto_ssl_image(self)
@@ -358,13 +357,7 @@ def pp_wait_ct():
 
 def pp_quit_wait():
         global event_quit
-        sleep(5)
-        print('pp_quit_wait returned')
-        return
-        try:
-                event_quit.wait()
-        except: 
-                pass
+        event_quit.wait()
 
 def pp_main():
         pp_init_config()
@@ -373,18 +366,20 @@ def pp_main():
         pp_init_client()
         pp_init_dm()
         pp_init_ct()
-        pp_quit_wait()
-        pp_stop_dm()
-        pp_stop_ct()
-        pp_wait_dm()
-        pp_wait_ct()
+        try:
+                pp_quit_wait()
+        except:
+                pass
+        else:                
+                pp_stop_dm()
+                pp_stop_ct()
+        finally:                
+                pp_wait_dm()
+                pp_wait_ct()
 
 #--------------------------------------
 
 if __name__ == "__main__":
-        try:
-                pp_main()
-        except  KeyboardInterrupt:
-                pass
+        pp_main()
 
 
