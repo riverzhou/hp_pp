@@ -20,14 +20,38 @@ class proto_udp():
         def __init__(self,client):
                 self.client = client
 
-        def decode(self,buff):
-                pass
+        def get_md5_up(self, string):
+                return md5(string.encode()).hexdigest().upper()
+
+        def get_vcode(self):
+                return self.get_md5_up(self.client.uid + self.client.bidno)
+ 
+        def decode(self,data):
+                buff = b''
+                len0 = len(data)
+                len1 = len0 // 4
+                len2 = len0 % 4
+                if len2 != 0:
+                        len1 += 1
+                for i in range(4 - len2):
+                        data += b'0'
+                for i in range(len1) :
+                        buff += pack('i', ~unpack('i', data[i*4:i*4+4])[0])
+                buff = buff[0:len0]
+                return buff
 
         def encode(self,buff):
                 return self.decode(buff)
 
+        def print_bytes(self, buff):
+                out     = ''
+                for b in buff:
+                        out += hex(b)
+                        out += ' '
+                print(out)
+
         def print(self,buff):
-                print(self.decode(buff))
+                print(self.decode(buff).decode())
 
 class proto_udp_login(proto_udp):
         def __init__(self,client):
@@ -57,11 +81,11 @@ class proto_ssl():
         def __init__(self,client):
                 self.client = client
 
-        def make_req(self):
-                return ''
+        @abstractmethod
+        def make_req(self):pass
 
-        def parse_ack(self):
-                return ''
+        @abstractmethod
+        def parse_ack(self):pass
 
         def print_req(self):
                 print(self.make_req())
@@ -69,26 +93,106 @@ class proto_ssl():
         def print_ack(self):
                 print(self.parse_ack())
 
+        def get_md5(self,string):
+                return md5(string.encode()).hexdigest()
+
+        def get_bidcode_md5_to_md8(self,string):
+                p = (3,5,11,13,19,21,27,29)
+                md8 = ''
+                for i in p :
+                        md8 += string[i-1]
+                return md8
+
+        def get_bidcode(self,price):
+                c = int(self.client.bidno) - int(self.client.passwd) + int(price)
+                c = c >> 4
+                if c == 1000 :
+                        c += 1000;
+                code_md5_seed = '%d' % c
+                code_md5 = self.get_md5(code_md5_seed)
+                code_md8 = self.get_bidcode_md5_to_md8(code_md5)
+                return code_md8
+
+        def get_price_checkcode(self,price,image):
+                bidcode = self.get_bidcode(price)
+                seed = ('%s%s%s%sAAA'
+                        % (
+                        self.client.version, 
+                        bidcode, 
+                        image, 
+                        self.client.mcode
+                        ))
+                return self.get_md5(seed)
+
+        def get_login_checkcode(self):
+                return self.get_price_checkcode(0, self.client.loginimage)
+
+        def get_image_checkcode(self,price):
+                number = ('%d'
+                        % (
+                        int(self.client.bidno) - int(price)
+                        ))
+                seed = ('%s#%s@%s'
+                        % (
+                        number, 
+                        self.client.version, 
+                        self.client.passwd
+                        ))
+                return self.get_md5(seed)
+
 class proto_ssl_login(proto_ssl):
         def make_req(self):
-                return 'GET /car/gui/login.aspx?BIDNUMBER=%s&BIDPASSWORD=%s&MACHINECODE=%s&CHECKCODE=%s&VERSION=%s&IMAGENUMBER=%s HTTP/1.0\r\nContent-Type: text/html\r\nHost: %s:443\r\nAccept: text/html, */*\r\nUser-Agent: Mozilla/3.0 (compatible; IndyLibrary)\r\n\r\n' % (self.client.bidno, self.client.passwd, self.client.mcode, self.get_checkcode(), self.client.version, self.client.loginimage, self.client.server_dict['login'][2])
+                return ((
+                        'GET /car/gui/login.aspx'+
+                        '?BIDNUMBER=%s'+                # 8
+                        '&BIDPASSWORD=%s'+              # 4
+                        '&MACHINECODE=%s'+              # ~
+                        '&CHECKCODE=%s'+                # 32
+                        '&VERSION=%s'+                  # 3
+                        '&IMAGENUMBER=%s'+              # 6
+                        ' HTTP/1.0\r\n'+
+                        'Content-Type: text/html\r\n'+
+                        'Host: %s:443\r\n'+             # ~
+                        'Accept: text/html, */*\r\n'+
+                        'User-Agent: Mozilla/3.0 (compatible; IndyLibrary)\r\n\r\n'
+                        ) % (
+                        self.client.bidno, 
+                        self.client.passwd, 
+                        self.client.mcode, 
+                        self.get_login_checkcode(), 
+                        self.client.version, 
+                        self.client.loginimage,
+                        self.client.server_dict['login'][2] 
+                        ))
 
-        def get_checkcode(self):
-                seed = 'aaaaaaaaaa'
-                #return md5(seed.encode()).hexdigest().upper()
-                return md5(seed.encode()).hexdigest()
-
+        def parse_ack(self):
+                pass
 
 class proto_ssl_image(proto_ssl):
         def __init__(self,client):
                 super(proto_ssl_image,self).__init__(client)
 
+        def make_req(self):
+                pass
+
+        def parse_ack(self):
+                pass
+
+        def get_checkcode(self):
+                pass
 
 class proto_ssl_price(proto_ssl):
         def __init__(self,client):
                 super(proto_ssl_price,self).__init__(client)
 
+        def make_req(self):
+                pass
 
+        def parse_ack(self):
+                pass
+
+        def get_checkcode(self):
+                pass
 
 #================================= for test ===========================================
 
@@ -108,9 +212,9 @@ class pp_client():
                 self.bidno = bidno_dict[0]
                 self.passwd = bidno_dict[1]
                 self.server_dict = server_dict
-                self.mcode = 'S0D123456abcd'
+                self.mcode = 'VB8c560dd2-2de8b7c4'
                 self.version = '177'
-                self.loginimage = '001122'
+                self.loginimage = '272772'
                 self.proto_udp_login = proto_udp_login(self)
                 self.proto_ssl_login = proto_ssl_login(self)
                 self.proto_ssl_image = proto_ssl_image(self)
@@ -144,9 +248,6 @@ def pp_main():
         pp_print_login_req()
 
 if __name__ == "__main__":
-        try:
-                pp_main()
-        except  KeyboardInterrupt:
-                pass
+        pp_main()
 
 

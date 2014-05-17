@@ -60,6 +60,7 @@ event_price_warmup = ()
 
 class pp_subthread(Thread):
         __metaclass__ = ABCMeta
+
         def __init__(self):
                 super(pp_subthread,self).__init__()
                 self.event_started = Event()
@@ -259,6 +260,7 @@ class check_for_stop(Thread):
 
 class pp_subprocess(Process):
         __metaclass__ = ABCMeta
+
         def __init__(self,server_addr,handler):
                 super(pp_subprocess,self).__init__()
                 self.event_stop = Event()
