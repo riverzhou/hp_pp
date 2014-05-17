@@ -13,6 +13,8 @@ from time                       import sleep
 from socket                     import socket, gethostbyname, AF_INET, SOCK_STREAM, SOCK_DGRAM 
 import ssl
 
+import logging
+
 from pp_proto                   import pp_server_dict, pp_server_dict_2, proto_pp_client, proto_client_login, proto_client_bid, proto_bid_image, proto_bid_price, proto_udp
 from dm_proto                   import proto_dm, dm_handler
 from ct_proto                   import proto_ct, ct_handler
@@ -62,10 +64,10 @@ class bid_price(pp_subthread, proto_bid_price):
                 pp_subthread.__init__(self)
                 proto_bid_price.__init__(self, client, bid, bidid)
                 global event_price_warmup
-                self.event_warmup = event_price_warmup[self.bidid]
+                self.event_warmup = event_price_warmup[bidid]
                 self.event_shoot = bid.event_price_shoot
                 self.ssl_sock = ssl.SSLContext(ssl.PROTOCOL_SSLv23).wrap_socket(socket(AF_INET, SOCK_STREAM))
-                self.ssl_server_addr = self.client.server_dict["toubiao"]
+                self.ssl_server_addr = self.client.server_dict["toubiao"]['addr']
 
         def run(self):
                 print('client %s : bid thread %d : %s thread started' % (self.client.bidno, self.bidid, self.__class__.__name__))
@@ -90,11 +92,11 @@ class bid_image(pp_subthread, proto_bid_image):
                 pp_subthread.__init__(self)
                 proto_bid_image.__init__(self, client, bid, bidid)
                 global event_image_warmup, event_image_shoot 
-                self.event_warmup = event_price_warmup[self.bidid]
+                self.event_warmup = event_price_warmup[bidid]
                 self.event_shoot = event_image_shoot[self.bidid]
                 self.event_price_shoot = bid.event_price_shoot
                 self.ssl_sock = ssl.SSLContext(ssl.PROTOCOL_SSLv23).wrap_socket(socket(AF_INET, SOCK_STREAM))
-                self.ssl_server_addr = self.client.server_dict["toubiao"]
+                self.ssl_server_addr = self.client.server_dict["toubiao"]['addr']
 
         def run(self):
                 print('client %s : bid thread %d : %s thread started' % (self.client.bidno, self.bidid, self.__class__.__name__))
@@ -122,8 +124,9 @@ class client_bid(pp_subthread, proto_client_bid):
                 pp_subthread.__init__(self)
                 proto_client_bid.__init__(self, client, bidid)
                 self.event_price_shoot = Event()
-                self.image = bid_image(client, self, self.bidid)
-                self.price = bid_price(client, self, self.bidid)
+                self.image_number = '666666'
+                self.image = bid_image(client, self, bidid)
+                self.price = bid_price(client, self, bidid)
 
         def run(self):
                 print('client %s : bid thread %s started' % (self.client.bidno, self.bidid))
@@ -146,10 +149,10 @@ class client_login(pp_subthread, proto_client_login):
                 global event_login_shoot
                 self.event_shoot = event_login_shoot
                 self.ssl_sock = ssl.SSLContext(ssl.PROTOCOL_SSLv23).wrap_socket(socket(AF_INET, SOCK_STREAM))
-                self.ssl_server_addr = self.client.server_dict["login"]
+                self.ssl_server_addr = self.client.server_dict["login"]['addr']
                 self.udp_sock = socket(AF_INET, SOCK_DGRAM)
                 self.udp_sock.bind(('',0))
-                self.udp_server_addr = self.client.server_dict["udp"]
+                self.udp_server_addr = self.client.server_dict["udp"]['addr']
                 print('client %s : login bind udp_sock @%s ' % (self.client.bidno,self.udp_sock.getsockname()))
 
         def run(self):
@@ -164,25 +167,32 @@ class client_login(pp_subthread, proto_client_login):
                 print('client %s : login thread stoped' % (self.client.bidno))
 
         def do_logoff_udp(self):
-                self.udp_sock.sendto(self.proto_udp_logoff.make_req(), self.udp_server_addr)
+                self.udp_sock.sendto(self.proto_udp.make_logoff_req(), self.udp_server_addr)
+                udp_recv = self.recv_udp()
+                self.proto_udp.print_ack(udp_recv)
+                self.proto_udp.parse_ack(udp_recv)
 
         def do_client_udp(self):
-                self.udp_sock.sendto(self.proto_udp_client.make_req(), self.udp_server_addr)
-                self.proto_udp_client.print_ack(self.recv_udp())                                # XXX
-                #self.proto_udp_client.parse_ack(self.recv_udp())                                # XXX
+                self.udp_sock.sendto(self.proto_udp.make_client_req(), self.udp_server_addr)
+                udp_recv = self.recv_udp()
+                self.proto_udp.print_ack(udp_recv)
+                self.proto_udp.parse_ack(udp_recv)
 
         def do_format_udp(self):
-                self.udp_sock.sendto(self.proto_udp_format.make_req(), self.udp_server_addr)
-                self.proto_udp_client.print_ack(self.recv_udp())                                # XXX
-                #self.proto_udp_format.parse_ack(self.recv_udp())                                # XXX
+                self.udp_sock.sendto(self.proto_udp.make_format_req(), self.udp_server_addr)
+                udp_recv = self.recv_udp()
+                self.proto_udp.print_ack(udp_recv)
+                self.proto_udp.parse_ack(udp_recv)
 
         def do_update_status(self):
-                self.proto_udp_client.print_ack(self.recv_udp())                                # XXX
+                udp_recv = self.recv_udp()
+                self.proto_udp.print_ack(udp_recv)
+                self.proto_udp.parse_ack(udp_recv)
 
         def do_shoot(self):
                 self.ssl_sock.connect(self.ssl_server_addr)
-                self.ssl_sock.send(self.client.proto_ssl.login.make_req())
-                recv_ssl = self.ssl_sock.recv(self.client.proto_ssl_login.ack_len())
+                self.ssl_sock.send(self.proto_ssl_login.make_req())
+                recv_ssl = self.ssl_sock.recv(self.proto_ssl_login.ack_len)
                 if not recv_ssl:
                         return False
                 self.proto_ssl_login.parse_ack(recv_ssl)
@@ -282,14 +292,18 @@ class pp_ct(pp_subprocess):
 def pp_init_config():
         global pp_bidno_dict
         pp_bidno_dict['98765432']  = ('98765432','4321')
-        pp_bidno_dict['98765431']  = ('98765431','1321')
+        #pp_bidno_dict['98765431']  = ('98765431','1321')
 
 def pp_init_dns():
         global pp_server_dict, pp_server_dict_2
         for s in pp_server_dict :
-                pp_server_dict[s]  = (gethostbyname(pp_server_dict[s][0]), pp_server_dict[s][1], pp_server_dict[s][0])
+                pp_server_dict[s]  = {
+                                        'addr' : (gethostbyname(pp_server_dict[s][0]), pp_server_dict[s][1]),
+                                        'name' : pp_server_dict[s][0]}
         for s in pp_server_dict_2 :
-                pp_server_dict_2[s]= (gethostbyname(pp_server_dict_2[s][0]), pp_server_dict_2[s][1], pp_server_dict_2[s][0])
+                pp_server_dict_2[s]= {
+                                        'addr' : (gethostbyname(pp_server_dict_2[s][0]), pp_server_dict_2[s][1]), 
+                                        'name' : pp_server_dict_2[s][0]}
 
 def pp_init_event():
         global event_quit, event_login_shoot, event_image_warmup, event_image_shoot, event_price_warmup
@@ -350,6 +364,9 @@ def pp_main():
         pp_init_client()
         pp_init_dm()
         pp_init_ct()
+
+        event_login_shoot.set()
+
         try:
                 pp_quit_wait()
         except:

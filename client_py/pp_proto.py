@@ -10,6 +10,8 @@ from time                       import sleep
 from socket                     import gethostbyname
 from xml.etree                  import ElementTree
 
+import logging
+
 #======================================================================================
 
 pp_server_dict = {
@@ -36,7 +38,7 @@ class proto_udp():
                 self.login = login
                 self.udp_ack = []
 
-        def parse_ack(self, string):
+        def do_parse_ack(self, string):
                 key_val = {}
                 try:
                         xml_string = '<XML>' + string.strip() + '</XML>'
@@ -45,23 +47,26 @@ class proto_udp():
                                 key_val[child.tag] = child.text
                 except :
                         print(string)
+                return key_val
+
+        def parse_ack(self, buff):
+                key_val = self.do_parse_ack(self.decode(buff).decode())
                 self.udp_ack.append(key_val)
                 return key_val
 
-        def parse_encode_ack(self, buff):
-                return self.parse_ack(self.decode(buff).decode())
+        def do_print_ack(self, string):
+                print(string)
+                print(self.do_parse_ack(string))
+
+        def print_ack(self, buff):
+                print(self.decode(buff).decode())
+                print(self.do_parse_ack(self.decode(buff).decode()))
 
         def print_buff(self, buff):
                 self.print_bytes(buff)
 
         def print_encode_buff(self, buff):
                 self.print_bytes(self.decode(buff))
-
-        def print_ack(self, buff):
-                print(self.parse_ack(buff))
-
-        def print_encode_ack(self, buff):
-                print(self.parse_encode_ack(buff))
 
         def print_bytes(self, buff):
                 out     = ''
@@ -93,7 +98,7 @@ class proto_udp():
         def get_vcode(self, uid, bidno):
                 return self.get_md5_up(uid + bidno)
 
-        def make_format_req(self):
+        def do_format_req(self):
                 self.format_req = ((
                         '<TYPE>FORMAT</TYPE>'+
                         '<BIDNO>%s</BIDNO>'+
@@ -101,10 +106,10 @@ class proto_udp():
                         ) % (
                         self.client.bidno,
                         self.get_vcode(self.login.uid, self.client.bidno)
-                        ))
+                        )).encode()
                 return self.format_req                        
 
-        def make_logoff_req(self):
+        def do_logoff_req(self):
                 self.logoff_req = ((
                         '<TYPE>LOGOFF</TYPE>'+
                         '<BIDNO>%s</BIDNO>'+
@@ -112,10 +117,10 @@ class proto_udp():
                         ) % (
                         self.client.bidno,
                         self.get_vcode(self.login.uid, self.client.bidno)
-                        ))
+                        )).encode()
                 return self.logoff_req
 
-        def make_client_req(self):
+        def do_client_req(self):
                 self.client_req = ((
                         '<TYPE>CLIENT</TYPE>'+
                         '<BIDNO>%s</BIDNO>'+
@@ -123,35 +128,35 @@ class proto_udp():
                         ) % (
                         self.client.bidno,
                         self.get_vcode(self.login.uid, self.client.bidno)
-                        ))
+                        )).encode()
                 return self.client_req
 
-        def encode_format_req(self):
-                return self.encode(self.make_format_req().encode())
+        def make_format_req(self):
+                return self.encode(self.do_format_req())
 
-        def encode_logoff_req(self):
-                return self.encode(self.make_logoff_req().encode())
+        def make_logoff_req(self):
+                return self.encode(self.do_logoff_req())
 
-        def encode_client_req(self):
-                return self.encode(self.make_client_req().encode())
+        def make_client_req(self):
+                return self.encode(self.do_client_req())
 
         def print_encode_format_req(self):
-                self.print_bytes(self.encode_format_req())
+                self.print_bytes(self.make_format_req())
 
         def print_encode_logoff_req(self):
-                self.print_bytes(self.encode_logoff_req())
+                self.print_bytes(self.make_logoff_req())
 
         def print_encode_client_req(self):
-                self.print_bytes(self.encode_client_req())
+                self.print_bytes(self.make_client_req())
 
         def print_format_req(self):
-                print(self.make_format_req())
+                print(self.do_format_req())
 
         def print_logoff_req(self):
-                print(self.make_logoff_req())
+                print(self.do_logoff_req())
 
         def print_client_req(self):
-                print(self.make_client_req())
+                print(self.do_client_req())
 
 #--------------------------------------------------------------------------------------
 
@@ -244,6 +249,7 @@ class proto_ssl_login(proto_ssl):
         def __init__(self, client, login):
                 self.client = client
                 self.login = login
+                self.ack_len = 4096
 
         def make_req(self):
                 self.req = ((
@@ -266,8 +272,8 @@ class proto_ssl_login(proto_ssl):
                         self.get_login_checkcode(), 
                         self.client.version, 
                         self.client.loginimage_number,
-                        self.client.server_dict['login'][2] 
-                        ))
+                        self.client.server_dict['login']['name']
+                        )).encode()
                 return self.req                        
 
 class proto_ssl_image(proto_ssl):
@@ -296,9 +302,9 @@ class proto_ssl_image(proto_ssl):
                         self.bid.price_amount,
                         self.client.version,
                         self.get_image_checkcode(self.bid.price_amount),
-                        self.client.server_dict['toubiao'][2],
+                        self.client.server_dict['toubiao']['name'],
                         self.bid.session_id
-                        ))
+                        )).encode()
                 return self.req                        
 
 class proto_ssl_price(proto_ssl):
@@ -331,9 +337,9 @@ class proto_ssl_price(proto_ssl):
                         self.get_price_checkcode(self.bid.price_amount, self.bid.image_number),
                         self.client.version,
                         self.bid.image_number,
-                        self.client.server_dict['toubiao'][2],
+                        self.client.server_dict['toubiao']['name'],
                         self.bid.session_id
-                        ))
+                        )).encode()
                 return self.req                        
 
 #--------------------------------------------------------------------------------------
@@ -362,8 +368,6 @@ class proto_client_bid():
         def __init__(self, client, bidid):
                 self.client = client
                 self.bidid = bidid
-                self.image_number = '666666'
-                self.price_amount = '100'
                 self.session_id = '8899CF08D15BE46A7872A443D865A5D5'
 
 class proto_client_login():
@@ -372,6 +376,7 @@ class proto_client_login():
         def __init__(self, client):
                 self.client = client
                 self.uid = '310108195810053456'
+                self.session_id = '8899CF08D15BE46A7872A443D865A5D5'
                 self.proto_udp = proto_udp(client, self)
                 self.proto_ssl_login = proto_ssl_login(client, self)
 
@@ -431,9 +436,11 @@ def pp_init_config():
         pp_bidno_dict['88888888']  = ('88888888','4444')
 
 def pp_init_dns():
-        global pp_server_dict
+        global pp_server_dict, pp_server_dict_2
         for s in pp_server_dict :
-                pp_server_dict[s] = (gethostbyname(pp_server_dict[s][0]), pp_server_dict[s][1], pp_server_dict[s][0])
+                pp_server_dict[s]  = {
+                                        'addr' : (gethostbyname(pp_server_dict[s][0]), pp_server_dict[s][1]),
+                                        'name' : pp_server_dict[s][0]}
 
 def pp_init_client():
         global pp_client_dict, pp_bidno_dict
@@ -463,7 +470,7 @@ def pp_print_ack():
                 pp_client_dict[bidno].bid[0].image.proto_ssl_image.print_ack(pp_read_file_to_buff('image.ack'))
                 pp_client_dict[bidno].bid[0].price.proto_ssl_price.print_ack(pp_read_file_to_buff('price.ack'))
 
-                pp_client_dict[bidno].login.proto_udp.print_ack(pp_read_file_to_buff('udp_format.ack').decode().strip())
+                pp_client_dict[bidno].login.proto_udp.do_print_ack(pp_read_file_to_buff('udp_format.ack').decode().strip())
                 pp_client_dict[bidno].login.proto_udp.print_encode_buff(pp_read_file_to_buff('udp_logoff.req').strip())
 
 def pp_read_file_to_buff(name):
