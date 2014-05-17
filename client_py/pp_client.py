@@ -13,7 +13,7 @@ from time                       import sleep
 from socket                     import socket, gethostbyname, AF_INET, SOCK_STREAM, SOCK_DGRAM 
 import ssl
 
-from pp_proto                   import proto_udp_login, proto_udp_logoff, proto_ssl_login, proto_ssl_image, proto_ssl_price
+from pp_proto                   import pp_server_dict, pp_server_dict_2, proto_pp_client, proto_client_login, proto_client_bid, proto_bid_image, proto_bid_price
 from dm_proto                   import proto_dm, dm_handler
 from ct_proto                   import proto_ct, ct_handler
 
@@ -31,22 +31,6 @@ CT_SERVER = ('', 9998)
 server_dm = None
 server_ct = None
 
-pp_server_dict = { 
-        'login'    : ('tblogin.alltobid.com',   443),
-        'toubiao'  : ('toubiao.alltobid.com',   443),
-        'result'   : ('tbresult.alltobid.com',  443),
-        'query'    : ('tbquery.alltobid.com',   443),
-        'udp'      : ('tbudp.alltobid.com',     999),
-}
-
-pp_server_dict_2 = { 
-        'login'    : ('tblogin2.alltobid.com',  443),
-        'toubiao'  : ('toubiao2.alltobid.com',  443),
-        'result'   : ('tbresult2.alltobid.com', 443),
-        'query'    : ('tbquery2.alltobid.com',  443),
-        'udp'      : ('tbudp2.alltobid.com',    999),
-}
-
 pp_bidno_dict      = {}
 pp_client_dict     = {}
 
@@ -62,7 +46,7 @@ class pp_subthread(Thread):
         __metaclass__ = ABCMeta
 
         def __init__(self):
-                super(pp_subthread,self).__init__()
+                Thread.__init__(self)
                 self.event_started = Event()
 
         def started(self):
@@ -73,15 +57,13 @@ class pp_subthread(Thread):
 
 #------------------------------------------------------------------------------------------------------------------
 
-class bid_price(pp_subthread):
+class bid_price(pp_subthread, proto_bid_price):
         def __init__(self, bid, bidid):
-                super(bid_price,self).__init__()
+                pp_subthread.__init__(self)
+                proto_bid_price.__init__(self, bid, bidid)
                 global event_price_warmup
-                self.bid = bid
-                self.bidid = bidid
-                self.client = self.bid.client
                 self.event_warmup = event_price_warmup[self.bidid]
-                self.event_shoot = self.bid.event_price_shoot
+                self.event_shoot = bid.event_price_shoot
                 self.ssl_sock = ssl.SSLContext(ssl.PROTOCOL_SSLv23).wrap_socket(socket(AF_INET, SOCK_STREAM))
                 self.ssl_server_addr = self.client.server_dict["toubiao"]
 
@@ -103,16 +85,14 @@ class bid_price(pp_subthread):
         def do_shoot(self):
                 pass
 
-class bid_image(pp_subthread):
+class bid_image(pp_subthread, proto_bid_image):
         def __init__(self, bid, bidid):
-                super(bid_image,self).__init__()
+                pp_subthread.__init__(self)
+                proto_bid_image.__init__(self, bid, bidid)
                 global event_image_warmup, event_image_shoot 
-                self.bid = bid
-                self.bidid = bidid
-                self.client = self.bid.client
                 self.event_warmup = event_price_warmup[self.bidid]
                 self.event_shoot = event_image_shoot[self.bidid]
-                self.event_price_shoot = self.bid.event_price_shoot
+                self.event_price_shoot = bid.event_price_shoot
                 self.ssl_sock = ssl.SSLContext(ssl.PROTOCOL_SSLv23).wrap_socket(socket(AF_INET, SOCK_STREAM))
                 self.ssl_server_addr = self.client.server_dict["toubiao"]
 
@@ -137,11 +117,33 @@ class bid_image(pp_subthread):
 
 #------------------------------------------------------------------------------------------------------------------
 
-class client_login(pp_subthread):
+class client_bid(pp_subthread, proto_client_bid):
+        def __init__(self,client,bidid):
+                pp_subthread.__init__(self)
+                proto_client_bid.__init__(self,client,bidid)
+                self.event_price_shoot = Event()
+                self.image = bid_image(self,self.bidid)
+                self.price = bid_price(self,self.bidid)
+
+        def run(self):
+                print('client %s : bid thread %s started' % (self.client.bidno, self.bidid))
+                try:
+                        self.image.start()
+                        self.image.started()
+                        self.price.start()
+                        self.price.started()
+                        self.started_set()
+                        self.image.join()
+                        self.price.join()
+                except  KeyboardInterrupt:
+                        pass
+                print('client %s : bid thread %s stoped' % (self.client.bidno, self.bidid))
+
+class client_login(pp_subthread, proto_client_login):
         def __init__(self,client):
-                super(client_login,self).__init__()
+                pp_subthread.__init__(self)
+                proto_client_login.__init__(self,client)
                 global event_login_shoot
-                self.client = client
                 self.event_shoot = event_login_shoot
                 self.ssl_sock = ssl.SSLContext(ssl.PROTOCOL_SSLv23).wrap_socket(socket(AF_INET, SOCK_STREAM))
                 self.ssl_server_addr = self.client.server_dict["login"]
@@ -187,44 +189,12 @@ class client_login(pp_subthread):
                                 return udp_result[0]
                         sleep(0)
 
-class client_bid(pp_subthread):
-        def __init__(self,client,bidid):
-                super(client_bid,self).__init__()
-                self.client = client
-                self.bidid = bidid
-                self.event_price_shoot = Event()
-                self.image_number = ''
-                self.image = bid_image(self,self.bidid)
-                self.price = bid_price(self,self.bidid)
-
-        def run(self):
-                print('client %s : bid thread %s started' % (self.client.bidno, self.bidid))
-                try:
-                        self.image.start()
-                        self.image.started()
-                        self.price.start()
-                        self.price.started()
-                        self.started_set()
-                        self.image.join()
-                        self.price.join()
-                except  KeyboardInterrupt:
-                        pass
-                print('client %s : bid thread %s stoped' % (self.client.bidno, self.bidid))
-
 #------------------------------------------------------------------------------------------------------------------
 
-class pp_client(pp_subthread):
+class pp_client(pp_subthread, proto_pp_client):
         def __init__(self,bidno_dict,server_dict):
-                super(pp_client,self).__init__()
-                self.bidno = bidno_dict[0]
-                self.passwd = bidno_dict[1]
-                self.server_dict = server_dict
-                self.mcode = 'S0D123456abcd'
-                self.version = '177'
-                self.proto_udp_login = proto_udp_login(self)
-                self.proto_ssl_login = proto_ssl_login(self)
-                self.proto_ssl_image = proto_ssl_image(self)
-                self.proto_ssl_price = proto_ssl_price(self)
+                pp_subthread.__init__(self)
+                proto_pp_client.__init__(self,bidno_dict,server_dict)
                 self.login = client_login(self)
                 self.bid = []
                 for i in range(3):
@@ -250,7 +220,7 @@ class pp_client(pp_subthread):
 
 class check_for_stop(Thread):
         def __init__(self,server,event):
-                super(check_for_stop,self).__init__()
+                Thread.__init__(self)
                 self.server = server
                 self.event  = event
 
@@ -262,7 +232,7 @@ class pp_subprocess(Process):
         __metaclass__ = ABCMeta
 
         def __init__(self,server_addr,handler):
-                super(pp_subprocess,self).__init__()
+                Process.__init__(self)
                 self.event_stop = Event()
                 self.event_started = Event()
                 self.server = TCPServer(server_addr, handler)
@@ -289,11 +259,11 @@ class pp_subprocess(Process):
 
 class pp_dm(pp_subprocess):
         def __init__(self):
-                super(pp_dm,self).__init__(DM_SERVER,dm_handler)
+                pp_subprocess.__init__(self,DM_SERVER,dm_handler)
 
 class pp_ct(pp_subprocess):
         def __init__(self):
-                super(pp_ct,self).__init__(CT_SERVER,ct_handler)
+                pp_subprocess.__init__(self,CT_SERVER,ct_handler)
 
 #------------------------------------------------------------------------------------------------------------------
 

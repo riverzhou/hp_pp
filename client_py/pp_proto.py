@@ -1,23 +1,38 @@
 #!/usr/bin/env python3
 
 from abc                        import ABCMeta, abstractmethod
-from threading                  import Thread
-from multiprocessing            import Process, Event, Condition, Lock, Event
 from struct                     import pack, unpack
-from socketserver               import TCPServer, BaseRequestHandler
 from socket                     import socket
 from traceback                  import print_exc
 from time                       import time, localtime, strftime
 from hashlib                    import md5
 from time                       import sleep
-from socket                     import socket, gethostbyname, AF_INET, SOCK_STREAM, SOCK_DGRAM
+from socket                     import gethostbyname
 
 #======================================================================================
+
+pp_server_dict = {
+        'login'    : ('tblogin.alltobid.com',   443),
+        'toubiao'  : ('toubiao.alltobid.com',   443),
+        'result'   : ('tbresult.alltobid.com',  443),
+        'query'    : ('tbquery.alltobid.com',   443),
+        'udp'      : ('tbudp.alltobid.com',     999),
+}
+
+pp_server_dict_2 = {
+        'login'    : ('tblogin2.alltobid.com',   443),
+        'toubiao'  : ('toubiao2.alltobid.com',   443),
+        'result'   : ('tbresult2.alltobid.com',  443),
+        'query'    : ('tbquery2.alltobid.com',   443),
+        'udp'      : ('tbudp2.alltobid.com',     999),
+}
+
+#--------------------------------------------------------------------------------------
 
 class proto_udp():
         __metaclass__ = ABCMeta
 
-        def __init__(self,client):
+        def __init__(self, client):
                 self.client = client
 
         def get_md5_up(self, string):
@@ -54,8 +69,9 @@ class proto_udp():
                 print(self.decode(buff).decode())
 
 class proto_udp_login(proto_udp):
-        def __init__(self,client):
-                super(proto_udp_login,self).__init__(client)
+        def __init__(self, client, login):
+                proto_udp.__init__(self, client)
+                self.login = login
 
         def make_req(self):
                 pass
@@ -64,8 +80,9 @@ class proto_udp_login(proto_udp):
                 pass
 
 class proto_udp_logoff(proto_udp):
-        def __init__(self,client):
-                super(proto_udp_login,self).__init__(client)
+        def __init__(self, client, login):
+                proto_udp.__init__(self, client)
+                self.login = login
 
         def make_req(self):
                 pass
@@ -78,7 +95,7 @@ class proto_udp_logoff(proto_udp):
 class proto_ssl():
         __metaclass__ = ABCMeta
 
-        def __init__(self,client):
+        def __init__(self, client):
                 self.client = client
 
         @abstractmethod
@@ -141,6 +158,10 @@ class proto_ssl():
                 return self.get_md5(seed)
 
 class proto_ssl_login(proto_ssl):
+        def __init__(self, client, login):
+                proto_ssl.__init__(self, client)
+                self.login = login
+
         def make_req(self):
                 return ((
                         'GET /car/gui/login.aspx'+
@@ -169,8 +190,9 @@ class proto_ssl_login(proto_ssl):
                 pass
 
 class proto_ssl_image(proto_ssl):
-        def __init__(self,client):
-                super(proto_ssl_image,self).__init__(client)
+        def __init__(self, client, bid):
+                proto_ssl.__init__(self, client)
+                self.bid = bid
 
         def make_req(self):
                 pass
@@ -182,8 +204,9 @@ class proto_ssl_image(proto_ssl):
                 pass
 
 class proto_ssl_price(proto_ssl):
-        def __init__(self,client):
-                super(proto_ssl_price,self).__init__(client)
+        def __init__(self, client, bid):
+                proto_ssl.__init__(self, client)
+                self.bid = bid
 
         def make_req(self):
                 pass
@@ -194,20 +217,45 @@ class proto_ssl_price(proto_ssl):
         def get_checkcode(self):
                 pass
 
-#================================= for test ===========================================
+#--------------------------------------------------------------------------------------
 
-pp_server_dict = {
-        'login'    : ('tblogin.alltobid.com',   443),
-        'toubiao'  : ('toubiao.alltobid.com',   443),
-        'result'   : ('tbresult.alltobid.com',  443),
-        'query'    : ('tbquery.alltobid.com',   443),
-        'udp'      : ('tbudp.alltobid.com',     999),
-}
+class proto_bid_price():
+        __metaclass__ = ABCMeta
 
-pp_bidno_dict   = {}
-pp_client_dict  = {}
+        def __init__(self, bid, bidid):
+                self.bid = bid
+                self.bidid = bidid
+                self.client = self.bid.client
+                self.proto_ssl_price = proto_ssl_price(self.client, self)
 
-class pp_client():
+class proto_bid_image():
+        __metaclass__ = ABCMeta
+
+        def __init__(self, bid, bidid):
+                self.bid = bid
+                self.bidid = bidid
+                self.client = self.bid.client
+                self.proto_ssl_image = proto_ssl_image(self.client, self)
+
+class proto_client_bid():
+        __metaclass__ = ABCMeta
+
+        def __init__(self,client,bidid):
+                self.client = client
+                self.bidid = bidid
+                self.image_number = ''
+
+class proto_client_login():
+        __metaclass__ = ABCMeta
+
+        def __init__(self,client):
+                self.client = client
+                self.proto_udp_login = proto_udp_login(self.client,self)
+                self.proto_ssl_login = proto_ssl_login(self.client,self)
+
+class proto_pp_client():
+        __metaclass__ = ABCMeta
+
         def __init__(self,bidno_dict,server_dict):
                 self.bidno = bidno_dict[0]
                 self.passwd = bidno_dict[1]
@@ -215,10 +263,39 @@ class pp_client():
                 self.mcode = 'VB8c560dd2-2de8b7c4'
                 self.version = '177'
                 self.loginimage = '272772'
-                self.proto_udp_login = proto_udp_login(self)
-                self.proto_ssl_login = proto_ssl_login(self)
-                self.proto_ssl_image = proto_ssl_image(self)
-                self.proto_ssl_price = proto_ssl_price(self)
+               
+#================================= for test ===========================================
+
+class bid_price(proto_bid_price):
+        def __init__(self, bid, bidid):
+                proto_bid_price.__init__(self, bid, bidid)
+
+class bid_image(proto_bid_image):
+        def __init__(self, bid, bidid):
+                proto_bid_image.__init__(self, bid, bidid)
+                
+class client_bid(proto_client_bid):
+        def __init__(self, client, bidid):
+                proto_client_bid.__init__(self,client,bidid)
+                self.image = bid_image(self, self.bidid)
+                self.price = bid_price(self, self.bidid)
+
+class client_login(proto_client_login):
+        def __init__(self, client):
+                proto_client_login.__init__(self, client)
+
+class pp_client(proto_pp_client):
+        def __init__(self, bidno_dict, server_dict):
+                proto_pp_client.__init__(self,bidno_dict, server_dict)
+                self.login = client_login(self)
+                self.bid = []
+                for i in range(3):
+                        self.bid.append(client_bid(self, i))
+
+pp_bidno_dict   = {}
+pp_client_dict  = {}
+
+#--------------------------------------------------------------------------------------
 
 def pp_init_config():
         global pp_bidno_dict
@@ -239,7 +316,7 @@ def pp_init_client():
 def pp_print_login_req():
         global pp_client_dict, pp_bidno_dict
         for bidno in pp_bidno_dict:
-                pp_client_dict[bidno].proto_ssl_login.print_req()
+                pp_client_dict[bidno].login.proto_ssl_login.print_req()
 
 def pp_main():
         pp_init_config()
