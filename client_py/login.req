@@ -1,0 +1,6 @@
+GET /car/gui/login.aspx?BIDNUMBER=10765432&BIDPASSWORD=1321&MACHINECODE=S0GWPC8Zdo9oKwe&CHECKCODE=acecd3ddbe42507d03980a469a254127&VERSION=177&IMAGENUMBER=609744 HTTP/1.0
+Content-Type: text/html
+Host: tblogin.alltobid.com:443
+Accept: text/html, */*
+User-Agent: Mozilla/3.0 (compatible; IndyLibrary)
+

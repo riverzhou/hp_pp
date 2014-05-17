@@ -1,0 +1,7 @@
+GET /car/gui/imagecode.aspx?BIDNUMBER=10765432&BIDPASSWORD=1321&BIDAMOUNT=500&VERSION=177&CHECKCODE=eebc56c9708d2685bdf5800bfaa7bfdf HTTP/1.0
+Content-Type: text/html
+Host: toubiao.alltobid.com:443
+Accept: text/html, */*
+User-Agent: Mozilla/3.0 (compatible; Indy Library)
+Cookie: JSESSIONID=8899CF08D15BE46A7872A443D865A5D5
+
