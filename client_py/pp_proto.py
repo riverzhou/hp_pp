@@ -52,12 +52,10 @@ class proto_udp():
                 return self.parse_ack(self.decode(buff).decode())
 
         def print_buff(self, buff):
-                print(buff.decode())
-                print(self.parse_ack(buff.decode()))
+                self.print_bytes(buff)
 
         def print_encode_buff(self, buff):
-                print(self.decode(buff).decode())
-                print(self.parse_encode_ack(buff))
+                self.print_bytes(self.decode(buff))
 
         def print_ack(self, buff):
                 print(self.parse_ack(buff))
@@ -449,9 +447,14 @@ def pp_print_req():
                 pp_client_dict[bidno].login.proto_ssl_login.print_req()
                 pp_client_dict[bidno].bid[0].image.proto_ssl_image.print_req()
                 pp_client_dict[bidno].bid[0].price.proto_ssl_price.print_req()
+
                 pp_client_dict[bidno].login.proto_udp.print_format_req()
                 pp_client_dict[bidno].login.proto_udp.print_logoff_req()
                 pp_client_dict[bidno].login.proto_udp.print_client_req()
+
+                pp_client_dict[bidno].login.proto_udp.print_encode_format_req()
+                pp_client_dict[bidno].login.proto_udp.print_encode_logoff_req()
+                pp_client_dict[bidno].login.proto_udp.print_encode_client_req()
 
 def pp_print_ack():
         global pp_client_dict, pp_bidno_dict
@@ -459,8 +462,9 @@ def pp_print_ack():
                 pp_client_dict[bidno].login.proto_ssl_login.print_ack(pp_read_file_to_buff('login.ack'))
                 pp_client_dict[bidno].bid[0].image.proto_ssl_image.print_ack(pp_read_file_to_buff('image.ack'))
                 pp_client_dict[bidno].bid[0].price.proto_ssl_price.print_ack(pp_read_file_to_buff('price.ack'))
-                pp_client_dict[bidno].login.proto_udp.print_ack(pp_read_file_to_buff('udp_format.ack').decode())
-                pp_client_dict[bidno].login.proto_udp.print_ack(pp_read_file_to_buff('udp_logoff.req').decode())
+
+                pp_client_dict[bidno].login.proto_udp.print_ack(pp_read_file_to_buff('udp_format.ack').decode().strip())
+                pp_client_dict[bidno].login.proto_udp.print_encode_buff(pp_read_file_to_buff('udp_logoff.req').strip())
 
 def pp_read_file_to_buff(name):
         buff = b''
@@ -475,7 +479,7 @@ def pp_main():
         pp_init_config()
         pp_init_dns()
         pp_init_client()
-        #pp_print_req()
+        pp_print_req()
         pp_print_ack()
 
 if __name__ == "__main__":
