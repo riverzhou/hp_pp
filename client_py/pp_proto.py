@@ -8,6 +8,7 @@ from time                       import time, localtime, strftime
 from hashlib                    import md5
 from time                       import sleep
 from socket                     import gethostbyname
+from xml.etree                  import ElementTree
 
 #======================================================================================
 
@@ -38,6 +39,14 @@ class proto_udp():
         def get_vcode(self):
                 return self.get_md5_up(self.client.uid + self.client.bidno)
  
+        def get_dict_from_xml_nohead(self, xml_nohead):
+                xml_string = '<XML>' + xml_nohead + '</XML>'
+                key_val = {}
+                root = ElementTree.fromstring(xml_string)
+                for child in root:
+                        key_val[child.tag] = child.text
+                return key_val
+
         def decode(self,data):
                 buff = b''
                 len0 = len(data)
@@ -95,14 +104,37 @@ class proto_ssl():
         @abstractmethod
         def make_req(self):pass
 
-        @abstractmethod
-        def parse_ack(self):pass
+        def parse_ack(self, buff):
+                html_string, xml_string = self.split_html_xml_from_buff(buff)
+                self.ack = (self.get_dict_from_xml(xml_string), self.get_sid_from_html(html_string))
+                return self.ack
 
         def print_req(self):
                 print(self.make_req())
 
-        def print_ack(self):
-                print(self.parse_ack())
+        def print_ack(self, buff):
+                print(self.parse_ack(buff))
+
+        def get_sid_from_html(self, html_string):
+                p1 = html_string.find('JSESSIONID')
+                s1 = html_string[p1:]
+                p2 = s1.find(';')
+                s2 = s1[0:p2]
+                p3 = s2.find('=')
+                s3 = s2[p3+1:]
+                return s3.strip()
+
+        def get_dict_from_xml(self, xml_string):
+                key_val = {}
+                root = ElementTree.fromstring(xml_string)
+                for child in root:
+                        key_val[child.tag] = child.text
+                return key_val
+
+        def split_html_xml_from_buff(self, buff):
+                string = buff.decode()
+                p = string.find('<XML>')
+                return (string[0:p], string[p:])
 
         def get_md5(self,string):
                 return md5(string.encode()).hexdigest()
@@ -157,7 +189,7 @@ class proto_ssl_login(proto_ssl):
                 self.login = login
 
         def make_req(self):
-                return  ((
+                self.req = ((
                         'GET /car/gui/login.aspx'+
                         '?BIDNUMBER=%s'+                                                # 8
                         '&BIDPASSWORD=%s'+                                              # 4
@@ -179,9 +211,7 @@ class proto_ssl_login(proto_ssl):
                         self.client.loginimage_number,
                         self.client.server_dict['login'][2] 
                         ))
-
-        def parse_ack(self):
-                pass
+                return self.req                        
 
 class proto_ssl_image(proto_ssl):
         def __init__(self, client, bid, bidid):
@@ -190,7 +220,7 @@ class proto_ssl_image(proto_ssl):
                 self.bidid = bidid
 
         def make_req(self):
-                return  ((
+                self.req = ((
                         'GET /car/gui/imagecode.aspx'+
                         '?BIDNUMBER=%s'+                                                # 8
                         '&BIDPASSWORD=%s'+                                              # 4
@@ -212,9 +242,7 @@ class proto_ssl_image(proto_ssl):
                         self.client.server_dict['toubiao'][2],
                         self.bid.session_id
                         ))
-
-        def parse_ack(self):
-                pass
+                return self.req                        
 
 class proto_ssl_price(proto_ssl):
         def __init__(self, client, bid, bidid):
@@ -223,7 +251,7 @@ class proto_ssl_price(proto_ssl):
                 self.bidid = bidid
 
         def make_req(self):
-                return  ((
+                self.req = ((
                         'GET /car/gui/bid.aspx'+
                         '?BIDNUMBER=%s'+                                                # 8
                         '&BIDPASSWORD=%s'+                                              # 4
@@ -249,9 +277,7 @@ class proto_ssl_price(proto_ssl):
                         self.client.server_dict['toubiao'][2],
                         self.bid.session_id
                         ))
-
-        def parse_ack(self):
-                pass
+                return self.req                        
 
 #--------------------------------------------------------------------------------------
 
@@ -357,18 +383,35 @@ def pp_init_client():
                 if not bidno in pp_client_dict:
                         pp_client_dict[bidno] = pp_client(pp_bidno_dict[bidno],pp_server_dict)
 
-def pp_print_login_req():
+def pp_print_req():
         global pp_client_dict, pp_bidno_dict
         for bidno in pp_bidno_dict:
                 pp_client_dict[bidno].login.proto_ssl_login.print_req()
                 pp_client_dict[bidno].bid[0].image.proto_ssl_image.print_req()
                 pp_client_dict[bidno].bid[0].price.proto_ssl_price.print_req()
 
+def pp_print_ack():
+        global pp_client_dict, pp_bidno_dict
+        for bidno in pp_bidno_dict:
+                pp_client_dict[bidno].login.proto_ssl_login.print_ack(pp_read_file_to_buff('login.ack'))
+                pp_client_dict[bidno].bid[0].image.proto_ssl_image.print_ack(pp_read_file_to_buff('image.ack'))
+                pp_client_dict[bidno].bid[0].price.proto_ssl_price.print_ack(pp_read_file_to_buff('price.ack'))
+
+def pp_read_file_to_buff(name):
+        buff = b''
+        f = open(name, 'rb')
+        try:
+                buff = f.read()
+        finally:
+                f.close()
+        return buff
+
 def pp_main():
         pp_init_config()
         pp_init_dns()
         pp_init_client()
-        pp_print_login_req()
+        pp_print_req()
+        pp_print_ack()
 
 if __name__ == "__main__":
         pp_main()
