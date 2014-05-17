@@ -31,38 +31,39 @@ pp_server_dict_2 = {
 #--------------------------------------------------------------------------------------
 
 class proto_udp():
-        __metaclass__ = ABCMeta
+        def __init__(self, client, login):
+                self.client = client
+                self.login = login
+                self.udp_ack = []
 
-        def get_md5_up(self, string):
-                return md5(string.encode()).hexdigest().upper()
-
-        def get_vcode(self):
-                return self.get_md5_up(self.client.uid + self.client.bidno)
- 
-        def get_dict_from_xml_nohead(self, xml_nohead):
-                xml_string = '<XML>' + xml_nohead + '</XML>'
+        def parse_ack(self, string):
                 key_val = {}
-                root = ElementTree.fromstring(xml_string)
-                for child in root:
-                        key_val[child.tag] = child.text
+                try:
+                        xml_string = '<XML>' + string.strip() + '</XML>'
+                        root = ElementTree.fromstring(xml_string)
+                        for child in root:
+                                key_val[child.tag] = child.text
+                except :
+                        print(string)
+                self.udp_ack.append(key_val)
                 return key_val
 
-        def decode(self,data):
-                buff = b''
-                len0 = len(data)
-                len1 = len0 // 4
-                len2 = len0 % 4
-                if len2 != 0:
-                        len1 += 1
-                for i in range(4 - len2):
-                        data += b'0'
-                for i in range(len1) :
-                        buff += pack('i', ~unpack('i', data[i*4:i*4+4])[0])
-                buff = buff[0:len0]
-                return buff
+        def parse_encode_ack(self, buff):
+                return self.parse_ack(self.decode(buff).decode())
 
-        def encode(self,buff):
-                return self.decode(buff)
+        def print_buff(self, buff):
+                print(buff.decode())
+                print(self.parse_ack(buff.decode()))
+
+        def print_encode_buff(self, buff):
+                print(self.decode(buff).decode())
+                print(self.parse_encode_ack(buff))
+
+        def print_ack(self, buff):
+                print(self.parse_ack(buff))
+
+        def print_encode_ack(self, buff):
+                print(self.parse_encode_ack(buff))
 
         def print_bytes(self, buff):
                 out     = ''
@@ -71,30 +72,88 @@ class proto_udp():
                         out += ' '
                 print(out)
 
-        def print(self,buff):
-                print(self.decode(buff).decode())
+        def decode(self, buff):
+                data = b''
+                len0 = len(buff)
+                len1 = len0 // 4
+                len2 = len0 % 4
+                if len2 != 0:
+                        len1 += 1
+                for i in range(4 - len2):
+                        buff += b'0'
+                for i in range(len1) :
+                        data += pack('i', ~unpack('i', buff[i*4:i*4+4])[0])
+                data = data[0:len0]
+                return data
 
-class proto_udp_login(proto_udp):
-        def __init__(self, client, login):
-                self.client = client
-                self.login = login
+        def encode(self, buff):
+                return self.decode(buff)
 
-        def make_req(self):
-                pass
+        def get_md5_up(self, string):
+                return md5(string.encode()).hexdigest().upper()
 
-        def parse_ack(self):
-                pass
+        def get_vcode(self, uid, bidno):
+                return self.get_md5_up(uid + bidno)
 
-class proto_udp_logoff(proto_udp):
-        def __init__(self, client, login):
-                self.client = client
-                self.login = login
+        def make_format_req(self):
+                self.format_req = ((
+                        '<TYPE>FORMAT</TYPE>'+
+                        '<BIDNO>%s</BIDNO>'+
+                        '<VCODE>%s</VCODE>'
+                        ) % (
+                        self.client.bidno,
+                        self.get_vcode(self.login.uid, self.client.bidno)
+                        ))
+                return self.format_req                        
 
-        def make_req(self):
-                pass
+        def make_logoff_req(self):
+                self.logoff_req = ((
+                        '<TYPE>LOGOFF</TYPE>'+
+                        '<BIDNO>%s</BIDNO>'+
+                        '<VCODE>%s</VCODE>'
+                        ) % (
+                        self.client.bidno,
+                        self.get_vcode(self.login.uid, self.client.bidno)
+                        ))
+                return self.logoff_req
 
-        def parse_ack(self):
-                pass
+        def make_client_req(self):
+                self.client_req = ((
+                        '<TYPE>CLIENT</TYPE>'+
+                        '<BIDNO>%s</BIDNO>'+
+                        '<VCODE>%s</VCODE>'
+                        ) % (
+                        self.client.bidno,
+                        self.get_vcode(self.login.uid, self.client.bidno)
+                        ))
+                return self.client_req
+
+        def encode_format_req(self):
+                return self.encode(self.make_format_req().encode())
+
+        def encode_logoff_req(self):
+                return self.encode(self.make_logoff_req().encode())
+
+        def encode_client_req(self):
+                return self.encode(self.make_client_req().encode())
+
+        def print_encode_format_req(self):
+                self.print_bytes(self.encode_format_req())
+
+        def print_encode_logoff_req(self):
+                self.print_bytes(self.encode_logoff_req())
+
+        def print_encode_client_req(self):
+                self.print_bytes(self.encode_client_req())
+
+        def print_format_req(self):
+                print(self.make_format_req())
+
+        def print_logoff_req(self):
+                print(self.make_logoff_req())
+
+        def print_client_req(self):
+                print(self.make_client_req())
 
 #--------------------------------------------------------------------------------------
 
@@ -136,7 +195,7 @@ class proto_ssl():
                 p = string.find('<XML>')
                 return (string[0:p], string[p:])
 
-        def get_md5(self,string):
+        def get_md5(self, string):
                 return md5(string.encode()).hexdigest()
 
         def get_bidcode_md5_to_md8(self,string):
@@ -314,7 +373,8 @@ class proto_client_login():
 
         def __init__(self, client):
                 self.client = client
-                self.proto_udp_login = proto_udp_login(client, self)
+                self.uid = '310108195810053456'
+                self.proto_udp = proto_udp(client, self)
                 self.proto_ssl_login = proto_ssl_login(client, self)
 
 class proto_pp_client():
@@ -389,6 +449,9 @@ def pp_print_req():
                 pp_client_dict[bidno].login.proto_ssl_login.print_req()
                 pp_client_dict[bidno].bid[0].image.proto_ssl_image.print_req()
                 pp_client_dict[bidno].bid[0].price.proto_ssl_price.print_req()
+                pp_client_dict[bidno].login.proto_udp.print_format_req()
+                pp_client_dict[bidno].login.proto_udp.print_logoff_req()
+                pp_client_dict[bidno].login.proto_udp.print_client_req()
 
 def pp_print_ack():
         global pp_client_dict, pp_bidno_dict
@@ -396,6 +459,8 @@ def pp_print_ack():
                 pp_client_dict[bidno].login.proto_ssl_login.print_ack(pp_read_file_to_buff('login.ack'))
                 pp_client_dict[bidno].bid[0].image.proto_ssl_image.print_ack(pp_read_file_to_buff('image.ack'))
                 pp_client_dict[bidno].bid[0].price.proto_ssl_price.print_ack(pp_read_file_to_buff('price.ack'))
+                pp_client_dict[bidno].login.proto_udp.print_ack(pp_read_file_to_buff('udp_format.ack').decode())
+                pp_client_dict[bidno].login.proto_udp.print_ack(pp_read_file_to_buff('udp_logoff.req').decode())
 
 def pp_read_file_to_buff(name):
         buff = b''
@@ -410,7 +475,7 @@ def pp_main():
         pp_init_config()
         pp_init_dns()
         pp_init_client()
-        pp_print_req()
+        #pp_print_req()
         pp_print_ack()
 
 if __name__ == "__main__":

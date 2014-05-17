@@ -13,7 +13,7 @@ from time                       import sleep
 from socket                     import socket, gethostbyname, AF_INET, SOCK_STREAM, SOCK_DGRAM 
 import ssl
 
-from pp_proto                   import pp_server_dict, pp_server_dict_2, proto_pp_client, proto_client_login, proto_client_bid, proto_bid_image, proto_bid_price
+from pp_proto                   import pp_server_dict, pp_server_dict_2, proto_pp_client, proto_client_login, proto_client_bid, proto_bid_image, proto_bid_price, proto_udp
 from dm_proto                   import proto_dm, dm_handler
 from ct_proto                   import proto_ct, ct_handler
 
@@ -159,14 +159,25 @@ class client_login(pp_subthread, proto_client_login):
                         self.event_shoot.wait()
                         self.do_shoot()
                 except  KeyboardInterrupt:
+                        self.do_logoff_udp()
                         pass
                 print('client %s : login thread stoped' % (self.client.bidno))
 
-        def logoff(self):
-                self.udp_sock.sendto(self.client.proto_udp_logoff.make_req(),self.udp_server_addr)      # XXX XXX XXX
+        def do_logoff_udp(self):
+                self.udp_sock.sendto(self.proto_udp_logoff.make_req(), self.udp_server_addr)
+
+        def do_client_udp(self):
+                self.udp_sock.sendto(self.proto_udp_client.make_req(), self.udp_server_addr)
+                self.proto_udp_client.print_ack(self.recv_udp())                                # XXX
+                #self.proto_udp_client.parse_ack(self.recv_udp())                                # XXX
+
+        def do_format_udp(self):
+                self.udp_sock.sendto(self.proto_udp_format.make_req(), self.udp_server_addr)
+                self.proto_udp_client.print_ack(self.recv_udp())                                # XXX
+                #self.proto_udp_format.parse_ack(self.recv_udp())                                # XXX
 
         def do_update_status(self):
-                self.client.proto_udp_login.print(self.recv_udp())                                      # XXX XXX XXX
+                self.proto_udp_client.print_ack(self.recv_udp())                                # XXX
 
         def do_shoot(self):
                 self.ssl_sock.connect(self.ssl_server_addr)
@@ -174,9 +185,10 @@ class client_login(pp_subthread, proto_client_login):
                 recv_ssl = self.ssl_sock.recv(self.client.proto_ssl_login.ack_len())
                 if not recv_ssl:
                         return False
-                self.client.login_ssl_result = self.client.proto_ssl_login.parse_ack(recv_ssl)
-                self.udp_sock.sendto(self.client.proto_udp_login.make_req(),self.udp_server_addr)
-                self.client.login_udp_result = self.client.proto_udp.login.parse_ack(self.recv_udp())
+                self.proto_ssl_login.parse_ack(recv_ssl)
+                # 
+                self.do_format_udp()
+                self.do_client_udp()
                 while True:
                         self.do_update_status()
                         sleep(0)
