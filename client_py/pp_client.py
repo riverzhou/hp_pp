@@ -58,9 +58,9 @@ class pp_subthread(Thread):
 #------------------------------------------------------------------------------------------------------------------
 
 class bid_price(pp_subthread, proto_bid_price):
-        def __init__(self, bid, bidid):
+        def __init__(self, client, bid, bidid):
                 pp_subthread.__init__(self)
-                proto_bid_price.__init__(self, bid, bidid)
+                proto_bid_price.__init__(self, client, bid, bidid)
                 global event_price_warmup
                 self.event_warmup = event_price_warmup[self.bidid]
                 self.event_shoot = bid.event_price_shoot
@@ -86,9 +86,9 @@ class bid_price(pp_subthread, proto_bid_price):
                 pass
 
 class bid_image(pp_subthread, proto_bid_image):
-        def __init__(self, bid, bidid):
+        def __init__(self, client, bid, bidid):
                 pp_subthread.__init__(self)
-                proto_bid_image.__init__(self, bid, bidid)
+                proto_bid_image.__init__(self, client, bid, bidid)
                 global event_image_warmup, event_image_shoot 
                 self.event_warmup = event_price_warmup[self.bidid]
                 self.event_shoot = event_image_shoot[self.bidid]
@@ -118,12 +118,12 @@ class bid_image(pp_subthread, proto_bid_image):
 #------------------------------------------------------------------------------------------------------------------
 
 class client_bid(pp_subthread, proto_client_bid):
-        def __init__(self,client,bidid):
+        def __init__(self, client, bidid):
                 pp_subthread.__init__(self)
-                proto_client_bid.__init__(self,client,bidid)
+                proto_client_bid.__init__(self, client, bidid)
                 self.event_price_shoot = Event()
-                self.image = bid_image(self,self.bidid)
-                self.price = bid_price(self,self.bidid)
+                self.image = bid_image(client, self, self.bidid)
+                self.price = bid_price(client, self, self.bidid)
 
         def run(self):
                 print('client %s : bid thread %s started' % (self.client.bidno, self.bidid))
@@ -140,9 +140,9 @@ class client_bid(pp_subthread, proto_client_bid):
                 print('client %s : bid thread %s stoped' % (self.client.bidno, self.bidid))
 
 class client_login(pp_subthread, proto_client_login):
-        def __init__(self,client):
+        def __init__(self, client):
                 pp_subthread.__init__(self)
-                proto_client_login.__init__(self,client)
+                proto_client_login.__init__(self, client)
                 global event_login_shoot
                 self.event_shoot = event_login_shoot
                 self.ssl_sock = ssl.SSLContext(ssl.PROTOCOL_SSLv23).wrap_socket(socket(AF_INET, SOCK_STREAM))
@@ -192,9 +192,9 @@ class client_login(pp_subthread, proto_client_login):
 #------------------------------------------------------------------------------------------------------------------
 
 class pp_client(pp_subthread, proto_pp_client):
-        def __init__(self,bidno_dict,server_dict):
+        def __init__(self, bidno_dict, server_dict):
                 pp_subthread.__init__(self)
-                proto_pp_client.__init__(self,bidno_dict,server_dict)
+                proto_pp_client.__init__(self,bidno_dict, server_dict)
                 self.login = client_login(self)
                 self.bid = []
                 for i in range(3):
