@@ -9,6 +9,7 @@ from hashlib                    import md5
 from time                       import sleep
 from socket                     import gethostbyname
 from xml.etree                  import ElementTree
+import random, string
 
 import logging
 
@@ -50,7 +51,7 @@ class proto_udp():
                 return key_val
 
         def parse_ack(self, buff):
-                key_val = self.do_parse_ack(self.decode(buff).decode())
+                key_val = self.do_parse_ack(self.decode(buff).decode('gb18030'))
                 self.udp_ack.append(key_val)
                 return key_val
 
@@ -62,8 +63,8 @@ class proto_udp():
 
         def print_ack(self, buff):
                 print()
-                print(self.decode(buff).decode())
-                print(self.do_parse_ack(self.decode(buff).decode()))
+                print(self.decode(buff).decode('gb18030'))
+                print(self.do_parse_ack(self.decode(buff).decode('gb18030')))
                 print()
 
         def print_buff(self, buff):

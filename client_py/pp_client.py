@@ -12,6 +12,7 @@ from hashlib                    import md5
 from time                       import sleep
 from socket                     import socket, gethostbyname, AF_INET, SOCK_STREAM, SOCK_DGRAM 
 import ssl
+import random, string
 
 import logging
 
