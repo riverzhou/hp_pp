@@ -36,11 +36,29 @@ server_ct = None
 pp_bidno_dict      = {}
 pp_client_dict     = {}
 
+pp_price_amount_list = ()
+
 event_quit         = None
 event_login_shoot  = None
 event_image_warmup = ()
 event_image_shoot  = ()
 event_price_warmup = ()
+
+#------------------------------------------------------------------------------------------------------------------
+
+class pp_price_amount():
+        def __init__(self, amount = ''):
+                self.not_busy = Event()
+                self.amount = amount
+
+        def set(self, amount):
+                self.not_busy.clear()
+                self.amount = amount
+                self.not_busy.set()
+
+        def get(self):
+                self.not_busy.wait()
+                return self.amount
 
 #------------------------------------------------------------------------------------------------------------------
 
@@ -85,7 +103,14 @@ class bid_price(pp_subthread, proto_bid_price):
                 self.ssl_sock.connect(self.ssl_server_addr)
 
         def do_shoot(self):
-                pass
+                self.proto_ssl_price.print_req()
+                self.ssl_sock.send(self.proto_ssl_price.make_req())
+                recv_ssl = self.ssl_sock.recv(self.proto_ssl_price.ack_len)
+                if not recv_ssl:
+                        return False
+                self.proto_ssl_price.parse_ack(recv_ssl)
+                self.proto_ssl_price.print_ack(recv_ssl)
+                return True
 
 class bid_image(pp_subthread, proto_bid_image):
         def __init__(self, client, bid, bidid):
@@ -114,8 +139,19 @@ class bid_image(pp_subthread, proto_bid_image):
                 self.ssl_sock.connect(self.ssl_server_addr)
 
         def do_shoot(self):
-                self.bid.image_number = '654321'
+                global pp_price_amount_list
+                self.bid.price_amount = pp_price_amount_list[self.bidid].get()
+                self.proto_ssl_image.print_req()
+                self.ssl_sock.send(self.proto_ssl_image.make_req())
+                recv_ssl = self.ssl_sock.recv(self.proto_ssl_image.ack_len)
+                if not recv_ssl:
+                        return False
+                self.proto_ssl_image.parse_ack(recv_ssl)
+                self.proto_ssl_image.print_ack(recv_ssl)
+                #print(self.bid.image_pic)                              # XXX
+                self.bid.image_number = '654321'                        # XXX XXX XXX XXX XXX
                 self.event_price_shoot.set()
+                return True
 
 #------------------------------------------------------------------------------------------------------------------
 
@@ -148,6 +184,7 @@ class client_login(pp_subthread, proto_client_login):
                 proto_client_login.__init__(self, client)
                 global event_login_shoot
                 self.event_shoot = event_login_shoot
+                self.event_login_ok = Event()
                 self.ssl_sock = ssl.SSLContext(ssl.PROTOCOL_SSLv23).wrap_socket(socket(AF_INET, SOCK_STREAM))
                 self.ssl_server_addr = self.client.server_dict["login"]['addr']
                 self.udp_sock = socket(AF_INET, SOCK_DGRAM)
@@ -165,6 +202,28 @@ class client_login(pp_subthread, proto_client_login):
                         self.do_logoff_udp()
                         pass
                 print('client %s : login thread stoped' % (self.client.bidno))
+
+        def do_shoot(self):
+                self.ssl_sock.connect(self.ssl_server_addr)
+                self.proto_ssl_login.print_req()
+                self.ssl_sock.send(self.proto_ssl_login.make_req())
+                recv_ssl = self.ssl_sock.recv(self.proto_ssl_login.ack_len)
+                if not recv_ssl:
+                        return False
+                self.proto_ssl_login.parse_ack(recv_ssl)
+                self.proto_ssl_login.print_ack(recv_ssl)
+                self.event_login_ok.set()
+                # 
+                self.do_format_udp()
+                self.do_client_udp()
+                while True:
+                        self.do_update_status()
+                        sleep(0)
+                return True
+
+        def wait_login_ok(self):
+                self.event_login_ok.wait()
+                sleep(1)
 
         def do_logoff_udp(self):
                 self.udp_sock.sendto(self.proto_udp.make_logoff_req(), self.udp_server_addr)
@@ -189,21 +248,6 @@ class client_login(pp_subthread, proto_client_login):
                 self.proto_udp.print_ack(udp_recv)
                 self.proto_udp.parse_ack(udp_recv)
 
-        def do_shoot(self):
-                self.ssl_sock.connect(self.ssl_server_addr)
-                self.ssl_sock.send(self.proto_ssl_login.make_req())
-                recv_ssl = self.ssl_sock.recv(self.proto_ssl_login.ack_len)
-                if not recv_ssl:
-                        return False
-                self.proto_ssl_login.parse_ack(recv_ssl)
-                # 
-                self.do_format_udp()
-                self.do_client_udp()
-                while True:
-                        self.do_update_status()
-                        sleep(0)
-                return True
-
         def recv_udp(self):
                 while True:
                         udp_result = self.udp_sock.recvfrom(1500)
@@ -217,6 +261,13 @@ class pp_client(pp_subthread, proto_pp_client):
         def __init__(self, bidno_dict, server_dict):
                 pp_subthread.__init__(self)
                 proto_pp_client.__init__(self,bidno_dict, server_dict)
+                self.bidno = bidno_dict[0]
+                self.passwd = bidno_dict[1]
+                self.server_dict = server_dict
+                self.version = '177'
+                #self.mcode = 'VB8c560dd2-2de8b7c4'
+                #self.loginimage_number = '666666'
+
                 self.login = client_login(self)
                 self.bid = []
                 for i in range(3):
@@ -313,6 +364,10 @@ def pp_init_event():
         event_image_shoot          = (Event(),Event(),Event())
         event_price_warmup         = (Event(),Event(),Event())
 
+def pp_init_price():
+        global pp_price_amount_list
+        pp_price_amount_list       = (pp_price_amount('100'), pp_price_amount('100'), pp_price_amount('100'))
+
 def pp_init_client():
         global pp_client_dict, pp_bidno_dict
         for bidno in pp_bidno_dict:
@@ -361,11 +416,21 @@ def pp_main():
         pp_init_config()
         pp_init_dns()
         pp_init_event()
+        pp_init_price()
         pp_init_client()
         pp_init_dm()
         pp_init_ct()
 
         event_login_shoot.set()
+        pp_client_dict['98765432'].login.wait_login_ok()
+
+        event_image_warmup[0].set()
+        event_price_warmup[0].set()
+
+        sleep(1)
+
+        pp_price_amount_list[0].set('200')
+        event_image_shoot[0].set()
 
         try:
                 pp_quit_wait()

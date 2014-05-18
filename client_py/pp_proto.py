@@ -55,18 +55,26 @@ class proto_udp():
                 return key_val
 
         def do_print_ack(self, string):
+                print()
                 print(string)
                 print(self.do_parse_ack(string))
+                print()
 
         def print_ack(self, buff):
+                print()
                 print(self.decode(buff).decode())
                 print(self.do_parse_ack(self.decode(buff).decode()))
+                print()
 
         def print_buff(self, buff):
+                print()
                 self.print_bytes(buff)
+                print()
 
         def print_encode_buff(self, buff):
+                print()
                 self.print_bytes(self.decode(buff))
+                print()
 
         def print_bytes(self, buff):
                 out     = ''
@@ -95,8 +103,8 @@ class proto_udp():
         def get_md5_up(self, string):
                 return md5(string.encode()).hexdigest().upper()
 
-        def get_vcode(self, uid, bidno):
-                return self.get_md5_up(uid + bidno)
+        def get_vcode(self, pid, bidno):
+                return self.get_md5_up(pid + bidno)
 
         def do_format_req(self):
                 self.format_req = ((
@@ -105,7 +113,7 @@ class proto_udp():
                         '<VCODE>%s</VCODE>'
                         ) % (
                         self.client.bidno,
-                        self.get_vcode(self.login.uid, self.client.bidno)
+                        self.get_vcode(self.login.proto_ssl_login.pid, self.client.bidno)
                         )).encode()
                 return self.format_req                        
 
@@ -116,7 +124,7 @@ class proto_udp():
                         '<VCODE>%s</VCODE>'
                         ) % (
                         self.client.bidno,
-                        self.get_vcode(self.login.uid, self.client.bidno)
+                        self.get_vcode(self.login.proto_ssl_login.pid, self.client.bidno)
                         )).encode()
                 return self.logoff_req
 
@@ -127,7 +135,7 @@ class proto_udp():
                         '<VCODE>%s</VCODE>'
                         ) % (
                         self.client.bidno,
-                        self.get_vcode(self.login.uid, self.client.bidno)
+                        self.get_vcode(self.login.proto_ssl_login.pid, self.client.bidno)
                         )).encode()
                 return self.client_req
 
@@ -141,22 +149,34 @@ class proto_udp():
                 return self.encode(self.do_client_req())
 
         def print_encode_format_req(self):
+                print()
                 self.print_bytes(self.make_format_req())
+                print()
 
         def print_encode_logoff_req(self):
+                print()
                 self.print_bytes(self.make_logoff_req())
+                print()
 
         def print_encode_client_req(self):
+                print()
                 self.print_bytes(self.make_client_req())
+                print()
 
         def print_format_req(self):
+                print()
                 print(self.do_format_req())
+                print()
 
         def print_logoff_req(self):
+                print()
                 print(self.do_logoff_req())
+                print()
 
         def print_client_req(self):
+                print()
                 print(self.do_client_req())
+                print()
 
 #--------------------------------------------------------------------------------------
 
@@ -172,10 +192,16 @@ class proto_ssl():
                 return self.ack
 
         def print_req(self):
+                print()
                 print(self.make_req())
+                print()
 
         def print_ack(self, buff):
-                print(self.parse_ack(buff))
+                print()
+                html_string, xml_string = self.split_html_xml_from_buff(buff)
+                print(xml_string.strip())
+                print(self.get_dict_from_xml(xml_string), self.get_sid_from_html(html_string))
+                print()
 
         def get_sid_from_html(self, html_string):
                 p1 = html_string.find('JSESSIONID')
@@ -274,13 +300,20 @@ class proto_ssl_login(proto_ssl):
                         self.client.loginimage_number,
                         self.client.server_dict['login']['name']
                         )).encode()
-                return self.req                        
+                return self.req
+
+        def parse_ack(self, buff):
+                proto_ssl.parse_ack(self, buff)
+                self.name = self.ack[0]['CLIENTNAME']
+                self.pid = self.ack[0]['PID']
+                self.sid = self.ack[1]
 
 class proto_ssl_image(proto_ssl):
         def __init__(self, client, bid, bidid):
                 self.client = client
                 self.bid = bid
                 self.bidid = bidid
+                self.ack_len = 8192
 
         def make_req(self):
                 self.req = ((
@@ -303,15 +336,21 @@ class proto_ssl_image(proto_ssl):
                         self.client.version,
                         self.get_image_checkcode(self.bid.price_amount),
                         self.client.server_dict['toubiao']['name'],
-                        self.bid.session_id
+                        self.client.login.proto_ssl_login.sid
                         )).encode()
                 return self.req                        
+
+        def parse_ack(self, buff):
+                proto_ssl.parse_ack(self, buff)
+                self.bid.image_pic = self.ack[0]['IMAGE_CONTENT']
+                self.bid.sid = self.ack[1]
 
 class proto_ssl_price(proto_ssl):
         def __init__(self, client, bid, bidid):
                 self.client = client
                 self.bid = bid
                 self.bidid = bidid
+                self.ack_len = 4096
 
         def make_req(self):
                 self.req = ((
@@ -338,9 +377,14 @@ class proto_ssl_price(proto_ssl):
                         self.client.version,
                         self.bid.image_number,
                         self.client.server_dict['toubiao']['name'],
-                        self.bid.session_id
+                        self.bid.sid
                         )).encode()
-                return self.req                        
+                return self.req
+
+        def parse_ack(self, buff):
+                proto_ssl.parse_ack(self, buff)
+                self.bid.time = self.ack[0]['BIDTIME']
+                self.bid.count = self.ack[0]['BIDCOUNT']
 
 #--------------------------------------------------------------------------------------
 
@@ -368,15 +412,12 @@ class proto_client_bid():
         def __init__(self, client, bidid):
                 self.client = client
                 self.bidid = bidid
-                self.session_id = '8899CF08D15BE46A7872A443D865A5D5'
 
 class proto_client_login():
         __metaclass__ = ABCMeta
 
         def __init__(self, client):
                 self.client = client
-                self.uid = '310108195810053456'
-                self.session_id = '8899CF08D15BE46A7872A443D865A5D5'
                 self.proto_udp = proto_udp(client, self)
                 self.proto_ssl_login = proto_ssl_login(client, self)
 
@@ -388,8 +429,8 @@ class proto_pp_client():
                 self.passwd = bidno_dict[1]
                 self.server_dict = server_dict
                 self.version = '177'
-                self.mcode = 'VB8c560dd2-2de8b7c4'
-                self.loginimage_number = '666666'
+                self.mcode = 'XXXXXXXXXXXXXXXXXXX'              # TODO  随机生成
+                self.loginimage_number = '666666'               # TODO  随机生成
                
 #================================= for test ===========================================
 
@@ -410,13 +451,15 @@ class client_bid(proto_client_bid):
                 self.image = bid_image(client, self, bidid)
                 self.price = bid_price(client, self, bidid)
 
-                self.image_number = '928393'
-                self.price_amount = '500'
-                self.session_id = '8899CF08D15BE46A7872A443D865A5D5'
+                self.image_number = '111111'
+                self.price_amount = '555'
+                self.sid = 'CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC'
 
 class client_login(proto_client_login):
         def __init__(self, client):
                 proto_client_login.__init__(self, client)
+                self.proto_ssl_login.pid = '111111111111111111'
+                self.proto_ssl_login.sid = 'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF'
 
 class pp_client(proto_pp_client):
         def __init__(self, bidno_dict, server_dict):
@@ -425,8 +468,8 @@ class pp_client(proto_pp_client):
                 self.bid = []
                 for i in range(3):
                         self.bid.append(client_bid(self, i))
-                self.mcode = 'VB8c560dd2-2de8b7c4'
-                self.loginimage_number = '372318'
+                self.mcode = 'VVVVVVVVVVVVVVVVVVV'
+                self.loginimage_number = '333333'
 
 #--------------------------------------------------------------------------------------
 
