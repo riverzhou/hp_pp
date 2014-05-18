@@ -424,13 +424,12 @@ def pp_main():
         event_login_shoot.set()
         pp_client_dict['98765432'].login.wait_login_ok()
 
-        event_image_warmup[0].set()
-        event_price_warmup[0].set()
-
-        sleep(1)
-
-        pp_price_amount_list[0].set('200')
-        event_image_shoot[0].set()
+        for i in range(3):
+                event_image_warmup[i].set()
+                event_price_warmup[i].set()
+                pp_price_amount_list[i].set(str(2000*(i+1)))
+                event_image_shoot[i].set()
+                sleep(3)
 
         try:
                 pp_quit_wait()
