@@ -141,7 +141,9 @@ class MyBaseRequestHandlerr(BaseRequestHandler):
                         if True:
                                 if( self.send_data() == False ):
                                         return
-                                sleep(1)
+                                #sleep(1)
+                        #sleep(5)
+                        #self.send_relogin()
                 except: 
                         print_exc() 
                         return
@@ -157,6 +159,12 @@ class MyBaseRequestHandlerr(BaseRequestHandler):
                 self.user_update(req)
                 print(req.decode())
                 return True
+
+        def send_relogin(self):
+                buff = self.encode_data(self.user.ack['RELOGIN'])
+                socket  = self.request[1]
+                socket.sendto(buff, self.client_address)
+                print(self.user.ack['RELOGIN'].decode())
 
         def send_data(self):
                 ack = self.user_getack()
