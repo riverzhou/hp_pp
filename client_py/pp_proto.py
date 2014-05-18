@@ -11,7 +11,7 @@ from socket                     import gethostbyname
 from xml.etree                  import ElementTree
 import random, string
 
-import logging
+from pp_log                     import make_log
 
 #======================================================================================
 

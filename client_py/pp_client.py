@@ -14,7 +14,7 @@ from socket                     import socket, gethostbyname, AF_INET, SOCK_STRE
 import ssl
 import random, string
 
-import logging
+from pp_log                     import make_log
 
 from pp_proto                   import pp_server_dict, pp_server_dict_2, proto_pp_client, proto_client_login, proto_client_bid, proto_bid_image, proto_bid_price, proto_udp
 from dm_proto                   import proto_dm, dm_handler
