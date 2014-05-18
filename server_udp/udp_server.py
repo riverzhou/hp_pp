@@ -6,6 +6,8 @@ from socketserver       import UDPServer, BaseRequestHandler
 from traceback          import print_exc
 from time               import time, localtime, strftime
 from hashlib            import md5
+from time               import sleep
+
 
 HOST    = ''
 PORT    = 999
@@ -24,24 +26,28 @@ class user():
                         id_dict[uid] = ps_id
 
                 #self.order         = ['FORMAT','INFO','MSG','ADDSERV','MARQUEE','RELOGIN']
-                self.order          = ['FORMAT','MSG','MARQUEE','INFO']
+                self.order          = ['FORMAT','INFO','INFO1','INFO2','INFO3']
                 self.ack            = {}
-                #self.ack['INFO']   = '<TYPE>INFO</TYPE><BIDNO>98765432</BIDNO><VCODE>7AD4010132285769C8496849089947CA</VCODE>'
-                self.ack['INFO']    =    '<TYPE>INFO</TYPE><BIDNO>'+uid+'</BIDNO><VCODE>'+self.get_vcode(uid)+'</VCODE>'
-                self.ack['FORMAT']  =  '<TYPE>FORMAT</TYPE><BIDNO>'+uid+'</BIDNO><VCODE>'+self.get_vcode(uid)+'</VCODE>'
-                self.ack['MSG']     =     '<TYPE>MSG</TYPE><BIDNO>'+uid+'</BIDNO><VCODE>'+self.get_vcode(uid)+'</VCODE>'
-                self.ack['RELOGIN'] = '<TYPE>RELOGIN</TYPE><BIDNO>'+uid+'</BIDNO><VCODE>'+self.get_vcode(uid)+'</VCODE>'
-                self.ack['ADDSERV'] = '<TYPE>ADDSERV</TYPE><BIDNO>'+uid+'</BIDNO><VCODE>'+self.get_vcode(uid)+'</VCODE>'
-                self.ack['MARQUEE'] = '<TYPE>MARQUEE</TYPE><BIDNO>'+uid+'</BIDNO><VCODE>'+self.get_vcode(uid)+'</VCODE>'
+                #self.ack['INFO']    = '<TYPE>INFO</TYPE><INFO>B投标会 Hello I am info</INFO>'.encode('gbk')
+                self.ack['INFO']    = pp_read_file_to_buff('carnetbidinfo.html')
+                self.ack['INFO1']   = pp_read_file_to_buff('carnetbidinfo1.html')
+                self.ack['INFO2']   = pp_read_file_to_buff('carnetbidinfo2.html')
+                self.ack['INFO3']   = pp_read_file_to_buff('carnetbidinfo3.html')
+                self.ack['FORMAT']  = b'<TYPE>FORMAT</TYPE><BIDNO>'+uid.encode('gb2312')+b'</BIDNO><VCODE>'+self.get_vcode(uid)+b'</VCODE>'
+                self.ack['MSG']     = b'<TYPE>MSG</TYPE><MSG>Hello I am msg. </MSG>'
+                self.ack['RELOGIN'] = b'<TYPE>RELOGIN</TYPE><INFO>Hello I am relogin</INFO>'
+                self.ack['ADDSERV'] = b'<TYPE>ADDSERV</TYPE><SERV>192.168.1.99</SERV>'
+                self.ack['MARQUEE'] = b'<TYPE>MARQUEE</TYPE><MARQUEE>Hello I am marquee.</MARQUEE>'
                 self.req            = []
                 self.req_parse      = []
+                self.count          = 0
                 self.feq            = -1
                 self.feq_test       = 1
                 self.keys           = ('TYPE','BIDNO','VCODE')
                 return
 
         def get_vcode(self, uid):
-                return self.get_md5(id_dict[uid] + uid)
+                return self.get_md5(id_dict[uid] + uid).encode('gb2312')
 
         def get_md5(self, string):
                 return md5(string.encode()).hexdigest().upper()
@@ -53,11 +59,10 @@ class user():
                 return
 
         def getack(self):
-                feq = self.feq
-                if feq > len(self.order) - 1 :
-                        feq = self.feq_test                                      
-                print('feq', feq)
-                return self.ack[self.order[feq]]
+                if self.feq > len(self.order) - 1 :
+                        self.feq = 1
+                print('feq', self.feq)
+                return self.ack[self.order[self.feq]]
 
         @staticmethod                                      
         def update(req):
@@ -90,6 +95,7 @@ class user():
 
 class MyBaseRequestHandlerr(BaseRequestHandler):  
         def __init__(self, request, client_address, server):
+                self.count = 0
                 self.my_init()
                 BaseRequestHandler.__init__(self, request, client_address, server)
                 return
@@ -130,9 +136,12 @@ class MyBaseRequestHandlerr(BaseRequestHandler):
                 try: 
                         if( self.recv_data() == False ):
                                 return
-
-                        if( self.send_data() == False ):
-                                return
+                        
+                        #while True:
+                        if True:
+                                if( self.send_data() == False ):
+                                        return
+                                sleep(1)
                 except: 
                         print_exc() 
                         return
@@ -150,12 +159,14 @@ class MyBaseRequestHandlerr(BaseRequestHandler):
                 return True
 
         def send_data(self):
-                ack     = self.user_getack()
-                buff    = self.encode_data(str.encode(ack))
+                ack = self.user_getack()
+                #ack = pp_read_file_to_buff('carnetbidinfo.html')
+                buff    = self.encode_data(ack)
                 socket  = self.request[1]
                 socket.sendto(buff, self.client_address)
-                print(ack)
-                self.print_bytes(buff)
+                self.count += 1
+                print(self.count)
+                print(ack.decode('gb2312'))
                 print()
                 return True
 
@@ -173,6 +184,14 @@ class MyBaseRequestHandlerr(BaseRequestHandler):
         def user_getack(self):
                 return self.user.getack()
 
+def pp_read_file_to_buff(name):
+        buff = b''
+        f = open(name, 'rb')
+        try:
+                buff = f.read()
+        finally:
+                f.close()
+        return buff
 
 if __name__ == "__main__": 
         server = UDPServer((HOST, PORT), MyBaseRequestHandlerr)
