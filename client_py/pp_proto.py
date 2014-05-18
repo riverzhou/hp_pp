@@ -38,6 +38,40 @@ class proto_udp():
                 self.client = client
                 self.login = login
                 self.udp_ack = []
+                self.info_ack = []
+
+        def do_parse_info(self, info):
+                key_val = {}
+                key_val['CODE'] = info[0]
+                if key_val['CODE'] == 'C' :
+                        return key_val
+                info = info[1:]
+                for line in info.split('\n') :
+                        line = line.strip()
+                        if '：' in line:
+                                data = line.split('：',1)
+                                key_val[data[0].strip()] = data[1].strip()
+                return key_val
+
+        def parse_info(self, buff):
+                info = self.do_parse_ack(self.decode(buff).decode('gb18030'))['INFO']
+                key_val = self.do_parse_info(info)
+                self.info_ack.append(key_val)
+                return key_val
+
+        def do_print_info(self, string):
+                info = self.do_parse_ack(string)['INFO']
+                print()
+                print(info)
+                print(self.do_parse_info(info))
+                print()
+
+        def print_info(self, buff):
+                info = self.do_parse_ack(self.decode(buff).decode('gb18030'))['INFO']
+                print()
+                print(info)
+                print(self.do_parse_info(info))
+                print()
 
         def do_parse_ack(self, string):
                 key_val = {}
@@ -543,7 +577,8 @@ def pp_print_ack():
                 pp_client_dict[bidno].bid[0].price.proto_ssl_price.print_ack(pp_read_file_to_buff('price.ack'))
 
                 pp_client_dict[bidno].login.proto_udp.do_print_ack(pp_read_file_to_buff('udp_format.ack').decode().strip())
-                pp_client_dict[bidno].login.proto_udp.print_encode_buff(pp_read_file_to_buff('udp_logoff.req').strip())
+                pp_client_dict[bidno].login.proto_udp.do_print_info(pp_read_file_to_buff('udp_info.ack').decode('gb18030'))
+                print(pp_read_file_to_buff('udp_info.ack'))
 
 def pp_read_file_to_buff(name):
         buff = b''
@@ -558,7 +593,7 @@ def pp_main():
         pp_init_config()
         pp_init_dns()
         pp_init_client()
-        pp_print_req()
+        #pp_print_req()
         pp_print_ack()
 
 if __name__ == "__main__":

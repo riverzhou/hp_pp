@@ -269,9 +269,10 @@ class client_login(pp_subthread, proto_client_login):
                 self.proto_udp.parse_ack(udp_recv)
 
         def do_update_status(self):
+                self.udp_sock.sendto(self.proto_udp.make_format_req(), self.udp_server_addr)
                 udp_recv = self.recv_udp()
-                self.proto_udp.print_ack(udp_recv)
-                self.proto_udp.parse_ack(udp_recv)
+                self.proto_udp.print_info(udp_recv)
+                self.proto_udp.parse_info(udp_recv)
 
         def recv_udp(self):
                 while True:
