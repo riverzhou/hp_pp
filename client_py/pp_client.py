@@ -33,7 +33,8 @@ CT_SERVER = ('', 9998)
 server_dm = None
 server_ct = None
 
-pp_bidno_dict      = {}
+pp_user_dict       = {}
+pp_machine_dict    = {}
 pp_client_dict     = {}
 
 pp_price_amount_list = ()
@@ -45,6 +46,29 @@ event_image_shoot  = ()
 event_price_warmup = ()
 
 #------------------------------------------------------------------------------------------------------------------
+
+class pp_user():
+        def __init__(self, bidno = '', passwd = ''):
+                self.bidno = bidno
+                self.passwd = passwd
+
+class pp_machine():
+        def __init__(self, mcode = '', loginimage_number = ''):
+                if mcode != '':
+                        self.mcode = mcode
+                else:
+                        self.mcode = self.create_mcode()
+
+                if loginimage_number != '':
+                        self.loginimage_number = loginimage_number
+                else:
+                        self.loginimage_number = self.create_number()
+
+        def create_mcode(self):
+                return 'QQQQQQQQQQ'                     # TODO 改成随机生成
+
+        def create_number(self):
+                return '777777'                         # TODO 改成随机生成
 
 class pp_price_amount():
         def __init__(self, amount = ''):
@@ -258,16 +282,9 @@ class client_login(pp_subthread, proto_client_login):
 #------------------------------------------------------------------------------------------------------------------
 
 class pp_client(pp_subthread, proto_pp_client):
-        def __init__(self, bidno_dict, server_dict):
+        def __init__(self, user, machine, server_dict):
                 pp_subthread.__init__(self)
-                proto_pp_client.__init__(self,bidno_dict, server_dict)
-                self.bidno = bidno_dict[0]
-                self.passwd = bidno_dict[1]
-                self.server_dict = server_dict
-                self.version = '177'
-                #self.mcode = 'VB8c560dd2-2de8b7c4'
-                #self.loginimage_number = '666666'
-
+                proto_pp_client.__init__(self, user, machine, server_dict)
                 self.login = client_login(self)
                 self.bid = []
                 for i in range(3):
@@ -341,9 +358,12 @@ class pp_ct(pp_subprocess):
 #------------------------------------------------------------------------------------------------------------------
 
 def pp_init_config():
-        global pp_bidno_dict
-        pp_bidno_dict['98765432']  = ('98765432','4321')
-        #pp_bidno_dict['98765431']  = ('98765431','1321')
+        global pp_user_dict, pp_machine_dict
+        pp_user_dict['98765432']  = pp_user('98765432','4321')
+        pp_machine_dict['98765432'] = pp_machine()
+
+        #pp_user_dict['98765431']  = pp_user('98765431','1321')
+        #pp_machine_dict['98765431'] = pp_machine()
 
 def pp_init_dns():
         global pp_server_dict, pp_server_dict_2
@@ -369,10 +389,10 @@ def pp_init_price():
         pp_price_amount_list       = (pp_price_amount('100'), pp_price_amount('100'), pp_price_amount('100'))
 
 def pp_init_client():
-        global pp_client_dict, pp_bidno_dict
-        for bidno in pp_bidno_dict:
+        global pp_client_dict, pp_user_dict
+        for bidno in pp_user_dict:
                 if not bidno in pp_client_dict:
-                        pp_client_dict[bidno] = pp_client(pp_bidno_dict[bidno],pp_server_dict)
+                        pp_client_dict[bidno] = pp_client(pp_user_dict[bidno], pp_machine_dict[bidno], pp_server_dict)
                         pp_client_dict[bidno].start()
                         pp_client_dict[bidno].started()
 

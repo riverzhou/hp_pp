@@ -424,18 +424,44 @@ class proto_client_login():
 class proto_pp_client():
         __metaclass__ = ABCMeta
 
-        def __init__(self, bidno_dict, server_dict):
-                self.bidno = bidno_dict[0]
-                self.passwd = bidno_dict[1]
+        def __init__(self, user, machine, server_dict):
+                self.bidno = user.bidno
+                self.passwd = user.passwd
+                self.mcode = machine.mcode
+                self.loginimage_number = machine.loginimage_number
                 self.server_dict = server_dict
                 self.version = '177'
-                self.mcode = 'XXXXXXXXXXXXXXXXXXX'              # TODO  随机生成
-                self.loginimage_number = '666666'               # TODO  随机生成
                
 #================================= for test ===========================================
 
-pp_bidno_dict   = {}
-pp_client_dict  = {}
+pp_user_dict       = {}
+pp_machine_dict    = {}
+pp_client_dict     = {}
+
+class pp_user():
+        def __init__(self, bidno = '', passwd = ''):
+                self.bidno = bidno
+                self.passwd = passwd
+
+class pp_machine():
+        def __init__(self, mcode = '', loginimage_number = ''):
+                if mcode != '':
+                        self.mcode = mcode
+                else:
+                        self.mcode = self.create_mcode()
+
+                if loginimage_number != '':
+                        self.loginimage_number = loginimage_number
+                else:
+                        self.loginimage_number = self.create_number()
+
+        def create_mcode(self):
+                return 'QQQQQQQQQQ'                     # TODO 改成随机生成
+
+        def create_number(self):
+                return '777777'                         # TODO 改成随机生成
+
+#--------------------------------- for test -------------------------------------------
 
 class bid_price(proto_bid_price):
         def __init__(self, client, bid, bidid):
@@ -458,25 +484,27 @@ class client_bid(proto_client_bid):
 class client_login(proto_client_login):
         def __init__(self, client):
                 proto_client_login.__init__(self, client)
+
                 self.proto_ssl_login.pid = '111111111111111111'
                 self.proto_ssl_login.sid = 'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF'
 
 class pp_client(proto_pp_client):
-        def __init__(self, bidno_dict, server_dict):
-                proto_pp_client.__init__(self,bidno_dict, server_dict)
+        def __init__(self, user, machine, server_dict):
+                proto_pp_client.__init__(self, user, machine, server_dict)
                 self.login = client_login(self)
                 self.bid = []
                 for i in range(3):
                         self.bid.append(client_bid(self, i))
+
                 self.mcode = 'VVVVVVVVVVVVVVVVVVV'
                 self.loginimage_number = '333333'
 
-#--------------------------------------------------------------------------------------
+#--------------------------------- for test -------------------------------------------
 
 def pp_init_config():
         global pp_bidno_dict
-        #pp_bidno_dict['98765432']  = ('98765432','4321')
-        pp_bidno_dict['88888888']  = ('88888888','4444')
+        pp_user_dict['88888888']  = pp_user('88888888','4444')
+        pp_machine_dict['88888888'] = pp_machine()
 
 def pp_init_dns():
         global pp_server_dict, pp_server_dict_2
@@ -486,14 +514,14 @@ def pp_init_dns():
                                         'name' : pp_server_dict[s][0]}
 
 def pp_init_client():
-        global pp_client_dict, pp_bidno_dict
-        for bidno in pp_bidno_dict:
+        global pp_client_dict, pp_user_dict
+        for bidno in pp_user_dict:
                 if not bidno in pp_client_dict:
-                        pp_client_dict[bidno] = pp_client(pp_bidno_dict[bidno],pp_server_dict)
+                        pp_client_dict[bidno] = pp_client(pp_user_dict[bidno], pp_machine_dict[bidno], pp_server_dict)
 
 def pp_print_req():
-        global pp_client_dict, pp_bidno_dict
-        for bidno in pp_bidno_dict:
+        global pp_client_dict, pp_user_dict
+        for bidno in pp_user_dict:
                 pp_client_dict[bidno].login.proto_ssl_login.print_req()
                 pp_client_dict[bidno].bid[0].image.proto_ssl_image.print_req()
                 pp_client_dict[bidno].bid[0].price.proto_ssl_price.print_req()
@@ -507,8 +535,8 @@ def pp_print_req():
                 pp_client_dict[bidno].login.proto_udp.print_encode_client_req()
 
 def pp_print_ack():
-        global pp_client_dict, pp_bidno_dict
-        for bidno in pp_bidno_dict:
+        global pp_client_dict, pp_user_dict
+        for bidno in pp_user_dict:
                 pp_client_dict[bidno].login.proto_ssl_login.print_ack(pp_read_file_to_buff('login.ack'))
                 pp_client_dict[bidno].bid[0].image.proto_ssl_image.print_ack(pp_read_file_to_buff('image.ack'))
                 pp_client_dict[bidno].bid[0].price.proto_ssl_price.print_ack(pp_read_file_to_buff('price.ack'))
