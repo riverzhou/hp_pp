@@ -456,10 +456,10 @@ class pp_machine():
                         self.loginimage_number = self.create_number()
 
         def create_mcode(self):
-                return 'QQQQQQQQQQ'                     # TODO 改成随机生成
+                return ''.join([(string.ascii_letters+string.digits)[x] for x in random.sample(range(0,62),random.randint(10,20))])
 
         def create_number(self):
-                return '777777'                         # TODO 改成随机生成
+                return ''.join([(string.digits)[x] for x in random.sample(range(0,10),6)])
 
 #--------------------------------- for test -------------------------------------------
 
