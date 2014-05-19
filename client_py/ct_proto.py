@@ -8,7 +8,6 @@ from socketserver               import TCPServer, BaseRequestHandler
 from socket                     import socket
 from traceback                  import print_exc
 from time                       import time, localtime, strftime
-from hashlib                    import md5
 from time                       import sleep
 from socket                     import socket, gethostbyname, AF_INET, SOCK_STREAM, SOCK_DGRAM
 

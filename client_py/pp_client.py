@@ -4,7 +4,7 @@ from abc                        import ABCMeta, abstractmethod
 from threading                  import Thread
 from multiprocessing            import Process, Event, Condition, Lock, Event
 from struct                     import pack, unpack
-from socketserver               import TCPServer, BaseRequestHandler
+from socketserver               import ThreadingTCPServer, BaseRequestHandler
 from socket                     import socket
 from traceback                  import print_exc
 from time                       import time, localtime, strftime
@@ -28,10 +28,8 @@ Thread.daemon  = True
 
 #------------------------------------------------------------------------------------------------------------------
 
-DM_SERVER = ('', 2000)
-CT_SERVER = ('', 9998)
+CT_SERVER = ('', 2000)
 
-server_dm = None
 server_ct = None
 
 pp_user_dict       = {}
@@ -327,7 +325,7 @@ class pp_subprocess(Process):
                 Process.__init__(self)
                 self.event_stop = Event()
                 self.event_started = Event()
-                self.server = TCPServer(server_addr, handler)
+                self.server = ThreadingTCPServer(server_addr, handler)
                 self.check = check_for_stop(self.server, self.event_stop)
 
         def started(self):
@@ -348,10 +346,6 @@ class pp_subprocess(Process):
                 except  KeyboardInterrupt:
                         pass
                 print('Process %s stoped' % (self.__class__.__name__))
-
-class pp_dm(pp_subprocess):
-        def __init__(self):
-                pp_subprocess.__init__(self,DM_SERVER,dm_handler)
 
 class pp_ct(pp_subprocess):
         def __init__(self):
@@ -398,21 +392,11 @@ def pp_init_client():
                         pp_client_dict[bidno].start()
                         pp_client_dict[bidno].started()
 
-def pp_init_dm():
-        global server_dm
-        server_dm = pp_dm()
-        server_dm.start()
-        server_dm.started()
-
 def pp_init_ct():
         global server_ct
         server_ct = pp_ct()
         server_ct.start()
         server_ct.started()
-
-def pp_stop_dm():
-        global server_dm
-        server_dm.stop()
 
 def pp_stop_ct():
         global server_ct
@@ -421,10 +405,6 @@ def pp_stop_ct():
 def pp_quit_set():
         global event_quit
         event_quit.set()
-
-def pp_wait_dm():
-        global server_dm
-        server_dm.join()
 
 def pp_wait_ct():
         global server_ct
@@ -438,10 +418,9 @@ def pp_main():
         pp_init_config()
         pp_init_dns()
         pp_init_event()
+        pp_init_ct()
         pp_init_price()
         pp_init_client()
-        pp_init_dm()
-        pp_init_ct()
 
         event_login_shoot.set()
         pp_client_dict['98765432'].login.wait_login_ok()
@@ -458,10 +437,8 @@ def pp_main():
         except:
                 pass
         else:                
-                pp_stop_dm()
                 pp_stop_ct()
         finally:                
-                pp_wait_dm()
                 pp_wait_ct()
 
 #--------------------------------------
