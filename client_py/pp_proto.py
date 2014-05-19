@@ -31,6 +31,8 @@ pp_server_dict_2 = {
         'udp'      : ('tbudp2.alltobid.com',    999),
 }
 
+pp_price_list = ('73800','73900','74000','74100','74200','74300','74400','74500')
+
 #--------------------------------------------------------------------------------------
 
 class proto_udp():
@@ -445,8 +447,10 @@ class proto_client_bid():
         __metaclass__ = ABCMeta
 
         def __init__(self, client, bidid):
+                global pp_price_list
                 self.client = client
                 self.bidid = bidid
+                self.price_dict = {}.fromkeys(pp_price_list)
 
 class proto_client_login():
         __metaclass__ = ABCMeta
