@@ -16,5 +16,5 @@ all:
 	strip pp
 
 clean:
-	$(rm) pp pp.log core
+	$(rm) pp *.log *.debug core
 
