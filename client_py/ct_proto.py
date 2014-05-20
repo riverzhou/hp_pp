@@ -11,6 +11,7 @@ from time                       import sleep
 from socket                     import socket, gethostbyname, AF_INET, SOCK_STREAM, SOCK_DGRAM
 import random, string
 
+from pp_thread                  import pp_subthread, buff_sender
 from pp_log                     import make_log
 
 from xml.etree                  import ElementTree
@@ -23,6 +24,7 @@ Thread.daemon  = True
 CT_SERVER = ('', 3000)
 
 #--------------------------------------------------------------------------------------------
+
 class proto_ct_client():
         __metaclass__ = ABCMeta
 
@@ -151,6 +153,9 @@ class proto_ct_server(BaseRequestHandler):
                         'PRICE_FLUSH':  self.proc_ct_price_flush
                         }
                 self.login_ok = False
+                self.buff_sender = buff_sender(self.request)
+                self.buff_sender.start()
+                self.buff_sender.started()
                 try:
                         while True:
                                 result = self.proc_ct_req()
@@ -166,7 +171,7 @@ class proto_ct_server(BaseRequestHandler):
                 size, proto, option = (12 + len(string), 0, 0)
                 buff = pack('iii',size, proto, option)
                 buff += string.encode()
-                self.request.send(buff)
+                self.buff_sender.send(buff)
                 print()
 
         def get(self):
