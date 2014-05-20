@@ -334,27 +334,47 @@ class pp_machine():
 
 class ct_handler(proto_ct_server):
  
+        def proc_ct_unknow(self, key_val):
+                self.put(self.make_proto_ct_unknow_ack())
+                return True
+
+        def proc_ct_nologin(self, key_val):
+                self.put(self.make_proto_ct_nologin_ack())
+                return True
+
         def proc_ct_image_decode(self, key_val):
-                self.put(self.proto_ct_image_decode_req())
+                self.put(self.make_proto_ct_image_decode_req())
+                return True
 
         def proc_ct_image_warmup(self, key_val):
-                
-                self.put(self.proto_ct_image_warmup_ack())
+                self.put(self.make_proto_ct_image_warmup_ack())
+                return True
 
         def proc_ct_price_warmup(self, key_val):
-                self.put(self.proto_ct_price_warmup_ack())
+                self.put(self.make_proto_ct_price_warmup_ack())
+                return True
 
         def proc_ct_image_shoot(self, key_val):
-                self.put(self.proto_ct_image_shoot_ack())
+                self.put(self.make_proto_ct_image_shoot_ack())
+                return True
+
+        def proc_ct_image_pool(self, key_val):
+                self.put(self.make_proto_ct_image_pool_ack())
+                return True
 
         def proc_ct_pool_decode(self, key_val):
-                self.put(self.proto_ct_pool_decode_req())
+                self.put(self.make_proto_ct_pool_decode_req())
+                return True
 
         def proc_ct_price_shoot(self, key_val):
-                self.put(self.proto_ct_price_shoot_ack())
+                self.put(self.make_proto_ct_price_shoot_ack())
+                return True
 
         def proc_ct_price_flush(self, key_val):
-                self.put(self.proto_ct_price_flush_req())
+                self.put(self.make_proto_ct_price_flush_req())
+                return True
+
+#----------------------------------------------------------------
 
         def proc_ct_login(self, key_val):
                 self.bidno = key_val['BIDNO']
@@ -387,7 +407,7 @@ class pp_ct(pp_subthread):
 
 def pp_init_user():
         machine = ct_machine()
-        ct_add_user('98765432','4321', machine)
+        ct_add_user('98765432','4321', ct_handler())
 
 def pp_init_dns():
         global pp_server_dict, pp_server_dict_2
@@ -406,7 +426,7 @@ def pp_init_ct():
         server_ct.start()
         server_ct.started()
 
-def pp_wait_set():
+def pp_quit_set():
         global event_pp_quit
         event_pp_quit.set()
 
