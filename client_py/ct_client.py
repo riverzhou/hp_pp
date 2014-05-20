@@ -52,7 +52,7 @@ proto_ct_image_shoot_ack        = '<XML><TYPE>IMAGE_SHOOT</TYPE><BIDID>1</BIDID>
 
 #<<模式2协议>>
 #proto_ct_price_warmup_ack      复用模式1的协议
-#proto_ct_image_pool_ack        合并到proto_ct_pool_decode_req协议中，不独立处理
+proto_ct_image_pool_ack         = '<XML><TYPE>IMAGE_POOL</TYPE><BIDID>1</BIDID><INFO>OK</INFO></XML>'
 proto_ct_pool_decode_req        = '<XML><TYPE>POOL_DECODE</TYPE><BIDID>1</BIDID><SESSIONID>CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC</SESSIONID><IMAGE>base64_XXXXXXXX</IMAGE></XML>'
 proto_ct_price_shoot_ack        = '<XML><TYPE>PRICE_SHOOT</TYPE><BIDID>1</BIDID><INFO>OK</INFO></XML>'
 
@@ -128,7 +128,6 @@ class ct_client():
         def send(self, buff):
                 self.sock.send(buff)
                 print(buff)
-                print()
 
         def recv(self):
                 head = self.sock.recv(12)
@@ -149,15 +148,7 @@ class ct_client():
                 buff = pack('iii', size, 0, 0)
                 buff += string.encode()
                 self.send(buff)
-                result = self.recv()
-                if not result:
-                        return
-                key_val = self.parse(result['data'])
-                #self.sock.shutdown()
-                #self.sock.close()
-                print(key_val)
-                print()
-                return key_val
+                return 
 
         def parse(self, buff):
                 xml_string = buff.decode()
@@ -168,38 +159,63 @@ class ct_client():
                                 key_val[child.tag] = child.text
                 except :
                         print(xml_string)
+                print(key_val)
                 return key_val
 
 if __name__ == "__main__":
         ct = ct_client()
 
+        #<<登录>>
         ct.send_ct_login_req()
+        ct.parse(ct.recv()['data'])
+        print()
         sleep(1)
 
+        #<<模式1>>
         ct.send_ct_image_warmup_req()
-        sleep(1)
-
-        ct.send_ct_image_warmup_req()
+        ct.parse(ct.recv()['data'])
+        print()
         sleep(1)
 
         ct.send_ct_price_warmup_req()
+        ct.parse(ct.recv()['data'])
+        print()
         sleep(1)
 
         ct.send_ct_image_shoot_req()
+        ct.parse(ct.recv()['data'])
+        print()
         sleep(1)
 
         ct.send_ct_image_decode_ack()
+        ct.parse(ct.recv()['data'])
+        print()
         sleep(1)
 
-        ct.send_ct_price_shoot_req()
-        sleep(1)
-
+        #<<模式2>>
         ct.send_ct_image_pool_req()
+        ct.parse(ct.recv()['data'])
+        print()
         sleep(1)
 
         ct.send_ct_pool_decode_ack()
+        ct.parse(ct.recv()['data'])
+        print()
         sleep(1)
 
+        ct.send_ct_price_warmup_req()
+        ct.parse(ct.recv()['data'])
+        print()
+        sleep(1)
+
+        ct.send_ct_price_shoot_req()
+        ct.parse(ct.recv()['data'])
+        print()
+        sleep(1)
+
+        #<<刷价格>>
         ct.send_ct_price_flush_ack()
+        ct.parse(ct.recv()['data'])
+        print()
         sleep(1)
 
