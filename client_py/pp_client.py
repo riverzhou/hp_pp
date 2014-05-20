@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 
 from abc                        import ABCMeta, abstractmethod
-from threading                  import Thread
-from multiprocessing            import Process, Event, Condition, Lock, Event
+from threading                  import Thread, Event, Condition, Lock, Event, Semaphore
 from struct                     import pack, unpack
 from socketserver               import ThreadingTCPServer, BaseRequestHandler
-from socket                     import socket
 from traceback                  import print_exc
 from time                       import time, localtime, strftime
 from hashlib                    import md5
@@ -16,106 +14,49 @@ import random, string
 
 from pp_log                     import make_log
 
+from pp_thread                  import pp_subthread
 from pp_proto                   import pp_server_dict, pp_server_dict_2, proto_pp_client, proto_client_login, proto_client_bid, proto_bid_image, proto_bid_price, proto_udp
-from ct_proto                   import proto_ct, ct_handler
+from ct_proto                   import CT_SERVER, proto_ct_server
 
 #==================================================================================================================
 
 ThreadingTCPServer.allow_reuse_address = True
-Process.daemon = True
 Thread.daemon  = True
 
-#------------------------------------------------------------------------------------------------------------------
+event_pp_quit = Event()
 
-CT_SERVER = ('', 2000)
-
-server_ct = None
-
-pp_user_dict       = {}
-pp_machine_dict    = {}
-pp_client_dict     = {}
-
-pp_price_amount_list = ()
-
-event_quit         = None
-event_login_shoot  = None
-event_image_warmup = ()
-event_image_shoot  = ()
-event_price_warmup = ()
-
-#------------------------------------------------------------------------------------------------------------------
-
-class pp_user():
-        def __init__(self, bidno = '', passwd = ''):
-                self.bidno = bidno
-                self.passwd = passwd
-
-class pp_machine():
-        def __init__(self, mcode = '', loginimage_number = ''):
-                if mcode != '':
-                        self.mcode = mcode
-                else:
-                        self.mcode = self.create_mcode()
-
-                if loginimage_number != '':
-                        self.loginimage_number = loginimage_number
-                else:
-                        self.loginimage_number = self.create_number()
-
-        def create_mcode(self):
-                return ''.join([(string.ascii_letters+string.digits)[x] for x in random.sample(range(0,62),random.randint(10,20))])
-
-        def create_number(self):
-                return ''.join([(string.digits)[x] for x in random.sample(range(0,10),6)])
-
-class pp_price_amount():
-        def __init__(self, amount = ''):
-                self.not_busy = Event()
-                self.amount = amount
-
-        def set(self, amount):
-                self.not_busy.clear()
-                self.amount = amount
-                self.not_busy.set()
-
-        def get(self):
-                self.not_busy.wait()
-                return self.amount
-
-#------------------------------------------------------------------------------------------------------------------
-
-class pp_subthread(Thread):
-        __metaclass__ = ABCMeta
-
-        def __init__(self):
-                Thread.__init__(self)
-                self.event_started = Event()
-
-        def started(self):
-                self.event_started.wait()
-
-        def started_set(self):
-                self.event_started.set()
+pp_user_dict = {}
+lock_pp_user_dict = Lock()
 
 #------------------------------------------------------------------------------------------------------------------
 
 class bid_price(pp_subthread, proto_bid_price):
-        def __init__(self, client, bid, bidid):
+        def __init__(self, user, client, bid, bidid):
                 pp_subthread.__init__(self)
-                proto_bid_price.__init__(self, client, bid, bidid)
-                global event_price_warmup
-                self.event_warmup = event_price_warmup[bidid]
-                self.event_shoot = bid.event_price_shoot
+                proto_bid_price.__init__(self, user, client, bid, bidid)
+                self.event_warmup = user.event_price_warmup[bidid]
+                self.event_shoot = user.event_price_shoot[bidid]
                 self.ssl_sock = ssl.SSLContext(ssl.PROTOCOL_SSLv23).wrap_socket(socket(AF_INET, SOCK_STREAM))
                 self.ssl_server_addr = self.client.server_dict["toubiao"]['addr']
+
+        def stop(self):
+                pp_subthread.stop(self)
+                self.event_warmup.set()
+                self.event_shoot.set()
 
         def run(self):
                 print('client %s : bid thread %d : %s thread started' % (self.client.bidno, self.bidid, self.__class__.__name__))
                 try:
                         self.started_set()
                         self.event_warmup.wait()
+                        if self.stop == True :
+                                print('client %s : bid thread %d : %s thread stoped' % (self.client.bidno, self.bidid, self.__class__.__name__))
+                                return
                         self.do_warmup()
                         self.event_shoot.wait()
+                        if self.stop == True :
+                                print('client %s : bid thread %d : %s thread stoped' % (self.client.bidno, self.bidid, self.__class__.__name__))
+                                return
                         self.do_shoot()
                 except  KeyboardInterrupt:
                         pass
@@ -135,23 +76,32 @@ class bid_price(pp_subthread, proto_bid_price):
                 return True
 
 class bid_image(pp_subthread, proto_bid_image):
-        def __init__(self, client, bid, bidid):
+        def __init__(self, user, client, bid, bidid):
                 pp_subthread.__init__(self)
-                proto_bid_image.__init__(self, client, bid, bidid)
-                global event_image_warmup, event_image_shoot 
-                self.event_warmup = event_price_warmup[bidid]
-                self.event_shoot = event_image_shoot[self.bidid]
-                self.event_price_shoot = bid.event_price_shoot
+                proto_bid_image.__init__(self, user, client, bid, bidid)
+                self.event_warmup = user.event_image_warmup[bidid]
+                self.event_shoot = user.event_image_shoot[bidid]
                 self.ssl_sock = ssl.SSLContext(ssl.PROTOCOL_SSLv23).wrap_socket(socket(AF_INET, SOCK_STREAM))
                 self.ssl_server_addr = self.client.server_dict["toubiao"]['addr']
+
+        def stop(self):
+                pp_subthread.stop(self)
+                self.event_warmup.set()
+                self.event_shoot.set()
 
         def run(self):
                 print('client %s : bid thread %d : %s thread started' % (self.client.bidno, self.bidid, self.__class__.__name__))
                 try:
                         self.started_set()
                         self.event_warmup.wait()
+                        if self.stop == True:
+                                print('client %s : bid thread %d : %s thread stoped' % (self.client.bidno, self.bidid, self.__class__.__name__))
+                                return
                         self.do_warmup()
                         self.event_shoot.wait()
+                        if self.stop == True:
+                                print('client %s : bid thread %d : %s thread stoped' % (self.client.bidno, self.bidid, self.__class__.__name__))
+                                return
                         self.do_shoot()
                 except  KeyboardInterrupt:
                         pass
@@ -178,13 +128,12 @@ class bid_image(pp_subthread, proto_bid_image):
 #------------------------------------------------------------------------------------------------------------------
 
 class client_bid(pp_subthread, proto_client_bid):
-        def __init__(self, client, bidid):
+        def __init__(self, user, client, bidid):
                 pp_subthread.__init__(self)
-                proto_client_bid.__init__(self, client, bidid)
-                self.event_price_shoot = Event()
-                self.image_number = '666666'
-                self.image = bid_image(client, self, bidid)
-                self.price = bid_price(client, self, bidid)
+                proto_client_bid.__init__(self, user, client, bidid)
+                self.image_number = '666666'                            # XXX
+                self.image = bid_image(user, client, self, bidid)
+                self.price = bid_price(user, client, self, bidid)
 
         def run(self):
                 print('client %s : bid thread %s started' % (self.client.bidno, self.bidid))
@@ -194,18 +143,18 @@ class client_bid(pp_subthread, proto_client_bid):
                         self.price.start()
                         self.price.started()
                         self.started_set()
-                        self.image.join()
-                        self.price.join()
+                        self.wait_for_stop()
+                        self.image.stop()
+                        self.price.stop()
                 except  KeyboardInterrupt:
                         pass
                 print('client %s : bid thread %s stoped' % (self.client.bidno, self.bidid))
 
 class client_login(pp_subthread, proto_client_login):
-        def __init__(self, client):
+        def __init__(self, user, client):
                 pp_subthread.__init__(self)
-                proto_client_login.__init__(self, client)
-                global event_login_shoot
-                self.event_shoot = event_login_shoot
+                proto_client_login.__init__(self, user, client)
+                self.event_shoot = user.event_login_shoot
                 self.event_login_ok = Event()
                 self.ssl_sock = ssl.SSLContext(ssl.PROTOCOL_SSLv23).wrap_socket(socket(AF_INET, SOCK_STREAM))
                 self.ssl_server_addr = self.client.server_dict["login"]['addr']
@@ -214,15 +163,24 @@ class client_login(pp_subthread, proto_client_login):
                 self.udp_server_addr = self.client.server_dict["udp"]['addr']
                 print('client %s : login bind udp_sock @%s ' % (self.client.bidno,self.udp_sock.getsockname()))
 
+        def stop(self):
+                pp_subthread.stop(self)
+                self.event_shoot.set()
+                self.event_login_ok.set()
+
         def run(self):
                 print('client %s : login thread started' % (self.client.bidno))
                 try:
                         self.started_set()
                         self.event_shoot.wait()
+                        if self.stop == True:
+                                print('client %s : login thread stoped' % (self.client.bidno))
+                                return
                         self.do_shoot()
                 except  KeyboardInterrupt:
-                        self.do_logoff_udp()
                         pass
+                finally:
+                        self.do_logoff_udp()
                 print('client %s : login thread stoped' % (self.client.bidno))
 
         def do_shoot(self):
@@ -239,6 +197,8 @@ class client_login(pp_subthread, proto_client_login):
                 self.do_format_udp()
                 self.do_client_udp()
                 while True:
+                        if self.stop == True:
+                                break
                         self.do_update_status()
                         sleep(0)
                 return True
@@ -284,10 +244,10 @@ class pp_client(pp_subthread, proto_pp_client):
         def __init__(self, user, machine, server_dict):
                 pp_subthread.__init__(self)
                 proto_pp_client.__init__(self, user, machine, server_dict)
-                self.login = client_login(self)
+                self.login = client_login(user, self)
                 self.bid = []
                 for i in range(3):
-                        self.bid.append(client_bid(self,i))
+                        self.bid.append(client_bid(user, self, i))
 
         def run(self):
                 print('Thread %s : %s started' % (self.__class__.__name__, self.bidno))
@@ -298,67 +258,136 @@ class pp_client(pp_subthread, proto_pp_client):
                                 self.bid[i].start()
                                 self.bid[i].started()
                         self.started_set()
+                        self.wait_for_stop()
                         for i in range(3):
-                                self.bid[i].join()
-                        self.login.join()
+                                self.bid[i].stop()
+                        self.login.stop()
                 except  KeyboardInterrupt:
                         pass
                 print('Thread %s : %s stoped' % (self.__class__.__name__, self.bidno))
 
 #------------------------------------------------------------------------------------------------------------------
 
-class check_for_stop(Thread):
-        def __init__(self,server,event):
-                Thread.__init__(self)
-                self.server = server
-                self.event  = event
+class pp_user():
+        def __init__(self, bidno, passwd, handler, machine):
+                self.bidno = bidno
+                self.passwd = passwd
+                self.handler = handler
+                if machine != None :
+                        self.machine = machine
+                else :
+                        self.machine = pp_machine()
+
+                self.event_price_warmup      = ( Event(), Event(), Event() )
+                self.event_price_shoot       = ( Event(), Event(), Event() )
+                self.event_image_warmup      = ( Event(), Event(), Event() )
+                self.event_image_shoot       = ( Event(), Event(), Event() )
+
+                self.event_login_shoot       = Event()
+                self.event_login_shoot.set()
+
+                self.client = pp_client(self, self.machine, pp_server_dict)
+
+        def logoff(self):
+                self.client.stop()
+
+        @staticmethod
+        def add_user(bidno, passwd, handler, machine = None):
+                global pp_user_dict, lock_pp_user_dict
+                lock_pp_user_dict.acquire()
+                user = pp_user(bidno, passwd, handler, machine)
+                pp_user_dict[bidno] = user
+                lock_pp_user_dict.release()
+                user.client.start()
+                user.client.started()
+                return user
+        
+        @staticmethod
+        def del_user(bidno, passwd):
+                global pp_user_dict, lock_pp_user_dict
+                lock_pp_user_dict.acquire()
+                pp_user_dict[bidno].logoff()
+                del(pp_user_dict[bidno])
+                lock_pp_user_dict.release()
+
+#------------------------------------------------------------------------------------------------------------------
+
+class pp_machine():
+        def __init__(self, mcode = None, loginimage_number = None):
+                if mcode != None :
+                        self.mcode = mcode
+                else:
+                        self.mcode = self.create_mcode()
+
+                if loginimage_number != None :
+                        self.loginimage_number = loginimage_number
+                else:
+                        self.loginimage_number = self.create_number()
+
+        def create_mcode(self):
+                return ''.join([(string.ascii_letters+string.digits)[x] for x in random.sample(range(0,62),random.randint(10,20))])
+
+        def create_number(self):
+                return ''.join([(string.digits)[x] for x in random.sample(range(0,10),6)])
+
+#------------------------------------------------------------------------------------------------------------------
+
+class ct_handler(proto_ct_server):
+ 
+        def proc_ct_image_decode(self, key_val):
+                self.put(self.proto_ct_image_decode_req())
+
+        def proc_ct_image_warmup(self, key_val):
+                
+                self.put(self.proto_ct_image_warmup_ack())
+
+        def proc_ct_price_warmup(self, key_val):
+                self.put(self.proto_ct_price_warmup_ack())
+
+        def proc_ct_image_shoot(self, key_val):
+                self.put(self.proto_ct_image_shoot_ack())
+
+        def proc_ct_pool_decode(self, key_val):
+                self.put(self.proto_ct_pool_decode_req())
+
+        def proc_ct_price_shoot(self, key_val):
+                self.put(self.proto_ct_price_shoot_ack())
+
+        def proc_ct_price_flush(self, key_val):
+                self.put(self.proto_ct_price_flush_req())
+
+        def proc_ct_login(self, key_val):
+                self.bidno = key_val['BIDNO']
+                self.passwd = key_val['PASSWD']
+
+                pp_user.add_user(self.bidno, self.passwd, self)
+
+                self.login_ok = True
+                self.put(self.make_proto_ct_login_ack())
+                return True
+
+
+#------------------------------------------------------------------------------------------------------------------
+
+class pp_ct(pp_subthread):
+        def __init__(self):
+                pp_subthread.__init__(self)
+                self.server = ThreadingTCPServer(CT_SERVER, ct_handler)
 
         def run(self):
-                self.event.wait()
-                self.server.shutdown()
-
-class pp_subprocess(Process):
-        __metaclass__ = ABCMeta
-
-        def __init__(self,server_addr,handler):
-                Process.__init__(self)
-                self.event_stop = Event()
-                self.event_started = Event()
-                self.server = ThreadingTCPServer(server_addr, handler)
-                self.check = check_for_stop(self.server, self.event_stop)
-
-        def started(self):
-                self.event_started.wait()
-
-        def started_set(self):
-                self.event_started.set()
-
-        def stop(self):
-                self.event_stop.set()
-
-        def run(self):
-                print('Process %s started' % (self.__class__.__name__))
+                print('Thread %s started' % (self.__class__.__name__))
                 try:
-                        self.check.start()
                         self.started_set()
                         self.server.serve_forever()
                 except  KeyboardInterrupt:
                         pass
-                print('Process %s stoped' % (self.__class__.__name__))
-
-class pp_ct(pp_subprocess):
-        def __init__(self):
-                pp_subprocess.__init__(self,CT_SERVER,ct_handler)
+                print('Thread %s stoped' % (self.__class__.__name__))
 
 #------------------------------------------------------------------------------------------------------------------
 
-def pp_init_config():
-        global pp_user_dict, pp_machine_dict
-        pp_user_dict['98765432']  = pp_user('98765432','4321')
-        pp_machine_dict['98765432'] = pp_machine()
-
-        #pp_user_dict['98765431']  = pp_user('98765431','1321')
-        #pp_machine_dict['98765431'] = pp_machine()
+def pp_init_user():
+        machine = ct_machine()
+        ct_add_user('98765432','4321', machine)
 
 def pp_init_dns():
         global pp_server_dict, pp_server_dict_2
@@ -371,74 +400,28 @@ def pp_init_dns():
                                         'addr' : (gethostbyname(pp_server_dict_2[s][0]), pp_server_dict_2[s][1]), 
                                         'name' : pp_server_dict_2[s][0]}
 
-def pp_init_event():
-        global event_quit, event_login_shoot, event_image_warmup, event_image_shoot, event_price_warmup
-        event_quit                 = Event()
-        event_login_shoot          = Event()
-        event_image_warmup         = (Event(),Event(),Event())
-        event_image_shoot          = (Event(),Event(),Event())
-        event_price_warmup         = (Event(),Event(),Event())
-
-def pp_init_price():
-        global pp_price_amount_list
-        pp_price_amount_list       = (pp_price_amount('100'), pp_price_amount('100'), pp_price_amount('100'))
-
-def pp_init_client():
-        global pp_client_dict, pp_user_dict
-        for bidno in pp_user_dict:
-                if not bidno in pp_client_dict:
-                        pp_client_dict[bidno] = pp_client(pp_user_dict[bidno], pp_machine_dict[bidno], pp_server_dict)
-                        pp_client_dict[bidno].start()
-                        pp_client_dict[bidno].started()
-
 def pp_init_ct():
         global server_ct
         server_ct = pp_ct()
         server_ct.start()
         server_ct.started()
 
-def pp_stop_ct():
-        global server_ct
-        server_ct.stop()
+def pp_wait_set():
+        global event_pp_quit
+        event_pp_quit.set()
 
-def pp_quit_set():
-        global event_quit
-        event_quit.set()
-
-def pp_wait_ct():
-        global server_ct
-        server_ct.join()
-
-def pp_quit_wait():
-        global event_quit
-        event_quit.wait()
+def pp_wait_quit():
+        global event_pp_quit
+        try:
+                event_pp_quit.wait()
+        except KeyboardInterrupt:
+                pass
 
 def pp_main():
-        pp_init_config()
         pp_init_dns()
-        pp_init_event()
+        #pp_init_user()
         pp_init_ct()
-        pp_init_price()
-        pp_init_client()
-
-        event_login_shoot.set()
-        pp_client_dict['98765432'].login.wait_login_ok()
-
-        for i in range(3):
-                event_image_warmup[i].set()
-                event_price_warmup[i].set()
-                pp_price_amount_list[i].set(str(2000*(i+1)))
-                event_image_shoot[i].set()
-                sleep(3)
-
-        try:
-                pp_quit_wait()
-        except:
-                pass
-        else:                
-                pp_stop_ct()
-        finally:                
-                pp_wait_ct()
+        pp_wait_quit()
 
 #--------------------------------------
 
