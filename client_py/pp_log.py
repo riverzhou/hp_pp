@@ -5,7 +5,7 @@
 import logging
 
 
-def make_log(file_name, level = 'debug' , ifConsole = False):
+def make_log(name = None, log = None,  level = 'debug' , console = True, fmt = True):
         LEVELS = {
                 'debug'   : logging.DEBUG,
                 'info'    : logging.INFO,
@@ -14,38 +14,46 @@ def make_log(file_name, level = 'debug' , ifConsole = False):
                 'critical': logging.CRITICAL}
 
         if not level in LEVELS :
-                level = False
+                level = 'debug' 
         else:
                 level = LEVELS[level]
 
         # 创建一个logger
-        #logger = logging.getLogger('pp_log')
-        logger = logging.getLogger()
-        if not level == False :
-                logger.setLevel(level)
+        if log != None :
+                logger = logging.getLogger(log)
+        else :
+                logger = logging.getLogger()
 
-        # 创建一个handler，用于写入日志文件
-        fh = logging.FileHandler(file_name)
-        if not level == False :
-                fh.setLevel(level)
-
-        # 再创建一个handler，用于输出到控制台
-        ch = logging.StreamHandler()
-        if not level == False :
-                ch.setLevel(level)
+        logger.setLevel(logging.DEBUG)
 
         # 定义handler的输出格式
-        #formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        formatter = logging.Formatter('%(asctime)s - %(levelname)-8s ->|%(message)s')
-        fh.setFormatter(formatter)
-        ch.setFormatter(formatter)
+        if fmt != False :
+                #formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+                formatter = logging.Formatter('%(asctime)s - %(levelname)-8s ->|%(message)s')
+        else :
+                formatter = logging.Formatter()
 
-        # 给logger添加handler
-        logger.addHandler(fh)
-        if ifConsole == True :
+        # 创建一个handler，用于写入日志文件，再添加到logger
+        if name != None :
+                fh = logging.FileHandler(name)
+                fh.setLevel(level)
+                fh.setFormatter(formatter)
+                logger.addHandler(fh)
+
+        # 再创建一个handler，用于输出到控制台，添加到logger
+        if console != False :
+                ch = logging.StreamHandler()
+                ch.setLevel(level)
+                ch.setFormatter(formatter)
                 logger.addHandler(ch)
 
         # 记录一条日志
         #logger.info('foorbar')
 
         return logger
+
+
+logger = make_log(log = 'logger')
+printer = make_log(log = 'printer', fmt = False)
+ct_printer = make_log(log = 'ct_printer', fmt = False)
+

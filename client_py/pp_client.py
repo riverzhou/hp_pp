@@ -12,7 +12,7 @@ from socket                     import socket, gethostbyname, AF_INET, SOCK_STRE
 import ssl
 import random, string
 
-from pp_log                     import make_log
+from pp_log                     import logger, printer
 
 from pp_thread                  import pp_subthread
 from pp_proto                   import pp_server_dict, pp_server_dict_2, proto_pp_client, proto_client_login, proto_client_bid, proto_bid_image, proto_bid_price, proto_udp
@@ -47,34 +47,32 @@ class bid_price(pp_subthread, proto_bid_price):
                 self.event_shoot.set()
 
         def run(self):
-                print('client %s : bid thread %d : %s thread started' % (self.client.bidno, self.bidid, self.__class__.__name__))
+                logger.debug('client %s : bid thread %d : %s thread started' % (self.client.bidno, self.bidid, self.__class__.__name__))
                 try:
                         self.started_set()
                         self.event_warmup.wait()
                         if self.stop == True :
-                                print('client %s : bid thread %d : %s thread stoped' % (self.client.bidno, self.bidid, self.__class__.__name__))
+                                logger.debug('client %s : bid thread %d : %s thread stoped' % (self.client.bidno, self.bidid, self.__class__.__name__))
                                 return
                         self.do_warmup()
                         self.event_shoot.wait()
                         if self.stop == True :
-                                print('client %s : bid thread %d : %s thread stoped' % (self.client.bidno, self.bidid, self.__class__.__name__))
+                                logger.debug('client %s : bid thread %d : %s thread stoped' % (self.client.bidno, self.bidid, self.__class__.__name__))
                                 return
                         self.do_shoot()
                 except  KeyboardInterrupt:
                         pass
-                print('client %s : bid thread %d : %s thread stoped' % (self.client.bidno, self.bidid, self.__class__.__name__))
+                logger.debug('client %s : bid thread %d : %s thread stoped' % (self.client.bidno, self.bidid, self.__class__.__name__))
 
         def do_warmup(self):
                 self.ssl_sock.connect(self.ssl_server_addr)
 
         def do_shoot(self):
-                self.proto_ssl_price.print_req()
-                self.ssl_sock.send(self.proto_ssl_price.make_req())
+                self.ssl_sock.send(self.proto_ssl_price.make_req(self.bid.price_amount, self.bid.sid))   # XXX XXX XXX
                 recv_ssl = self.ssl_sock.recv(self.proto_ssl_price.ack_len)
                 if not recv_ssl:
                         return False
-                self.proto_ssl_price.parse_ack(recv_ssl)
-                self.proto_ssl_price.print_ack(recv_ssl)
+                key_val = self.proto_ssl_price.parse_ack(recv_ssl)
                 return True
 
 class bid_image(pp_subthread, proto_bid_image):
@@ -92,38 +90,42 @@ class bid_image(pp_subthread, proto_bid_image):
                 self.event_shoot.set()
 
         def run(self):
-                print('client %s : bid thread %d : %s thread started' % (self.client.bidno, self.bidid, self.__class__.__name__))
+                logger.debug('client %s : bid thread %d : %s thread started' % (self.client.bidno, self.bidid, self.__class__.__name__))
                 try:
                         self.started_set()
                         self.event_warmup.wait()
                         if self.stop == True:
-                                print('client %s : bid thread %d : %s thread stoped' % (self.client.bidno, self.bidid, self.__class__.__name__))
+                                logger.debug('client %s : bid thread %d : %s thread stoped' % (self.client.bidno, self.bidid, self.__class__.__name__))
                                 return
                         self.do_warmup()
                         self.event_shoot.wait()
                         if self.stop == True:
-                                print('client %s : bid thread %d : %s thread stoped' % (self.client.bidno, self.bidid, self.__class__.__name__))
+                                logger.debug('client %s : bid thread %d : %s thread stoped' % (self.client.bidno, self.bidid, self.__class__.__name__))
                                 return
                         self.do_shoot()
                 except  KeyboardInterrupt:
                         pass
-                print('client %s : bid thread %d : %s thread stoped' % (self.client.bidno, self.bidid, self.__class__.__name__))
+                logger.debug('client %s : bid thread %d : %s thread stoped' % (self.client.bidno, self.bidid, self.__class__.__name__))
 
         def do_warmup(self):
                 self.ssl_sock.connect(self.ssl_server_addr)
 
         def do_shoot(self):
-                self.proto_ssl_image.print_req()
-                self.ssl_sock.send(self.proto_ssl_image.make_req())
+                self.ssl_sock.send(self.proto_ssl_image.make_req(self.bid.price_amount, self.client.login.sid))   # XXX XXX XXX
                 recv_ssl = self.ssl_sock.recv(self.proto_ssl_image.ack_len)
                 if not recv_ssl:
                         return False
-                self.proto_ssl_image.parse_ack(recv_ssl)
-                self.proto_ssl_image.print_ack(recv_ssl)
-                #print(self.bid.image_pic)                              # XXX
-                self.bid.image_number = '654321'                        # XXX
+                key_val = self.proto_ssl_image.parse_ack(recv_ssl)
+                #self.bid.image_number = '654321'                       # XXX
                 #self.event_price_shoot.set()                           # XXX
+                self.send_decode_req(key_val['sid'], key_val['image'])
                 return True
+
+        def send_decode_req(self, sessionid, image):
+                if True :
+                        self.user.handler.send_ct_image_decode(self.bidid, sessionid, image)
+                else :
+                        self.user.handler.send_ct_pool_decode(self.bidid, sessionid, image)
 
 #------------------------------------------------------------------------------------------------------------------
 
@@ -136,7 +138,7 @@ class client_bid(pp_subthread, proto_client_bid):
                 self.price = bid_price(user, client, self, bidid)
 
         def run(self):
-                print('client %s : bid thread %s started' % (self.client.bidno, self.bidid))
+                logger.debug('client %s : bid thread %s started' % (self.client.bidno, self.bidid))
                 try:
                         self.image.start()
                         self.image.started()
@@ -148,7 +150,7 @@ class client_bid(pp_subthread, proto_client_bid):
                         self.price.stop()
                 except  KeyboardInterrupt:
                         pass
-                print('client %s : bid thread %s stoped' % (self.client.bidno, self.bidid))
+                logger.debug('client %s : bid thread %s stoped' % (self.client.bidno, self.bidid))
 
 class client_login(pp_subthread, proto_client_login):
         def __init__(self, user, client):
@@ -161,7 +163,7 @@ class client_login(pp_subthread, proto_client_login):
                 self.udp_sock = socket(AF_INET, SOCK_DGRAM)
                 self.udp_sock.bind(('',0))
                 self.udp_server_addr = self.client.server_dict["udp"]['addr']
-                print('client %s : login bind udp_sock @%s ' % (self.client.bidno,self.udp_sock.getsockname()))
+                logger.info('client %s : login bind udp_sock @%s ' % (self.client.bidno,self.udp_sock.getsockname()))
 
         def stop(self):
                 pp_subthread.stop(self)
@@ -169,29 +171,31 @@ class client_login(pp_subthread, proto_client_login):
                 self.event_login_ok.set()
 
         def run(self):
-                print('client %s : login thread started' % (self.client.bidno))
+                logger.debug('client %s : login thread started' % (self.client.bidno))
                 try:
                         self.started_set()
                         self.event_shoot.wait()
                         if self.stop == True:
-                                print('client %s : login thread stoped' % (self.client.bidno))
+                                logger.debug('client %s : login thread stoped' % (self.client.bidno))
                                 return
                         self.do_shoot()
                 except  KeyboardInterrupt:
                         pass
                 finally:
                         self.do_logoff_udp()
-                print('client %s : login thread stoped' % (self.client.bidno))
+                logger.debug('client %s : login thread stoped' % (self.client.bidno))
 
         def do_shoot(self):
                 self.ssl_sock.connect(self.ssl_server_addr)
-                self.proto_ssl_login.print_req()
                 self.ssl_sock.send(self.proto_ssl_login.make_req())
                 recv_ssl = self.ssl_sock.recv(self.proto_ssl_login.ack_len)
                 if not recv_ssl:
                         return False
-                self.proto_ssl_login.parse_ack(recv_ssl)
-                self.proto_ssl_login.print_ack(recv_ssl)
+                key_val = self.proto_ssl_login.parse_ack(recv_ssl)
+                self.sid = key_val['sid']
+                self.pid = key_val['pid']
+                self.name = key_val['name']
+                #print(key_val)
                 self.event_login_ok.set()
                 # 
                 self.do_format_udp()
@@ -250,7 +254,7 @@ class pp_client(pp_subthread, proto_pp_client):
                         self.bid.append(client_bid(user, self, i))
 
         def run(self):
-                print('Thread %s : %s started' % (self.__class__.__name__, self.bidno))
+                logger.debug('Thread %s : %s started' % (self.__class__.__name__, self.bidno))
                 try:
                         self.login.start()
                         self.login.started()
@@ -264,7 +268,7 @@ class pp_client(pp_subthread, proto_pp_client):
                         self.login.stop()
                 except  KeyboardInterrupt:
                         pass
-                print('Thread %s : %s stoped' % (self.__class__.__name__, self.bidno))
+                logger.debug('Thread %s : %s stoped' % (self.__class__.__name__, self.bidno))
 
 #------------------------------------------------------------------------------------------------------------------
 
@@ -333,16 +337,26 @@ class pp_user():
 #------------------------------------------------------------------------------------------------------------------
 
 class ct_handler(proto_ct_server):
- 
-        def proc_ct_image_decode(self, key_val):
-                self.put(self.make_proto_ct_image_decode_req())
+
+        #给 pp_client 线程的函数调用的接口
+        def send_ct_image_decode(self, bidid, sessionid, image):
+                self.put(self.make_proto_ct_image_decode_req(bidid, sessionid, image))
                 return True
 
-        def proc_ct_pool_decode(self, key_val):
-                self.put(self.make_proto_ct_pool_decode_req())
+        # 给 pp_client 线程的函数调用的接口
+        def send_ct_pool_decode(self, bidid, sessionid, image):
+                self.put(self.make_proto_ct_pool_decode_req(bidid, sessionid, image))
                 return True
 
 #----------------------------------------------------------------
+
+        def proc_ct_image_decode(self, key_val):        # 把结果存入到 self.user.client.bid[bidid] 里，并发送事件
+                #print(key_val)
+                return True
+
+        def proc_ct_pool_decode(self, key_val):         # 把结果存入到 self.user.client 和 self.user.client.bid[bidid] 里，并发送事件
+                #print(key_val)
+                return True
 
         def proc_ct_image_pool(self, key_val):
                 bidid = key_val['BIDID']
@@ -412,13 +426,13 @@ class pp_ct(pp_subthread):
                 self.server = ThreadingTCPServer(CT_SERVER, ct_handler)
 
         def run(self):
-                print('Thread %s started' % (self.__class__.__name__))
+                logger.debug('Thread %s started' % (self.__class__.__name__))
                 try:
                         self.started_set()
                         self.server.serve_forever()
                 except  KeyboardInterrupt:
                         pass
-                print('Thread %s stoped' % (self.__class__.__name__))
+                logger.debug('Thread %s stoped' % (self.__class__.__name__))
 
 #------------------------------------------------------------------------------------------------------------------
 
@@ -458,6 +472,7 @@ def pp_main():
         pp_init_dns()
         #pp_init_user()
         pp_init_ct()
+        logger.info('Server Started ...')
         pp_wait_quit()
 
 #--------------------------------------

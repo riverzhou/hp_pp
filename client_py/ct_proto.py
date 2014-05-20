@@ -10,14 +10,17 @@ from hashlib                    import md5
 from time                       import sleep
 from socket                     import socket, gethostbyname, AF_INET, SOCK_STREAM, SOCK_DGRAM
 import random, string
+import logging
 
 from pp_thread                  import pp_subthread, buff_sender
-from pp_log                     import make_log
+from pp_log                     import logger, ct_printer as printer
 
 from xml.etree                  import ElementTree
 
 ThreadingTCPServer.allow_reuse_address = True
 Thread.daemon  = True
+
+printer.setLevel(logging.ERROR)
 
 #----------------------------
 
@@ -43,8 +46,8 @@ class proto_ct_server(BaseRequestHandler):
                 return '<XML><TYPE>CT_LOGIN</TYPE><INFO>OK</INFO></XML>'
 
         #<<模式1>>
-        def make_proto_ct_image_decode_req(self):
-                return '<XML><TYPE>IMAGE_DECODE</TYPE><BIDID>1</BIDID><SESSIONID>CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC</SESSIONID><IMAGE>base64_XXXXXXXX</IMAGE></XML>'
+        def make_proto_ct_image_decode_req(self, bidid, sessionid, image):
+                return ('<XML><TYPE>IMAGE_DECODE</TYPE><BIDID>%s</BIDID><SESSIONID>%s</SESSIONID><IMAGE>%s</IMAGE></XML>' % (bidid, sessionid, image))
 
         def make_proto_ct_image_warmup_ack(self, bidid):
                 return ('<XML><TYPE>IMAGE_WARMUP</TYPE><BIDID>%s</BIDID><INFO>OK</INFO></XML>' % bidid)
@@ -59,8 +62,8 @@ class proto_ct_server(BaseRequestHandler):
         def make_proto_ct_image_pool_ack(self, bidid):
                 return ('<XML><TYPE>IMAGE_POOL</TYPE><BIDID>%s</BIDID><INFO>OK</INFO></XML>' % bidid)
 
-        def make_proto_ct_pool_decode_req(self):
-                return '<XML><TYPE>POOL_DECODE</TYPE><BIDID>1</BIDID><SESSIONID>CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC</SESSIONID><IMAGE>base64_XXXXXXXX</IMAGE></XML>'
+        def make_proto_ct_pool_decode_req(self, bidid, sessionid, image):
+                return ('<XML><TYPE>POOL_DECODE</TYPE><BIDID>%s</BIDID><SESSIONID>%s</SESSIONID><IMAGE>%s</IMAGE></XML>' % (bidid, sessionid, image))
 
         def make_proto_ct_price_shoot_ack(self, bidid):
                 return ('<XML><TYPE>PRICE_SHOOT</TYPE><BIDID>%s</BIDID><INFO>OK</INFO></XML>' % bidid)
@@ -107,12 +110,11 @@ class proto_ct_server(BaseRequestHandler):
 
         #------------------------------------------------------------------------
 
-        def proc_ct_req(self):
+        def proc_ct_recv(self):
                 result = self.get()
                 if not result:
                         return
                 key_val = self.parse(result['data'].decode())
-                print(key_val)
 
                 if not key_val['TYPE'] in self.func_dict:
                         return self.proc_ct_unknow(key_val)
@@ -125,7 +127,7 @@ class proto_ct_server(BaseRequestHandler):
                 return True
 
         def handle(self):
-                print('Thread %s : %s started' % (self.__class__.__name__, self.client_address))
+                logger.debug('Thread %s : %s started' % (self.__class__.__name__, self.client_address))
                 self.func_dict = {
                         'CT_LOGIN':     self.proc_ct_login,
                         'IMAGE_WARMUP': self.proc_ct_image_warmup,
@@ -143,7 +145,7 @@ class proto_ct_server(BaseRequestHandler):
                 self.buff_sender.started()
                 try:
                         while True:
-                                result = self.proc_ct_req()
+                                result = self.proc_ct_recv()
                                 if not result :
                                         break
 
@@ -151,14 +153,14 @@ class proto_ct_server(BaseRequestHandler):
                         print_exc()
                 finally:
                         pass
-                print('Thread %s : %s stoped' % (self.__class__.__name__, self.client_address))
+                logger.debug('Thread %s : %s stoped' % (self.__class__.__name__, self.client_address))
 
         def put(self, string):
                 size, proto, option = (12 + len(string), 0, 0)
                 buff = pack('iii',size, proto, option)
                 buff += string.encode()
                 self.buff_sender.send(buff)
-                print()
+                #printer.debug(string)
 
         def get(self):
                 head = self.request.recv(12)
@@ -173,7 +175,7 @@ class proto_ct_server(BaseRequestHandler):
                 result['proto'] = proto
                 result['option'] = option
                 result['data'] = data
-                print(data)
+                printer.debug(data.decode())
                 return result
 
         def parse(self, xml_string):
@@ -183,8 +185,10 @@ class proto_ct_server(BaseRequestHandler):
                         for child in root:
                                 key_val[child.tag] = child.text
                 except :
-                        print(xml_string)
+                        printer.error(xml_string)
                         print_exc()
+                printer.debug(key_val)
+                printer.debug('')
                 return key_val
 
 #--------------------------------------------------------------------------------------
@@ -209,7 +213,7 @@ class ct_handler(proto_ct_server):
                 return True
 
         def proc_ct_image_decode(self, key_val):
-                self.put(self.make_proto_ct_image_decode_req())
+                self.put(self.make_proto_ct_image_decode_req('1', 'CCCCCCC', 'xxxxxxxx'))
                 return True
 
         def proc_ct_image_warmup(self, key_val):
@@ -229,7 +233,7 @@ class ct_handler(proto_ct_server):
                 return True
 
         def proc_ct_pool_decode(self, key_val):
-                self.put(self.make_proto_ct_pool_decode_req())
+                self.put(self.make_proto_ct_pool_decode_req('1', 'CCCCCCC', 'xxxxxxxx'))
                 return True
 
         def proc_ct_price_shoot(self, key_val):
