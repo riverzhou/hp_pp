@@ -2,7 +2,6 @@
 
 from abc                        import ABCMeta, abstractmethod
 from struct                     import pack, unpack
-from socket                     import socket
 from traceback                  import print_exc
 from time                       import time, localtime, strftime
 from hashlib                    import md5
@@ -428,7 +427,9 @@ class proto_ssl_price(proto_ssl):
 class proto_bid_price():
         __metaclass__ = ABCMeta
 
-        def __init__(self, client, bid, bidid):
+        def __init__(self, user, client, bid, bidid):
+                self.user = user
+                self.bidno = user.bidno
                 self.client = client
                 self.bid = bid
                 self.bidid = bidid
@@ -437,7 +438,9 @@ class proto_bid_price():
 class proto_bid_image():
         __metaclass__ = ABCMeta
 
-        def __init__(self, client, bid, bidid):
+        def __init__(self, user, client, bid, bidid):
+                self.user = user
+                self.bidno = user.bidno
                 self.client = client
                 self.bid = bid
                 self.bidid = bidid
@@ -446,16 +449,18 @@ class proto_bid_image():
 class proto_client_bid():
         __metaclass__ = ABCMeta
 
-        def __init__(self, client, bidid):
-                global pp_price_list
+        def __init__(self, user, client, bidid):
+                self.user = user
+                self.bidno = user.bidno
                 self.client = client
                 self.bidid = bidid
-                self.price_dict = {}.fromkeys(pp_price_list)
 
 class proto_client_login():
         __metaclass__ = ABCMeta
 
-        def __init__(self, client):
+        def __init__(self, user, client):
+                self.user = user
+                self.bidno = user.bidno
                 self.client = client
                 self.proto_udp = proto_udp(client, self)
                 self.proto_ssl_login = proto_ssl_login(client, self)
@@ -464,6 +469,7 @@ class proto_pp_client():
         __metaclass__ = ABCMeta
 
         def __init__(self, user, machine, server_dict):
+                self.user = user
                 self.bidno = user.bidno
                 self.passwd = user.passwd
                 self.mcode = machine.mcode
@@ -472,117 +478,6 @@ class proto_pp_client():
                 self.version = '177'
                
 #================================= for test ===========================================
-
-pp_user_dict       = {}
-pp_machine_dict    = {}
-pp_client_dict     = {}
-
-class pp_user():
-        def __init__(self, bidno = '', passwd = ''):
-                self.bidno = bidno
-                self.passwd = passwd
-
-class pp_machine():
-        def __init__(self, mcode = '', loginimage_number = ''):
-                if mcode != '':
-                        self.mcode = mcode
-                else:
-                        self.mcode = self.create_mcode()
-
-                if loginimage_number != '':
-                        self.loginimage_number = loginimage_number
-                else:
-                        self.loginimage_number = self.create_number()
-
-        def create_mcode(self):
-                return ''.join([(string.ascii_letters+string.digits)[x] for x in random.sample(range(0,62),random.randint(10,20))])
-
-        def create_number(self):
-                return ''.join([(string.digits)[x] for x in random.sample(range(0,10),6)])
-
-#--------------------------------- for test -------------------------------------------
-
-class bid_price(proto_bid_price):
-        def __init__(self, client, bid, bidid):
-                proto_bid_price.__init__(self, client, bid, bidid)
-
-class bid_image(proto_bid_image):
-        def __init__(self, client, bid, bidid):
-                proto_bid_image.__init__(self, client, bid, bidid)
-                
-class client_bid(proto_client_bid):
-        def __init__(self, client, bidid):
-                proto_client_bid.__init__(self, client, bidid)
-                self.image = bid_image(client, self, bidid)
-                self.price = bid_price(client, self, bidid)
-
-                self.image_number = '111111'
-                self.price_amount = '555'
-                self.sid = 'CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC'
-
-class client_login(proto_client_login):
-        def __init__(self, client):
-                proto_client_login.__init__(self, client)
-
-                self.proto_ssl_login.pid = '111111111111111111'
-                self.proto_ssl_login.sid = 'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF'
-
-class pp_client(proto_pp_client):
-        def __init__(self, user, machine, server_dict):
-                proto_pp_client.__init__(self, user, machine, server_dict)
-                self.login = client_login(self)
-                self.bid = []
-                for i in range(3):
-                        self.bid.append(client_bid(self, i))
-
-                self.mcode = 'VVVVVVVVVVVVVVVVVVV'
-                self.loginimage_number = '333333'
-
-#--------------------------------- for test -------------------------------------------
-
-def pp_init_config():
-        global pp_bidno_dict
-        pp_user_dict['88888888']  = pp_user('88888888','4444')
-        pp_machine_dict['88888888'] = pp_machine()
-
-def pp_init_dns():
-        global pp_server_dict, pp_server_dict_2
-        for s in pp_server_dict :
-                pp_server_dict[s]  = {
-                                        'addr' : (gethostbyname(pp_server_dict[s][0]), pp_server_dict[s][1]),
-                                        'name' : pp_server_dict[s][0]}
-
-def pp_init_client():
-        global pp_client_dict, pp_user_dict
-        for bidno in pp_user_dict:
-                if not bidno in pp_client_dict:
-                        pp_client_dict[bidno] = pp_client(pp_user_dict[bidno], pp_machine_dict[bidno], pp_server_dict)
-
-def pp_print_req():
-        global pp_client_dict, pp_user_dict
-        for bidno in pp_user_dict:
-                pp_client_dict[bidno].login.proto_ssl_login.print_req()
-                pp_client_dict[bidno].bid[0].image.proto_ssl_image.print_req()
-                pp_client_dict[bidno].bid[0].price.proto_ssl_price.print_req()
-
-                pp_client_dict[bidno].login.proto_udp.print_format_req()
-                pp_client_dict[bidno].login.proto_udp.print_logoff_req()
-                pp_client_dict[bidno].login.proto_udp.print_client_req()
-
-                pp_client_dict[bidno].login.proto_udp.print_encode_format_req()
-                pp_client_dict[bidno].login.proto_udp.print_encode_logoff_req()
-                pp_client_dict[bidno].login.proto_udp.print_encode_client_req()
-
-def pp_print_ack():
-        global pp_client_dict, pp_user_dict
-        for bidno in pp_user_dict:
-                pp_client_dict[bidno].login.proto_ssl_login.print_ack(pp_read_file_to_buff('login.ack'))
-                pp_client_dict[bidno].bid[0].image.proto_ssl_image.print_ack(pp_read_file_to_buff('image.ack'))
-                pp_client_dict[bidno].bid[0].price.proto_ssl_price.print_ack(pp_read_file_to_buff('price.ack'))
-
-                pp_client_dict[bidno].login.proto_udp.do_print_ack(pp_read_file_to_buff('udp_format.ack').decode().strip())
-                pp_client_dict[bidno].login.proto_udp.do_print_info(pp_read_file_to_buff('udp_info.ack').decode('gb18030'))
-                print(pp_read_file_to_buff('udp_info.ack'))
 
 def pp_read_file_to_buff(name):
         buff = b''
@@ -594,11 +489,7 @@ def pp_read_file_to_buff(name):
         return buff
 
 def pp_main():
-        pp_init_config()
-        pp_init_dns()
-        pp_init_client()
-        #pp_print_req()
-        pp_print_ack()
+        pass
 
 if __name__ == "__main__":
         pp_main()
