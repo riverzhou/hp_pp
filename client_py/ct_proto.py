@@ -10,7 +10,6 @@ from hashlib                    import md5
 from time                       import sleep
 from socket                     import socket, gethostbyname, AF_INET, SOCK_STREAM, SOCK_DGRAM
 import random, string
-import logging
 
 from pp_thread                  import pp_subthread, buff_sender
 from pp_log                     import logger, ct_printer as printer
@@ -19,8 +18,6 @@ from xml.etree                  import ElementTree
 
 ThreadingTCPServer.allow_reuse_address = True
 Thread.daemon  = True
-
-printer.setLevel(logging.ERROR)
 
 #----------------------------
 
@@ -190,8 +187,6 @@ class proto_ct_server(BaseRequestHandler):
                 printer.debug(key_val)
                 printer.debug('')
                 return key_val
-
-#--------------------------------------------------------------------------------------
 
 #================================= for test ===========================================
 

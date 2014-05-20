@@ -10,7 +10,7 @@ from socket                     import gethostbyname
 from xml.etree                  import ElementTree
 import random, string
 
-from pp_log                     import logger, printer
+from pp_log                     import logger, pp_printer as printer
 
 #======================================================================================
 
@@ -52,8 +52,6 @@ class proto_udp():
                         if '：' in line:
                                 data = line.split('：',1)
                                 key_val[data[0].strip()] = data[1].strip()
-                printer.info(key_val)                                
-                printer.info('')
                 return key_val
 
         def parse_info(self, buff):
@@ -71,20 +69,16 @@ class proto_udp():
                                 key_val[child.tag] = child.text
                 except :
                         logger.error(string)
-                printer.info(key_val)
-                printer.info('')
                 return key_val
 
         def parse_ack(self, buff):
-                key_val = self.do_parse_ack(self.decode(buff).decode('gb18030'))
+                string = self.decode(buff).decode('gb18030')
+                key_val = self.do_parse_ack(string)
                 self.udp_ack.append(key_val)
+                printer.warning(string)
+                printer.warning(key_val)
+                printer.warning('')
                 return key_val
-
-        def print_ack(self, buff):
-                print()
-                print(self.decode(buff).decode('gb18030'))
-                print(self.do_parse_ack(self.decode(buff).decode('gb18030')))
-                print()
 
         def print_buff(self, buff):
                 print()
@@ -134,9 +128,9 @@ class proto_udp():
                         ) % (
                         self.client.bidno,
                         self.get_vcode(self.login.pid, self.client.bidno)
-                        )).encode()
-                printer.info(self.format_req)
-                return self.format_req                        
+                        ))
+                printer.warning(self.format_req)
+                return self.format_req.encode()
 
         def do_logoff_req(self):
                 self.logoff_req = ((
@@ -146,9 +140,9 @@ class proto_udp():
                         ) % (
                         self.client.bidno,
                         self.get_vcode(self.login.pid, self.client.bidno)
-                        )).encode()
-                printer.info(self.logoff_req)
-                return self.logoff_req
+                        ))
+                printer.warning(self.logoff_req)
+                return self.logoff_req.encode()
 
         def do_client_req(self):
                 self.client_req = ((
@@ -158,9 +152,9 @@ class proto_udp():
                         ) % (
                         self.client.bidno,
                         self.get_vcode(self.login.pid, self.client.bidno)
-                        )).encode()
-                printer.info(self.client_req)
-                return self.client_req
+                        ))
+                printer.warning(self.client_req)
+                return self.client_req.encode()
 
         def make_format_req(self):
                 return self.encode(self.do_format_req())
@@ -179,17 +173,10 @@ class proto_ssl():
         @abstractmethod
         def make_req(self):pass
 
-        def parse_ack(self, buff):
-                html_string, xml_string = self.split_html_xml_from_buff(buff)
+        def parse_ack(self, string):
+                html_string, xml_string = self.split_html_xml_from_string(string)
                 self.ack = (self.get_dict_from_xml(xml_string), self.get_sid_from_html(html_string))
                 return self.ack
-
-        def print_ack(self, buff):
-                print()
-                html_string, xml_string = self.split_html_xml_from_buff(buff)
-                print(xml_string.strip())
-                print(self.get_dict_from_xml(xml_string), self.get_sid_from_html(html_string))
-                print()
 
         def get_sid_from_html(self, html_string):
                 p1 = html_string.find('JSESSIONID')
@@ -207,8 +194,7 @@ class proto_ssl():
                         key_val[child.tag] = child.text
                 return key_val
 
-        def split_html_xml_from_buff(self, buff):
-                string = buff.decode()
+        def split_html_xml_from_string(self, string):
                 p = string.find('<XML>')
                 return (string[0:p], string[p:])
 
@@ -287,16 +273,20 @@ class proto_ssl_login(proto_ssl):
                         self.client.version, 
                         self.client.loginimage_number,
                         self.client.server_dict['login']['name']
-                        )).encode()
+                        ))
                 printer.info(self.req)
-                return self.req
+                return self.req.encode()
 
         def parse_ack(self, buff):
-                proto_ssl.parse_ack(self, buff)
+                string = buff.decode()
+                proto_ssl.parse_ack(self, string)
                 key_val = {}
                 key_val['name'] = self.ack[0]['CLIENTNAME']
                 key_val['pid'] = self.ack[0]['PID']
                 key_val['sid'] = self.ack[1]
+                printer.info(string)
+                printer.info(key_val)
+                printer.info('')
                 return key_val
 
 class proto_ssl_image(proto_ssl):
@@ -328,15 +318,17 @@ class proto_ssl_image(proto_ssl):
                         self.get_image_checkcode(self.bid.price_amount),
                         self.client.server_dict['toubiao']['name'],
                         sid
-                        )).encode()
+                        ))
                 printer.info(self.req)
-                return self.req                        
+                return self.req.encode()
 
         def parse_ack(self, buff):
-                proto_ssl.parse_ack(self, buff)
+                string = buff.decode()
+                proto_ssl.parse_ack(self, string)
                 key_val = {}
                 key_val['image'] = self.ack[0]['IMAGE_CONTENT']
                 key_val['sid'] = self.ack[1]
+                printer.info(string)
                 printer.info(key_val)
                 printer.info('')
                 return key_val
@@ -374,15 +366,19 @@ class proto_ssl_price(proto_ssl):
                         image_number,
                         self.client.server_dict['toubiao']['name'],
                         sid
-                        )).encode()
+                        ))
                 printer.info(self.req)
-                return self.req
+                return self.req.encode()
 
         def parse_ack(self, buff):
-                proto_ssl.parse_ack(self, buff)
+                string = buff.decode()
+                proto_ssl.parse_ack(self, string)
                 key_val = {}
                 key_val['time'] = self.ack[0]['BIDTIME']
                 key_val['count'] = self.ack[0]['BIDCOUNT']
+                key_val['price'] = self.ack[0]['BIDAMOUNT']
+                key_val['sid'] = self.ack[1]
+                printer.info(string)
                 printer.info(key_val)
                 printer.info('')
                 return key_val
