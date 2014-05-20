@@ -98,7 +98,7 @@ class bid_image(pp_subthread, proto_bid_image):
                 self.sem_warmup = bid.sem_image_warmup
                 self.sem_shoot  = bid.sem_image_shoot
 
-                self.ssl_sock = ssl.SSLContext(ssl.PROTOCOL_SSLv23).wrap_socket(socket(AF_INET, SOCK_STREAM))
+                #self.ssl_sock = ssl.SSLContext(ssl.PROTOCOL_SSLv23).wrap_socket(socket(AF_INET, SOCK_STREAM))
                 self.ssl_server_addr = self.client.server_dict["toubiao"]['addr']
 
         def stop(self):
@@ -130,6 +130,7 @@ class bid_image(pp_subthread, proto_bid_image):
                 logger.debug('client %s : bid thread %d : %s thread stoped' % (self.client.bidno, self.bidid, self.__class__.__name__))
 
         def do_warmup(self):
+                self.ssl_sock = ssl.SSLContext(ssl.PROTOCOL_SSLv23).wrap_socket(socket(AF_INET, SOCK_STREAM))
                 self.ssl_sock.connect(self.ssl_server_addr)
 
         def do_cooldown(self):
@@ -151,7 +152,7 @@ class bid_image(pp_subthread, proto_bid_image):
                 return True
 
         def send_decode_req(self, price, sid, image):
-                if True :
+                if self.bid.flag_pool_mode != True :
                         self.bid.lock_dict.acquire()
                         self.bid.price_amount = price
                         self.bid.price_sid_dict[price] = sid
@@ -176,6 +177,8 @@ class client_bid(pp_subthread, proto_client_bid):
                 #self.event_image_shoot  = Event()
                 self.sem_image_warmup    = Semaphore(value=0)
                 self.sem_image_shoot     = Semaphore(value=0)
+
+                self.flag_pool_mode      = False
 
                 self.lock_dict = Lock()
                 self.price_sid_dict = {}
@@ -422,6 +425,7 @@ class ct_handler(proto_ct_server):
         def proc_ct_image_pool(self, key_val):
                 bidid = int(key_val['BIDID'])
                 price = key_val['PRICE']
+                self.client.bid[bidid].flag_pool_mode = True
                 self.client.bid[bidid].image_amount = price
                 #self.client.bid[bidid].event_image_warmup.set()
                 #self.client.bid[bidid].event_image_shoot.set()

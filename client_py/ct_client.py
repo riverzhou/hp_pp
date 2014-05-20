@@ -88,7 +88,7 @@ class ct_client():
                 return '<XML><TYPE>PRICE_SHOOT</TYPE><BIDID>1</BIDID><PRICE>74000</PRICE></XML>'
 
         def proto_ct_image_pool_req(self):
-                return '<XML><TYPE>IMAGE_POOL</TYPE><BIDID>1</BIDID><PRICE>70000</PRICE></XML>'
+                return '<XML><TYPE>IMAGE_POOL</TYPE><BIDID>1</BIDID><PRICE>74000</PRICE></XML>'
 
         def proto_ct_pool_decode_ack(self):
                 return '<XML><TYPE>POOL_DECODE</TYPE><BIDID>1</BIDID><SESSIONID>8899CF08D15BE46A7872A443D865A5D5</SESSIONID><IMAGE_NUMBER>666666</IMAGE_NUMBER></XML>'
@@ -172,33 +172,7 @@ if __name__ == "__main__":
         sleep(1)
 
         #<<模式1>>
-        ct.send_ct_image_warmup_req()
-        ct.parse(ct.recv()['data'])
-        print()
-        sleep(1)
-
-        ct.send_ct_price_warmup_req()
-        ct.parse(ct.recv()['data'])
-        print()
-        sleep(1)
-
-        ct.send_ct_image_shoot_req()
-        ct.parse(ct.recv()['data'])
-        print()
-        sleep(5)
-
-        ct.send_ct_image_decode_ack()
-        ct.parse(ct.recv()['data'])
-        print()
-        sleep(1)
-
-        ##<<模式2>>
-        #ct.send_ct_image_pool_req()
-        #ct.parse(ct.recv()['data'])
-        #print()
-        #sleep(1)
-
-        #ct.send_ct_pool_decode_ack()
+        #ct.send_ct_image_warmup_req()
         #ct.parse(ct.recv()['data'])
         #print()
         #sleep(1)
@@ -208,10 +182,46 @@ if __name__ == "__main__":
         #print()
         #sleep(1)
 
-        #ct.send_ct_price_shoot_req()
+        #ct.send_ct_image_shoot_req()
+        #ct.parse(ct.recv()['data'])
+        #print()
+        #sleep(5)
+
+        #ct.send_ct_image_decode_ack()
         #ct.parse(ct.recv()['data'])
         #print()
         #sleep(1)
+
+        #<<模式2>>
+        ct.send_ct_image_pool_req()
+        ct.parse(ct.recv()['data'])
+        print()
+        sleep(5)
+
+        ct.send_ct_pool_decode_ack()
+        ct.parse(ct.recv()['data'])
+        print()
+        sleep(1)
+
+        ct.send_ct_image_pool_req()
+        ct.parse(ct.recv()['data'])
+        print()
+        sleep(5)
+
+        ct.send_ct_pool_decode_ack()
+        ct.parse(ct.recv()['data'])
+        print()
+        sleep(1)
+
+        ct.send_ct_price_warmup_req()
+        ct.parse(ct.recv()['data'])
+        print()
+        sleep(1)
+
+        ct.send_ct_price_shoot_req()
+        ct.parse(ct.recv()['data'])
+        print()
+        sleep(1)
 
         #<<刷价格>>
         ct.send_ct_price_flush_ack()
