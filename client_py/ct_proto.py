@@ -125,6 +125,7 @@ class proto_ct_server(BaseRequestHandler):
                 return True
 
         def handle(self):
+                print('Thread %s : %s started' % (self.__class__.__name__, self.client_address))
                 self.func_dict = {
                         'CT_LOGIN':     self.proc_ct_login,
                         'IMAGE_WARMUP': self.proc_ct_image_warmup,
@@ -150,6 +151,7 @@ class proto_ct_server(BaseRequestHandler):
                         print_exc()
                 finally:
                         pass
+                print('Thread %s : %s stoped' % (self.__class__.__name__, self.client_address))
 
         def put(self, string):
                 size, proto, option = (12 + len(string), 0, 0)
