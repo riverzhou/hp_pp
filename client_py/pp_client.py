@@ -36,8 +36,8 @@ class bid_price(pp_subthread, proto_bid_price):
         def __init__(self, user, client, bid, bidid):
                 pp_subthread.__init__(self)
                 proto_bid_price.__init__(self, user, client, bid, bidid)
-                self.event_warmup = user.event_price_warmup[bidid]
-                self.event_shoot = user.event_price_shoot[bidid]
+                self.event_warmup = client.event_price_warmup[bidid]
+                self.event_shoot = client.event_price_shoot[bidid]
                 self.ssl_sock = ssl.SSLContext(ssl.PROTOCOL_SSLv23).wrap_socket(socket(AF_INET, SOCK_STREAM))
                 self.ssl_server_addr = self.client.server_dict["toubiao"]['addr']
 
@@ -68,7 +68,7 @@ class bid_price(pp_subthread, proto_bid_price):
                 self.ssl_sock.connect(self.ssl_server_addr)
 
         def do_shoot(self):
-                self.ssl_sock.send(self.proto_ssl_price.make_req(self.bid.price_amount, self.bid.sid))   # XXX XXX XXX
+                self.ssl_sock.send(self.proto_ssl_price.make_req(self.bid.price_amount, self.bid.image_number, self.bid.sid))
                 recv_ssl = self.ssl_sock.recv(self.proto_ssl_price.ack_len)
                 if not recv_ssl:
                         return False
@@ -79,8 +79,8 @@ class bid_image(pp_subthread, proto_bid_image):
         def __init__(self, user, client, bid, bidid):
                 pp_subthread.__init__(self)
                 proto_bid_image.__init__(self, user, client, bid, bidid)
-                self.event_warmup = user.event_image_warmup[bidid]
-                self.event_shoot = user.event_image_shoot[bidid]
+                self.event_warmup = client.event_image_warmup[bidid]
+                self.event_shoot = client.event_image_shoot[bidid]
                 self.ssl_sock = ssl.SSLContext(ssl.PROTOCOL_SSLv23).wrap_socket(socket(AF_INET, SOCK_STREAM))
                 self.ssl_server_addr = self.client.server_dict["toubiao"]['addr']
 
@@ -111,7 +111,7 @@ class bid_image(pp_subthread, proto_bid_image):
                 self.ssl_sock.connect(self.ssl_server_addr)
 
         def do_shoot(self):
-                self.ssl_sock.send(self.proto_ssl_image.make_req(self.bid.price_amount, self.client.login.sid))   # XXX XXX XXX
+                self.ssl_sock.send(self.proto_ssl_image.make_req(self.bid.price_amount, self.client.login.sid))
                 recv_ssl = self.ssl_sock.recv(self.proto_ssl_image.ack_len)
                 if not recv_ssl:
                         return False
@@ -156,7 +156,7 @@ class client_login(pp_subthread, proto_client_login):
         def __init__(self, user, client):
                 pp_subthread.__init__(self)
                 proto_client_login.__init__(self, user, client)
-                self.event_shoot = user.event_login_shoot
+                self.event_shoot = client.event_login_shoot
                 self.event_login_ok = Event()
                 self.ssl_sock = ssl.SSLContext(ssl.PROTOCOL_SSLv23).wrap_socket(socket(AF_INET, SOCK_STREAM))
                 self.ssl_server_addr = self.client.server_dict["login"]['addr']
@@ -195,7 +195,6 @@ class client_login(pp_subthread, proto_client_login):
                 self.sid = key_val['sid']
                 self.pid = key_val['pid']
                 self.name = key_val['name']
-                #print(key_val)
                 self.event_login_ok.set()
                 # 
                 self.do_format_udp()
@@ -248,6 +247,14 @@ class pp_client(pp_subthread, proto_pp_client):
         def __init__(self, user, machine, server_dict):
                 pp_subthread.__init__(self)
                 proto_pp_client.__init__(self, user, machine, server_dict)
+
+                self.event_price_warmup      = ( Event(), Event(), Event() )
+                self.event_price_shoot       = ( Event(), Event(), Event() )
+                self.event_image_warmup      = ( Event(), Event(), Event() )
+                self.event_image_shoot       = ( Event(), Event(), Event() )
+                self.event_login_shoot       = Event()
+                self.event_login_shoot.set()
+
                 self.login = client_login(user, self)
                 self.bid = []
                 for i in range(3):
@@ -296,19 +303,13 @@ class pp_user():
         def __init__(self, bidno, passwd, handler, machine):
                 self.bidno = bidno
                 self.passwd = passwd
+
                 self.handler = handler
+
                 if machine != None :
                         self.machine = machine
                 else :
                         self.machine = pp_machine()
-
-                self.event_price_warmup      = ( Event(), Event(), Event() )
-                self.event_price_shoot       = ( Event(), Event(), Event() )
-                self.event_image_warmup      = ( Event(), Event(), Event() )
-                self.event_image_shoot       = ( Event(), Event(), Event() )
-
-                self.event_login_shoot       = Event()
-                self.event_login_shoot.set()
 
                 self.client = pp_client(self, self.machine, pp_server_dict)
 
@@ -351,54 +352,57 @@ class ct_handler(proto_ct_server):
 #----------------------------------------------------------------
 
         def proc_ct_image_decode(self, key_val):        # 把结果存入到 self.user.client.bid[bidid] 里，并发送事件
-                #print(key_val)
+                bidid = int(key_val['BIDID'])
+                sid = key_val['SESSIONID']
+                number = key_val['IMAGE_NUMBER']
+                self.client.bid[bidid].sid = sid
+                self.client.bid[bidid].image_number = number
+                self.client.event_price_shoot[bidid].set()
                 return True
 
         def proc_ct_pool_decode(self, key_val):         # 把结果存入到 self.user.client 和 self.user.client.bid[bidid] 里，并发送事件
-                #print(key_val)
                 return True
 
         def proc_ct_image_pool(self, key_val):
-                bidid = key_val['BIDID']
+                bidid = int(key_val['BIDID'])
                 price = key_val['PRICE']
-                self.user.client.bid[int(bidid)].price_amount = price   # XXX
-                self.user.event_image_warmup[int(bidid)].set()
-                self.user.event_image_shoot[int(bidid)].set()
+                self.client.bid[bidid].price_amount = price
+                self.client.event_image_warmup[bidid].set()
+                self.client.event_image_shoot[bidid].set()
                 self.put(self.make_proto_ct_image_pool_ack(bidid))
                 return True
 
         def proc_ct_price_shoot(self, key_val):
-                bidid = key_val['BIDID']
+                bidid = int(key_val['BIDID'])
                 price = key_val['PRICE']
-                self.user.client.bid[int(bidid)].price_amount = price   # XXX
-                self.user.event_price_shoot[int(bidid)].set()
+                self.client.bid[bidid].price_amount = price
+                self.client.event_price_shoot[bidid].set()
                 self.put(self.make_proto_ct_price_shoot_ack(bidid))
                 return True
 
         def proc_ct_image_shoot(self, key_val):
-                bidid = key_val['BIDID']
+                bidid = int(key_val['BIDID'])
                 price = key_val['PRICE']
-                self.user.client.bid[int(bidid)].price_amount = price
-                self.user.event_image_shoot[int(bidid)].set()
+                self.client.bid[bidid].price_amount = price
+                self.client.event_image_shoot[bidid].set()
                 self.put(self.make_proto_ct_image_shoot_ack(bidid))
                 return True
 
         def proc_ct_image_warmup(self, key_val):
-                bidid = key_val['BIDID']
-                self.user.event_image_warmup[int(bidid)].set()
+                bidid = int(key_val['BIDID'])
+                self.client.event_image_warmup[bidid].set()
                 self.put(self.make_proto_ct_image_warmup_ack(bidid))
                 return True
 
         def proc_ct_price_warmup(self, key_val):
-                bidid = key_val['BIDID']
-                self.user.event_price_warmup[int(bidid)].set()
+                bidid = int(key_val['BIDID'])
+                self.client.event_price_warmup[bidid].set()
                 self.put(self.make_proto_ct_price_warmup_ack(bidid))
                 return True
 
         def proc_ct_login(self, key_val):
-                #self.bidno = key_val['BIDNO']
-                #self.passwd = key_val['PASSWD']
                 self.user = pp_user.add_user(key_val['BIDNO'], key_val['PASSWD'], self)
+                self.client = self.user.client
                 self.login_ok = True
                 self.put(self.make_proto_ct_login_ack())
                 return True
@@ -414,7 +418,7 @@ class ct_handler(proto_ct_server):
 #----------------------------------------------------------------
 
         def proc_ct_price_flush(self, key_val):
-                price = '74000'
+                price = 74000
                 self.put(self.make_proto_ct_price_flush_req(price))
                 return True
 

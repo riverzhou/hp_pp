@@ -348,7 +348,7 @@ class proto_ssl_price(proto_ssl):
                 self.bidid = bidid
                 self.ack_len = 4096
 
-        def make_req(self, price_amount, sid):
+        def make_req(self, price_amount, image_number, sid):
                 self.req = ((
                         'GET /car/gui/bid.aspx'+
                         '?BIDNUMBER=%s'+                                                # 8
@@ -371,7 +371,7 @@ class proto_ssl_price(proto_ssl):
                         self.client.mcode,
                         self.get_price_checkcode(self.bid.price_amount, self.bid.image_number),
                         self.client.version,
-                        self.bid.image_number,
+                        image_number,
                         self.client.server_dict['toubiao']['name'],
                         sid
                         )).encode()
