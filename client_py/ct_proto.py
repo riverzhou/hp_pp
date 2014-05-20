@@ -46,28 +46,28 @@ class proto_ct_server(BaseRequestHandler):
         def make_proto_ct_image_decode_req(self):
                 return '<XML><TYPE>IMAGE_DECODE</TYPE><BIDID>1</BIDID><SESSIONID>CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC</SESSIONID><IMAGE>base64_XXXXXXXX</IMAGE></XML>'
 
-        def make_proto_ct_image_warmup_ack(self):
-                return '<XML><TYPE>IMAGE_WARMUP</TYPE><BIDID>1</BIDID><INFO>OK</INFO></XML>'
+        def make_proto_ct_image_warmup_ack(self, bidid):
+                return ('<XML><TYPE>IMAGE_WARMUP</TYPE><BIDID>%s</BIDID><INFO>OK</INFO></XML>' % bidid)
 
-        def make_proto_ct_price_warmup_ack(self):
-                return '<XML><TYPE>PRICE_WARMUP</TYPE><BIDID>1</BIDID><INFO>OK</INFO></XML>'
+        def make_proto_ct_price_warmup_ack(self, bidid):
+                return ('<XML><TYPE>PRICE_WARMUP</TYPE><BIDID>%s</BIDID><INFO>OK</INFO></XML>' % bidid)
 
-        def make_proto_ct_image_shoot_ack(self):
-                return '<XML><TYPE>IMAGE_SHOOT</TYPE><BIDID>1</BIDID><INFO>OK</INFO></XML>'
+        def make_proto_ct_image_shoot_ack(self, bidid):
+                return ('<XML><TYPE>IMAGE_SHOOT</TYPE><BIDID>%s</BIDID><INFO>OK</INFO></XML>' % bidid)
 
         #<<模式2>>
-        def make_proto_ct_image_pool_ack(self):
-                return '<XML><TYPE>IMAGE_POOL</TYPE><BIDID>1</BIDID><INFO>OK</INFO></XML>'
+        def make_proto_ct_image_pool_ack(self, bidid):
+                return ('<XML><TYPE>IMAGE_POOL</TYPE><BIDID>%s</BIDID><INFO>OK</INFO></XML>' % bidid)
 
         def make_proto_ct_pool_decode_req(self):
                 return '<XML><TYPE>POOL_DECODE</TYPE><BIDID>1</BIDID><SESSIONID>CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC</SESSIONID><IMAGE>base64_XXXXXXXX</IMAGE></XML>'
 
-        def make_proto_ct_price_shoot_ack(self):
-                return '<XML><TYPE>PRICE_SHOOT</TYPE><BIDID>1</BIDID><INFO>OK</INFO></XML>'
+        def make_proto_ct_price_shoot_ack(self, bidid):
+                return ('<XML><TYPE>PRICE_SHOOT</TYPE><BIDID>%s</BIDID><INFO>OK</INFO></XML>' % bidid)
 
         #<<刷价格>>
-        def make_proto_ct_price_flush_req(self):
-                return '<XML><TYPE>PRICE_FLUSH</TYPE><PRICE>74000</PRICE></XML>'
+        def make_proto_ct_price_flush_req(self, price):
+                return ('<XML><TYPE>PRICE_FLUSH</TYPE><PRICE>%s</PRICE></XML>' % price)
 
         #------------------------------------------------------------------------
 
@@ -213,19 +213,19 @@ class ct_handler(proto_ct_server):
                 return True
 
         def proc_ct_image_warmup(self, key_val):
-                self.put(self.make_proto_ct_image_warmup_ack())
+                self.put(self.make_proto_ct_image_warmup_ack('1'))
                 return True
 
         def proc_ct_price_warmup(self, key_val):
-                self.put(self.make_proto_ct_price_warmup_ack())
+                self.put(self.make_proto_ct_price_warmup_ack('1'))
                 return True
 
         def proc_ct_image_shoot(self, key_val):
-                self.put(self.make_proto_ct_image_shoot_ack())
+                self.put(self.make_proto_ct_image_shoot_ack('1'))
                 return True
 
         def proc_ct_image_pool(self, key_val):
-                self.put(self.make_proto_ct_image_pool_ack())
+                self.put(self.make_proto_ct_image_pool_ack('1'))
                 return True
 
         def proc_ct_pool_decode(self, key_val):
@@ -233,11 +233,11 @@ class ct_handler(proto_ct_server):
                 return True
 
         def proc_ct_price_shoot(self, key_val):
-                self.put(self.make_proto_ct_price_shoot_ack())
+                self.put(self.make_proto_ct_price_shoot_ack('1'))
                 return True
 
         def proc_ct_price_flush(self, key_val):
-                self.put(self.make_proto_ct_price_flush_req())
+                self.put(self.make_proto_ct_price_flush_req('7000'))
                 return True
 
 if __name__ == "__main__":
