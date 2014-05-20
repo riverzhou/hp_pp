@@ -27,7 +27,7 @@ class pp_subthread(Thread):
                 self.event_stop.set()
 
         def wait_for_stop(self):
-                self.event_stop_wait()
+                self.event_stop.wait()
 
 
 #--------------------------------------------------------------------------------------------

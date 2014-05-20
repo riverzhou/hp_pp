@@ -71,55 +71,39 @@ class proto_ct_server(BaseRequestHandler):
 
         #------------------------------------------------------------------------
 
-        def proc_ct_unknow(self, key_val):
-                self.put(self.make_proto_ct_unknow_ack())
-                return True
+        #<<继承后重写>>
+        @abstractmethod
+        def proc_ct_unknow(self, key_val): pass
 
-        def proc_ct_nologin(self, key_val):
-                self.put(self.make_proto_ct_nologin_ack())
-                return True
+        @abstractmethod
+        def proc_ct_nologin(self, key_val): pass
 
-        def proc_ct_login(self, key_val):
-                self.bidno = key_val['BIDNO']
-                self.passwd = key_val['PASSWD']
+        @abstractmethod
+        def proc_ct_login(self, key_val): pass
 
-                #pp_user.add_user(self.bidno, self.passwd, self)
+        @abstractmethod
+        def proc_ct_image_decode(self, key_val): pass
 
-                self.login_ok = True
-                self.put(self.make_proto_ct_login_ack())
-                return True
+        @abstractmethod
+        def proc_ct_image_warmup(self, key_val): pass
 
-        def proc_ct_image_decode(self, key_val):
-                self.put(self.make_proto_ct_image_decode_req())
-                return True
+        @abstractmethod
+        def proc_ct_price_warmup(self, key_val): pass
 
-        def proc_ct_image_warmup(self, key_val):
-                self.put(self.make_proto_ct_image_warmup_ack())
-                return True
+        @abstractmethod
+        def proc_ct_image_shoot(self, key_val): pass
 
-        def proc_ct_price_warmup(self, key_val):
-                self.put(self.make_proto_ct_price_warmup_ack())
-                return True
+        @abstractmethod
+        def proc_ct_image_pool(self, key_val): pass
 
-        def proc_ct_image_shoot(self, key_val):
-                self.put(self.make_proto_ct_image_shoot_ack())
-                return True
+        @abstractmethod
+        def proc_ct_pool_decode(self, key_val): pass
 
-        def proc_ct_image_pool(self, key_val):
-                self.put(self.make_proto_ct_image_pool_ack())
-                return True
+        @abstractmethod
+        def proc_ct_price_shoot(self, key_val): pass
 
-        def proc_ct_pool_decode(self, key_val):
-                self.put(self.make_proto_ct_pool_decode_req())
-                return True
-
-        def proc_ct_price_shoot(self, key_val):
-                self.put(self.make_proto_ct_price_shoot_ack())
-                return True
-
-        def proc_ct_price_flush(self, key_val):
-                self.put(self.make_proto_ct_price_flush_req())
-                return True
+        @abstractmethod
+        def proc_ct_price_flush(self, key_val): pass
 
         #------------------------------------------------------------------------
 
@@ -206,7 +190,53 @@ class proto_ct_server(BaseRequestHandler):
 #================================= for test ===========================================
 
 class ct_handler(proto_ct_server):
-        pass
+        def proc_ct_unknow(self, key_val):
+                self.put(self.make_proto_ct_unknow_ack())
+                return True
+
+        def proc_ct_nologin(self, key_val):
+                self.put(self.make_proto_ct_nologin_ack())
+                return True
+
+        def proc_ct_login(self, key_val):
+                self.bidno = key_val['BIDNO']
+                self.passwd = key_val['PASSWD']
+
+                self.login_ok = True
+                self.put(self.make_proto_ct_login_ack())
+                return True
+
+        def proc_ct_image_decode(self, key_val):
+                self.put(self.make_proto_ct_image_decode_req())
+                return True
+
+        def proc_ct_image_warmup(self, key_val):
+                self.put(self.make_proto_ct_image_warmup_ack())
+                return True
+
+        def proc_ct_price_warmup(self, key_val):
+                self.put(self.make_proto_ct_price_warmup_ack())
+                return True
+
+        def proc_ct_image_shoot(self, key_val):
+                self.put(self.make_proto_ct_image_shoot_ack())
+                return True
+
+        def proc_ct_image_pool(self, key_val):
+                self.put(self.make_proto_ct_image_pool_ack())
+                return True
+
+        def proc_ct_pool_decode(self, key_val):
+                self.put(self.make_proto_ct_pool_decode_req())
+                return True
+
+        def proc_ct_price_shoot(self, key_val):
+                self.put(self.make_proto_ct_price_shoot_ack())
+                return True
+
+        def proc_ct_price_flush(self, key_val):
+                self.put(self.make_proto_ct_price_flush_req())
+                return True
 
 if __name__ == "__main__":
         server = ThreadingTCPServer(CT_SERVER, ct_handler)
