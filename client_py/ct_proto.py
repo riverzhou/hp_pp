@@ -67,7 +67,7 @@ class proto_ct_server(BaseRequestHandler):
 
         #<<刷价格>>
         def make_proto_ct_price_flush_req(self, price):
-                return ('<XML><TYPE>PRICE_FLUSH</TYPE><PRICE>%d</PRICE></XML>' % price)
+                return ('<XML><TYPE>PRICE_FLUSH</TYPE><PRICE>%s</PRICE></XML>' % price)
 
         #------------------------------------------------------------------------
 
@@ -236,7 +236,7 @@ class ct_handler(proto_ct_server):
                 return True
 
         def proc_ct_price_flush(self, key_val):
-                self.put(self.make_proto_ct_price_flush_req(7000))
+                self.put(self.make_proto_ct_price_flush_req('7000'))
                 return True
 
 if __name__ == "__main__":

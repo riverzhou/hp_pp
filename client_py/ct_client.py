@@ -29,13 +29,13 @@ proto_ct_login_req              = '<XML><TYPE>CT_LOGIN</TYPE><BIDNO>88888888</BI
 proto_ct_image_warmup_req       = '<XML><TYPE>IMAGE_WARMUP</TYPE><BIDID>1</BIDID></XML>'
 proto_ct_price_warmup_req       = '<XML><TYPE>PRICE_WARMUP</TYPE><BIDID>1</BIDID></XML>'
 proto_ct_image_shoot_req        = '<XML><TYPE>IMAGE_SHOOT</TYPE><BIDID>1</BIDID><PRICE>74000</PRICE></XML>'
-proto_ct_image_decode_ack       = '<XML><TYPE>IMAGE_DECODE</TYPE><BIDID>1</BIDID><SESSIONID>CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC</SESSIONID><IMAGE_NUMBER>666666</IMAGE_NUMBER></XML>'
+proto_ct_image_decode_ack       = '<XML><TYPE>IMAGE_DECODE</TYPE><BIDID>1</BIDID><SESSIONID>8899CF08D15BE46A7872A443D865A5D5</SESSIONID><IMAGE_NUMBER>666666</IMAGE_NUMBER></XML>'
 
 #<<模式2协议>>
 #proto_ct_price_warmup_req      复用模式1的协议
 proto_ct_price_shoot_req        = '<XML><TYPE>PRICE_SHOOT</TYPE><BIDID>1</BIDID><PRICE>74000</PRICE></XML>'
 proto_ct_image_pool_req         = '<XML><TYPE>IMAGE_POOL</TYPE><BIDID>1</BIDID><PRICE>70000</PRICE></XML>'
-proto_ct_pool_decode_ack        = '<XML><TYPE>POOL_DECODE</TYPE><BIDID>1</BIDID><SESSIONID>CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC</SESSIONID><IMAGE_NUMBER>666666</IMAGE_NUMBER></XML>'
+proto_ct_pool_decode_ack        = '<XML><TYPE>POOL_DECODE</TYPE><BIDID>1</BIDID><SESSIONID>8899CF08D15BE46A7872A443D865A5D5</SESSIONID><IMAGE_NUMBER>666666</IMAGE_NUMBER></XML>'
 
 #<<独立线程>>
 proto_ct_price_flush_ack        = '<XML><TYPE>PRICE_FLUSH</TYPE><INFO>OK</INFO></XML>'
@@ -45,7 +45,7 @@ proto_ct_price_flush_ack        = '<XML><TYPE>PRICE_FLUSH</TYPE><INFO>OK</INFO><
 proto_ct_login_ack              = '<XML><TYPE>CT_LOGIN</TYPE><INFO>OK</INFO></XML>'
 
 #<<模式1协议>>
-proto_ct_image_decode_req       = '<XML><TYPE>IMAGE_DECODE</TYPE><BIDID>1</BIDID><SESSIONID>CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC</SESSIONID><IMAGE>base64_XXXXXXXX</IMAGE></XML>'
+proto_ct_image_decode_req       = '<XML><TYPE>IMAGE_DECODE</TYPE><BIDID>1</BIDID><SESSIONID>8899CF08D15BE46A7872A443D865A5D5</SESSIONID><IMAGE>base64_XXXXXXXX</IMAGE></XML>'
 proto_ct_image_warmup_ack       = '<XML><TYPE>IMAGE_WARMUP</TYPE><BIDID>1</BIDID><INFO>OK</INFO></XML>'
 proto_ct_price_warmup_ack       = '<XML><TYPE>PRICE_WARMUP</TYPE><BIDID>1</BIDID><INFO>OK</INFO></XML>'
 proto_ct_image_shoot_ack        = '<XML><TYPE>IMAGE_SHOOT</TYPE><BIDID>1</BIDID><INFO>OK</INFO></XML>'
@@ -53,7 +53,7 @@ proto_ct_image_shoot_ack        = '<XML><TYPE>IMAGE_SHOOT</TYPE><BIDID>1</BIDID>
 #<<模式2协议>>
 #proto_ct_price_warmup_ack      复用模式1的协议
 proto_ct_image_pool_ack         = '<XML><TYPE>IMAGE_POOL</TYPE><BIDID>1</BIDID><INFO>OK</INFO></XML>'
-proto_ct_pool_decode_req        = '<XML><TYPE>POOL_DECODE</TYPE><BIDID>1</BIDID><SESSIONID>CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC</SESSIONID><IMAGE>base64_XXXXXXXX</IMAGE></XML>'
+proto_ct_pool_decode_req        = '<XML><TYPE>POOL_DECODE</TYPE><BIDID>1</BIDID><SESSIONID>8899CF08D15BE46A7872A443D865A5D5</SESSIONID><IMAGE>base64_XXXXXXXX</IMAGE></XML>'
 proto_ct_price_shoot_ack        = '<XML><TYPE>PRICE_SHOOT</TYPE><BIDID>1</BIDID><INFO>OK</INFO></XML>'
 
 #<<独立线程>>
@@ -82,7 +82,7 @@ class ct_client():
                 return '<XML><TYPE>IMAGE_SHOOT</TYPE><BIDID>1</BIDID><PRICE>74000</PRICE></XML>'
 
         def proto_ct_image_decode_ack(self):
-                return '<XML><TYPE>IMAGE_DECODE</TYPE><BIDID>1</BIDID><SESSIONID>CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC</SESSIONID><IMAGE_NUMBER>666666</IMAGE_NUMBER></XML>'
+                return '<XML><TYPE>IMAGE_DECODE</TYPE><BIDID>1</BIDID><SESSIONID>8899CF08D15BE46A7872A443D865A5D5</SESSIONID><IMAGE_NUMBER>666666</IMAGE_NUMBER></XML>'
 
         def proto_ct_price_shoot_req(self):
                 return '<XML><TYPE>PRICE_SHOOT</TYPE><BIDID>1</BIDID><PRICE>74000</PRICE></XML>'
@@ -91,7 +91,7 @@ class ct_client():
                 return '<XML><TYPE>IMAGE_POOL</TYPE><BIDID>1</BIDID><PRICE>70000</PRICE></XML>'
 
         def proto_ct_pool_decode_ack(self):
-                return '<XML><TYPE>POOL_DECODE</TYPE><BIDID>1</BIDID><SESSIONID>CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC</SESSIONID><IMAGE_NUMBER>666666</IMAGE_NUMBER></XML>'
+                return '<XML><TYPE>POOL_DECODE</TYPE><BIDID>1</BIDID><SESSIONID>8899CF08D15BE46A7872A443D865A5D5</SESSIONID><IMAGE_NUMBER>666666</IMAGE_NUMBER></XML>'
 
         def proto_ct_price_flush_ack(self):
                 return '<XML><TYPE>PRICE_FLUSH</TYPE><INFO>OK</INFO></XML>'
@@ -185,7 +185,7 @@ if __name__ == "__main__":
         ct.send_ct_image_shoot_req()
         ct.parse(ct.recv()['data'])
         print()
-        sleep(1)
+        sleep(5)
 
         ct.send_ct_image_decode_ack()
         ct.parse(ct.recv()['data'])

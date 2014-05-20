@@ -8,7 +8,7 @@ from traceback                  import print_exc
 from time                       import time, localtime, strftime
 from hashlib                    import md5
 from time                       import sleep
-from socket                     import socket, gethostbyname, AF_INET, SOCK_STREAM, SOCK_DGRAM 
+from socket                     import socket, gethostbyname, AF_INET, SOCK_STREAM, SOCK_DGRAM, SHUT_RDWR
 import ssl
 import random, string
 
@@ -52,16 +52,16 @@ class bid_price(pp_subthread, proto_bid_price):
                 logger.debug('client %s : bid thread %d : %s thread started' % (self.client.bidno, self.bidid, self.__class__.__name__))
                 try:
                         self.started_set()
-                        self.event_warmup.wait()
-                        if self.stop == True :
-                                logger.debug('client %s : bid thread %d : %s thread stoped' % (self.client.bidno, self.bidid, self.__class__.__name__))
-                                return
-                        self.do_warmup()
-                        self.event_shoot.wait()
-                        if self.stop == True :
-                                logger.debug('client %s : bid thread %d : %s thread stoped' % (self.client.bidno, self.bidid, self.__class__.__name__))
-                                return
-                        self.do_shoot()
+                        while True :
+                                if self.stop == True: break
+                                self.event_warmup.wait()
+                                if self.stop == True: break
+                                self.do_warmup()
+                                if self.stop == True: break
+                                self.event_shoot.wait()
+                                if self.stop == True: break
+                                self.do_shoot()
+                                break
                 except  KeyboardInterrupt:
                         pass
                 logger.debug('client %s : bid thread %d : %s thread stoped' % (self.client.bidno, self.bidid, self.__class__.__name__))
@@ -70,7 +70,18 @@ class bid_price(pp_subthread, proto_bid_price):
                 self.ssl_sock.connect(self.ssl_server_addr)
 
         def do_shoot(self):
-                self.ssl_sock.send(self.proto_ssl_price.make_req(self.bid.price_amount, self.bid.image_number, self.bid.sid))
+                self.bid.lock_dict.acquire()
+                price = self.bid.price_amount
+                if not price in self.bid.price_sid_dict :
+                        self.bid.lock_dict.release()
+                        return False
+                sid = self.bid.price_sid_dict[price]
+                if not sid in self.bid.sid_number_dict : 
+                        self.bid.lock_dict.release()
+                        return False
+                number = self.bid.sid_number_dict[sid]
+                self.bid.lock_dict.release()
+                self.ssl_sock.send(self.proto_ssl_price.make_req(price, number, sid))
                 recv_ssl = self.ssl_sock.recv(self.proto_ssl_price.ack_len)
                 if not recv_ssl:
                         return False
@@ -82,31 +93,38 @@ class bid_image(pp_subthread, proto_bid_image):
                 pp_subthread.__init__(self)
                 proto_bid_image.__init__(self, user, client, bid, bidid)
 
-                self.event_warmup = bid.event_image_warmup
-                self.event_shoot = bid.event_image_shoot
+                #self.event_warmup = bid.event_image_warmup
+                #self.event_shoot  = bid.event_image_shoot
+                self.sem_warmup = bid.sem_image_warmup
+                self.sem_shoot  = bid.sem_image_shoot
 
                 self.ssl_sock = ssl.SSLContext(ssl.PROTOCOL_SSLv23).wrap_socket(socket(AF_INET, SOCK_STREAM))
                 self.ssl_server_addr = self.client.server_dict["toubiao"]['addr']
 
         def stop(self):
                 pp_subthread.stop(self)
-                self.event_warmup.set()
-                self.event_shoot.set()
+                #self.event_warmup.set()
+                #self.event_shoot.set()
+                self.sem_warmup.release()
+                self.sem_shoot.release()
 
         def run(self):
                 logger.debug('client %s : bid thread %d : %s thread started' % (self.client.bidno, self.bidid, self.__class__.__name__))
                 try:
                         self.started_set()
-                        self.event_warmup.wait()
-                        if self.stop == True:
-                                logger.debug('client %s : bid thread %d : %s thread stoped' % (self.client.bidno, self.bidid, self.__class__.__name__))
-                                return
-                        self.do_warmup()
-                        self.event_shoot.wait()
-                        if self.stop == True:
-                                logger.debug('client %s : bid thread %d : %s thread stoped' % (self.client.bidno, self.bidid, self.__class__.__name__))
-                                return
-                        self.do_shoot()
+                        while True: 
+                                if self.stop == True: break
+                                #self.event_warmup.wait()
+                                self.sem_warmup.acquire()
+                                if self.stop == True: break
+                                self.do_warmup()
+                                if self.stop == True: break
+                                #self.event_shoot.wait()
+                                self.sem_shoot.acquire()
+                                if self.stop == True: break
+                                self.do_shoot()
+                                self.do_cooldown()
+                                sleep(0)
                 except  KeyboardInterrupt:
                         pass
                 logger.debug('client %s : bid thread %d : %s thread stoped' % (self.client.bidno, self.bidid, self.__class__.__name__))
@@ -114,20 +132,36 @@ class bid_image(pp_subthread, proto_bid_image):
         def do_warmup(self):
                 self.ssl_sock.connect(self.ssl_server_addr)
 
+        def do_cooldown(self):
+                self.ssl_sock.shutdown(SHUT_RDWR)
+                self.ssl_sock.close()
+
         def do_shoot(self):
-                self.ssl_sock.send(self.proto_ssl_image.make_req(self.bid.price_amount, self.client.login.sid))
+                self.bid.lock_dict.acquire()
+                price = self.bid.image_amount
+                self.bid.lock_dict.release()
+                self.ssl_sock.send(self.proto_ssl_image.make_req(price, self.client.login.sid))
                 recv_ssl = self.ssl_sock.recv(self.proto_ssl_image.ack_len)
                 if not recv_ssl:
                         return False
                 key_val = self.proto_ssl_image.parse_ack(recv_ssl)
-                self.send_decode_req(key_val['sid'], key_val['image'])
+                sid = key_val['sid']
+                image = key_val['image']
+                self.send_decode_req(price, sid, image)
                 return True
 
-        def send_decode_req(self, sessionid, image):
+        def send_decode_req(self, price, sid, image):
                 if True :
-                        self.user.handler.send_ct_image_decode(self.bidid, sessionid, image)
+                        self.bid.lock_dict.acquire()
+                        self.bid.price_amount = price
+                        self.bid.price_sid_dict[price] = sid
+                        self.bid.lock_dict.release()
+                        self.user.handler.send_ct_image_decode(self.bidid, sid, image)
                 else :
-                        self.user.handler.send_ct_pool_decode(self.bidid, sessionid, image)
+                        self.bid.lock_dict.acquire()
+                        self.bid.price_sid_dict[price] = sid
+                        self.bid.lock_dict.release()
+                        self.user.handler.send_ct_pool_decode(self.bidid, sid, image)
 
 #------------------------------------------------------------------------------------------------------------------
 
@@ -138,8 +172,14 @@ class client_bid(pp_subthread, proto_client_bid):
 
                 self.event_price_warmup  = Event()
                 self.event_price_shoot   = Event()
-                self.event_image_warmup  = Event()
-                self.event_image_shoot   = Event()
+                #self.event_image_warmup = Event()
+                #self.event_image_shoot  = Event()
+                self.sem_image_warmup    = Semaphore(value=0)
+                self.sem_image_shoot     = Semaphore(value=0)
+
+                self.lock_dict = Lock()
+                self.price_sid_dict = {}
+                self.sid_number_dict = {}
 
                 self.image = bid_image(user, client, self, bidid)
                 self.price = bid_price(user, client, self, bidid)
@@ -185,11 +225,12 @@ class client_login(pp_subthread, proto_client_login):
                 logger.debug('client %s : login thread started' % (self.client.bidno))
                 try:
                         self.started_set()
-                        self.event_shoot.wait()
-                        if self.stop == True:
-                                logger.debug('client %s : login thread stoped' % (self.client.bidno))
-                                return
-                        self.do_shoot()
+                        while True :
+                                if self.stop == True: break
+                                self.event_shoot.wait()
+                                if self.stop == True: break
+                                self.do_shoot()
+                                break
                 except  KeyboardInterrupt:
                         pass
                 finally:
@@ -353,26 +394,39 @@ class ct_handler(proto_ct_server):
                 self.put(self.make_proto_ct_pool_decode_req(bidid, sessionid, image))
                 return True
 
-#----------------------------------------------------------------
+        #----------------------------------------------------------------
 
-        def proc_ct_image_decode(self, key_val):        # 把结果存入到 self.user.client.bid[bidid] 里，并发送事件
+        def proc_ct_image_decode(self, key_val):        # 把结果存入到 self..bid 的 sid_number 字典里，并发送事件
                 bidid = int(key_val['BIDID'])
                 sid = key_val['SESSIONID']
                 number = key_val['IMAGE_NUMBER']
-                self.client.bid[bidid].sid = sid
-                self.client.bid[bidid].image_number = number
+                #self.client.bid[bidid].sid = sid
+                #self.client.bid[bidid].image_number = number
+                self.client.bid[bidid].lock_dict.acquire()
+                self.client.bid[bidid].sid_number_dict[sid] = number
+                self.client.bid[bidid].lock_dict.release()
                 self.client.bid[bidid].event_price_shoot.set()
                 return True
 
-        def proc_ct_pool_decode(self, key_val):         # 把结果存入到 self.user.client 和 self.user.client.bid[bidid] 里，并发送事件
+        def proc_ct_pool_decode(self, key_val):         # 把结果存入到 self..bid 的 sid_number 字典里，不发送事件
+                bidid = int(key_val['BIDID'])
+                sid = key_val['SESSIONID']
+                number = key_val['IMAGE_NUMBER']
+                #self.client.bid[bidid].sid = sid
+                #self.client.bid[bidid].image_number = number
+                self.client.bid[bidid].lock_dict.acquire()
+                self.client.bid[bidid].sid_number_dict[sid] = number
+                self.client.bid[bidid].lock_dict.release()
                 return True
 
         def proc_ct_image_pool(self, key_val):
                 bidid = int(key_val['BIDID'])
                 price = key_val['PRICE']
-                self.client.bid[bidid].price_amount = price
-                self.client.bid[bidid].event_image_warmup.set()
-                self.client.bid[bidid].event_image_shoot.set()
+                self.client.bid[bidid].image_amount = price
+                #self.client.bid[bidid].event_image_warmup.set()
+                #self.client.bid[bidid].event_image_shoot.set()
+                self.client.bid[bidid].sem_image_warmup.release()
+                self.client.bid[bidid].sem_image_shoot.release()
                 self.put(self.make_proto_ct_image_pool_ack(bidid))
                 return True
 
@@ -387,14 +441,16 @@ class ct_handler(proto_ct_server):
         def proc_ct_image_shoot(self, key_val):
                 bidid = int(key_val['BIDID'])
                 price = key_val['PRICE']
-                self.client.bid[bidid].price_amount = price
-                self.client.bid[bidid].event_image_shoot.set()
+                self.client.bid[bidid].image_amount = price
+                #self.client.bid[bidid].event_image_shoot.set()
+                self.client.bid[bidid].sem_image_shoot.release()
                 self.put(self.make_proto_ct_image_shoot_ack(bidid))
                 return True
 
         def proc_ct_image_warmup(self, key_val):
                 bidid = int(key_val['BIDID'])
-                self.client.bid[bidid].event_image_warmup.set()
+                #self.client.bid[bidid].event_image_warmup.set()
+                self.client.bid[bidid].sem_image_warmup.release()
                 self.put(self.make_proto_ct_image_warmup_ack(bidid))
                 return True
 
@@ -419,10 +475,10 @@ class ct_handler(proto_ct_server):
                 self.put(self.make_proto_ct_unknow_ack())
                 return True
 
-#----------------------------------------------------------------
+        #----------------------------------------------------------------
 
         def proc_ct_price_flush(self, key_val):
-                price = 74000
+                price = '74000'
                 self.put(self.make_proto_ct_price_flush_req(price))
                 return True
 

@@ -315,7 +315,7 @@ class proto_ssl_image(proto_ssl):
                         self.client.passwd,
                         price_amount,
                         self.client.version,
-                        self.get_image_checkcode(self.bid.price_amount),
+                        self.get_image_checkcode(price_amount),
                         self.client.server_dict['toubiao']['name'],
                         sid
                         ))
@@ -361,7 +361,7 @@ class proto_ssl_price(proto_ssl):
                         self.client.passwd,
                         price_amount,
                         self.client.mcode,
-                        self.get_price_checkcode(self.bid.price_amount, self.bid.image_number),
+                        self.get_price_checkcode(price_amount, image_number),
                         self.client.version,
                         image_number,
                         self.client.server_dict['toubiao']['name'],
