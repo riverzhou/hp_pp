@@ -149,7 +149,7 @@ class proto_ct_server(BaseRequestHandler):
                 except:
                         print_exc()
                 finally:
-                        pass
+                        self.buff_sender.stop()
                 logger.debug('Thread %s : %s stoped' % (self.__class__.__name__, self.client_address))
 
         def put(self, string):
