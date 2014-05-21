@@ -5,8 +5,6 @@ from threading                  import Thread, Event, Condition, Lock, Event, Se
 from struct                     import pack, unpack
 from socketserver               import ThreadingTCPServer, BaseRequestHandler
 from traceback                  import print_exc
-from time                       import time, localtime, strftime
-from hashlib                    import md5
 from time                       import sleep
 from socket                     import socket, gethostbyname, AF_INET, SOCK_STREAM, SOCK_DGRAM, SHUT_RDWR
 import ssl
@@ -14,21 +12,20 @@ import random, string
 
 from pp_log                     import logger, printer
 
-from pp_thread                  import pp_subthread
+from pp_thread                  import pp_subthread, price_sender
 from pp_proto                   import pp_server_dict, pp_server_dict_2, proto_pp_client, proto_client_login, proto_client_bid, proto_bid_image, proto_bid_price, proto_udp
 from ct_proto                   import CT_SERVER, proto_ct_server
+from pr_proto                   import PR_SERVER, proto_pr_server
+
 
 #==================================================================================================================
 
 ThreadingTCPServer.allow_reuse_address = True
 Thread.daemon  = True
 
-event_pp_quit = Event()
-
 pp_user_dict = {}
 lock_pp_user_dict = Lock()
-
-server_ct = None
+event_pp_quit = Event()
 
 #------------------------------------------------------------------------------------------------------------------
 
@@ -64,6 +61,8 @@ class bid_price(pp_subthread, proto_bid_price):
                                 break
                 except  KeyboardInterrupt:
                         pass
+                except:
+                        print_exc()
                 logger.debug('client %s : bid thread %d : %s thread stoped' % (self.client.bidno, self.bidid, self.__class__.__name__))
 
         def do_warmup(self):
@@ -127,6 +126,8 @@ class bid_image(pp_subthread, proto_bid_image):
                                 sleep(0)
                 except  KeyboardInterrupt:
                         pass
+                except:
+                        print_exc()
                 logger.debug('client %s : bid thread %d : %s thread stoped' % (self.client.bidno, self.bidid, self.__class__.__name__))
 
         def do_warmup(self):
@@ -200,6 +201,8 @@ class client_bid(pp_subthread, proto_client_bid):
                         self.price.stop()
                 except  KeyboardInterrupt:
                         pass
+                except:
+                        print_exc()
                 logger.debug('client %s : bid thread %s stoped' % (self.client.bidno, self.bidid))
 
 class client_login(pp_subthread, proto_client_login):
@@ -236,6 +239,8 @@ class client_login(pp_subthread, proto_client_login):
                                 break
                 except  KeyboardInterrupt:
                         pass
+                except:
+                        print_exc()
                 finally:
                         self.do_logoff_udp()
                 logger.debug('client %s : login thread stoped' % (self.client.bidno))
@@ -323,6 +328,8 @@ class pp_client(pp_subthread, proto_pp_client):
                         self.login.stop()
                 except  KeyboardInterrupt:
                         pass
+                except:
+                        print_exc()
                 logger.debug('Thread %s : %s stoped' % (self.__class__.__name__, self.bidno))
 
 #------------------------------------------------------------------------------------------------------------------
@@ -479,6 +486,9 @@ class ct_handler(proto_ct_server):
                 self.put(self.make_proto_ct_unknow_ack())
                 return True
 
+class pr_handler(proto_pr_server):
+        pass
+
 #------------------------------------------------------------------------------------------------------------------
 
 class pp_ct(pp_subthread):
@@ -493,6 +503,24 @@ class pp_ct(pp_subthread):
                         self.server.serve_forever()
                 except  KeyboardInterrupt:
                         pass
+                except:
+                        print_exc()
+                logger.debug('Thread %s stoped' % (self.__class__.__name__))
+
+class pp_pr(pp_subthread):
+        def __init__(self):
+                pp_subthread.__init__(self)
+                self.server = ThreadingTCPServer(PR_SERVER, pr_handler)
+
+        def run(self):
+                logger.debug('Thread %s started' % (self.__class__.__name__))
+                try:
+                        self.started_set()
+                        self.server.serve_forever()
+                except  KeyboardInterrupt:
+                        pass
+                except:
+                        print_exc()
                 logger.debug('Thread %s stoped' % (self.__class__.__name__))
 
 #------------------------------------------------------------------------------------------------------------------
@@ -512,6 +540,15 @@ def pp_init_dns():
                                         'addr' : (gethostbyname(pp_server_dict_2[s][0]), pp_server_dict_2[s][1]), 
                                         'name' : pp_server_dict_2[s][0]}
 
+def pp_init_pr():
+        global server_pr, daemon_pr
+        daemon_pr = price_sender()
+        daemon_pr.start()
+        daemon_pr.started()
+        server_pr = pp_pr()
+        server_pr.start()
+        server_pr.started()
+
 def pp_init_ct():
         global server_ct
         server_ct = pp_ct()
@@ -526,12 +563,13 @@ def pp_wait_quit():
         global event_pp_quit
         try:
                 event_pp_quit.wait()
-        except KeyboardInterrupt:
+        except  KeyboardInterrupt:
                 pass
 
 def pp_main():
         pp_init_dns()
         #pp_init_user()
+        pp_init_pr()
         pp_init_ct()
         logger.info('Server Started ...')
         pp_wait_quit()
