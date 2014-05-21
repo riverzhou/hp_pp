@@ -172,7 +172,44 @@ if __name__ == "__main__":
         sleep(1)
 
         #<<模式1>>
-        #ct.send_ct_image_warmup_req()
+        ct.send_ct_image_warmup_req()
+        print(ct.recv())
+        #ct.parse(ct.recv()['data'])
+        print()
+        sleep(1)
+
+        ct.send_ct_price_warmup_req()
+        ct.parse(ct.recv()['data'])
+        print()
+        sleep(1)
+
+        ct.send_ct_image_shoot_req()
+        ct.parse(ct.recv()['data'])
+        print()
+        sleep(5)
+
+        ct.send_ct_image_decode_ack()
+        ct.parse(ct.recv()['data'])
+        print()
+        sleep(1)
+
+        ##<<模式2>>
+        #ct.send_ct_image_pool_req()
+        #ct.parse(ct.recv()['data'])
+        #print()
+        #sleep(5)
+
+        #ct.send_ct_pool_decode_ack()
+        #ct.parse(ct.recv()['data'])
+        #print()
+        #sleep(1)
+
+        #ct.send_ct_image_pool_req()
+        #ct.parse(ct.recv()['data'])
+        #print()
+        #sleep(5)
+
+        #ct.send_ct_pool_decode_ack()
         #ct.parse(ct.recv()['data'])
         #print()
         #sleep(1)
@@ -182,50 +219,8 @@ if __name__ == "__main__":
         #print()
         #sleep(1)
 
-        #ct.send_ct_image_shoot_req()
-        #ct.parse(ct.recv()['data'])
-        #print()
-        #sleep(5)
-
-        #ct.send_ct_image_decode_ack()
+        #ct.send_ct_price_shoot_req()
         #ct.parse(ct.recv()['data'])
         #print()
         #sleep(1)
-
-        #<<模式2>>
-        ct.send_ct_image_pool_req()
-        ct.parse(ct.recv()['data'])
-        print()
-        sleep(5)
-
-        ct.send_ct_pool_decode_ack()
-        ct.parse(ct.recv()['data'])
-        print()
-        sleep(1)
-
-        ct.send_ct_image_pool_req()
-        ct.parse(ct.recv()['data'])
-        print()
-        sleep(5)
-
-        ct.send_ct_pool_decode_ack()
-        ct.parse(ct.recv()['data'])
-        print()
-        sleep(1)
-
-        ct.send_ct_price_warmup_req()
-        ct.parse(ct.recv()['data'])
-        print()
-        sleep(1)
-
-        ct.send_ct_price_shoot_req()
-        ct.parse(ct.recv()['data'])
-        print()
-        sleep(1)
-
-        #<<刷价格>>
-        ct.send_ct_price_flush_ack()
-        ct.parse(ct.recv()['data'])
-        print()
-        sleep(1)
 
