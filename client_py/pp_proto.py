@@ -73,8 +73,8 @@ class proto_udp():
                 key_val = self.do_parse_ack(string)
                 self.udp_ack.append(key_val)
                 printer.info(string)
-                printer.warning(key_val)
-                printer.warning('')
+                printer.error(key_val)
+                printer.error('')
                 return key_val
 
         def print_buff(self, buff):
@@ -282,8 +282,8 @@ class proto_ssl_login(proto_ssl):
                 key_val['pid'] = self.ack[0]['PID']
                 key_val['sid'] = self.ack[1]
                 printer.info(string)
-                printer.info(key_val)
-                printer.info('')
+                printer.warning(key_val)
+                printer.warning('')
                 return key_val
 
 class proto_ssl_image(proto_ssl):
@@ -326,8 +326,8 @@ class proto_ssl_image(proto_ssl):
                 key_val['image'] = self.ack[0]['IMAGE_CONTENT']
                 key_val['sid'] = self.ack[1]
                 printer.info(string)
-                printer.info(key_val)
-                printer.info('')
+                printer.warning(key_val)
+                printer.warning('')
                 return key_val
 
 class proto_ssl_price(proto_ssl):
@@ -376,8 +376,8 @@ class proto_ssl_price(proto_ssl):
                 key_val['price'] = self.ack[0]['BIDAMOUNT']
                 key_val['sid'] = self.ack[1]
                 printer.info(string)
-                printer.info(key_val)
-                printer.info('')
+                printer.warning(key_val)
+                printer.warning('')
                 return key_val
 
 #--------------------------------------------------------------------------------------
