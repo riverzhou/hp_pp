@@ -42,7 +42,7 @@ def test_image_mac2():
 
 def test_price_mac2():
         user = pp_user(test_user['bidno'], test_user['passwd'], None, server_dict, machine2)
-        user.client.bid[0].price.warmup()
+        user.client.bid[0].price.do_warmup()
         user.client.bid[0].price.do_shoot()
 
 #---------------------------------------
