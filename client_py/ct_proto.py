@@ -65,10 +65,6 @@ class proto_ct_server(BaseRequestHandler):
         def make_proto_ct_price_shoot_ack(self, bidid):
                 return ('<XML><TYPE>PRICE_SHOOT</TYPE><BIDID>%d</BIDID><INFO>OK</INFO></XML>' % bidid)
 
-        #<<刷价格>>
-        def make_proto_ct_price_flush_req(self, price):
-                return ('<XML><TYPE>PRICE_FLUSH</TYPE><PRICE>%s</PRICE></XML>' % price)
-
         #------------------------------------------------------------------------
 
         #<<继承后重写>>
@@ -102,15 +98,12 @@ class proto_ct_server(BaseRequestHandler):
         @abstractmethod
         def proc_ct_price_shoot(self, key_val): pass
 
-        @abstractmethod
-        def proc_ct_price_flush(self, key_val): pass
-
         #------------------------------------------------------------------------
 
         def proc_ct_recv(self):
                 result = self.get()
                 if not result:
-                        return
+                        return None
                 key_val = self.parse(result['data'].decode())
 
                 if not key_val['TYPE'] in self.func_dict:
@@ -134,7 +127,6 @@ class proto_ct_server(BaseRequestHandler):
                         'IMAGE_POOL' :  self.proc_ct_image_pool,
                         'POOL_DECODE':  self.proc_ct_pool_decode,
                         'PRICE_SHOOT':  self.proc_ct_price_shoot,
-                        'PRICE_FLUSH':  self.proc_ct_price_flush
                         }
                 self.login_ok = False
                 self.buff_sender = buff_sender(self.request)
@@ -145,7 +137,7 @@ class proto_ct_server(BaseRequestHandler):
                                 result = self.proc_ct_recv()
                                 if not result :
                                         break
-
+                                sleep(0)
                 except:
                         print_exc()
                 finally:
@@ -233,10 +225,6 @@ class ct_handler(proto_ct_server):
 
         def proc_ct_price_shoot(self, key_val):
                 self.put(self.make_proto_ct_price_shoot_ack(1))
-                return True
-
-        def proc_ct_price_flush(self, key_val):
-                self.put(self.make_proto_ct_price_flush_req('7000'))
                 return True
 
 if __name__ == "__main__":

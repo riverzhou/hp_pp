@@ -479,13 +479,6 @@ class ct_handler(proto_ct_server):
                 self.put(self.make_proto_ct_unknow_ack())
                 return True
 
-        #----------------------------------------------------------------
-
-        def proc_ct_price_flush(self, key_val):
-                price = '74000'
-                self.put(self.make_proto_ct_price_flush_req(price))
-                return True
-
 #------------------------------------------------------------------------------------------------------------------
 
 class pp_ct(pp_subthread):
