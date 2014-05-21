@@ -50,13 +50,13 @@ class bid_price(pp_subthread, proto_bid_price):
                 try:
                         self.started_set()
                         while True :
-                                if self.stop == True: break
+                                if self.flag_stop == True: break
                                 self.event_warmup.wait()
-                                if self.stop == True: break
+                                if self.flag_stop == True: break
                                 self.do_warmup()
-                                if self.stop == True: break
+                                if self.flag_stop == True: break
                                 self.event_shoot.wait()
-                                if self.stop == True: break
+                                if self.flag_stop == True: break
                                 self.do_shoot()
                                 break
                 except  KeyboardInterrupt:
@@ -112,15 +112,15 @@ class bid_image(pp_subthread, proto_bid_image):
                 try:
                         self.started_set()
                         while True: 
-                                if self.stop == True: break
+                                if self.flag_stop == True: break
                                 #self.event_warmup.wait()
                                 self.sem_warmup.acquire()
-                                if self.stop == True: break
+                                if self.flag_stop == True: break
                                 self.do_warmup()
-                                if self.stop == True: break
+                                if self.flag_stop == True: break
                                 #self.event_shoot.wait()
                                 self.sem_shoot.acquire()
-                                if self.stop == True: break
+                                if self.flag_stop == True: break
                                 self.do_shoot()
                                 self.do_cooldown()
                                 sleep(0)
@@ -223,18 +223,19 @@ class client_login(pp_subthread, proto_client_login):
                 logger.info('client %s : login bind udp_sock @%s ' % (self.client.bidno,self.udp_sock.getsockname()))
 
         def stop(self):
+                self.do_logoff_udp()
                 pp_subthread.stop(self)
-                self.event_shoot.set()
                 self.event_login_ok.set()
+                self.event_shoot.set()
 
         def run(self):
                 logger.debug('client %s : login thread started' % (self.client.bidno))
                 try:
                         self.started_set()
                         while True :
-                                if self.stop == True: break
+                                if self.flag_stop == True: break
                                 self.event_shoot.wait()
-                                if self.stop == True: break
+                                if self.flag_stop == True: break
                                 self.do_shoot()
                                 break
                 except  KeyboardInterrupt:
@@ -260,7 +261,7 @@ class client_login(pp_subthread, proto_client_login):
                 self.do_format_udp()
                 self.do_client_udp()
                 while True:
-                        if self.stop == True:
+                        if self.flag_stop == True:
                                 break
                         self.do_update_status()
                         sleep(0)
@@ -268,13 +269,12 @@ class client_login(pp_subthread, proto_client_login):
 
         def wait_login_ok(self):
                 self.event_login_ok.wait()
-                sleep(1)
 
         def do_logoff_udp(self):
                 self.udp_sock.sendto(self.proto_udp.make_logoff_req(), self.udp_server_addr)
-                udp_recv = self.recv_udp()
-                self.proto_udp.print_ack(udp_recv)
-                self.proto_udp.parse_ack(udp_recv)
+                #udp_recv = self.recv_udp()
+                #self.proto_udp.print_ack(udp_recv)
+                #self.proto_udp.parse_ack(udp_recv)
 
         def do_client_udp(self):
                 self.udp_sock.sendto(self.proto_udp.make_client_req(), self.udp_server_addr)
@@ -355,24 +355,21 @@ class pp_machine():
 #------------------------------------------------------------------------------------------------------------------
 
 class pp_user():
-        def __init__(self, bidno, passwd, handler, machine):
+        def __init__(self, bidno, passwd, handler, server_dict, machine):
                 self.bidno = bidno
                 self.passwd = passwd
-
                 self.handler = handler
-
                 if machine != None :
                         self.machine = machine
                 else :
                         self.machine = pp_machine()
-
-                self.client = pp_client(self, self.machine, pp_server_dict)
+                self.client = pp_client(self, machine, server_dict)
 
         def logoff(self):
                 self.client.stop()
 
         @staticmethod
-        def add_user(bidno, passwd, handler, machine = None):
+        def add_user(bidno, passwd, handler, server_dict, machine = None):
                 global pp_user_dict, lock_pp_user_dict
                 lock_pp_user_dict.acquire()
                 user = pp_user(bidno, passwd, handler, machine)
@@ -383,11 +380,12 @@ class pp_user():
                 return user
         
         @staticmethod
-        def del_user(bidno, passwd):
+        def del_user(bidno):
                 global pp_user_dict, lock_pp_user_dict
                 lock_pp_user_dict.acquire()
-                pp_user_dict[bidno].logoff()
-                del(pp_user_dict[bidno])
+                if bidno in pp_user_dict :
+                        pp_user_dict[bidno].logoff()
+                        del(pp_user_dict[bidno])
                 lock_pp_user_dict.release()
 
 #------------------------------------------------------------------------------------------------------------------
@@ -472,7 +470,7 @@ class ct_handler(proto_ct_server):
                 return True
 
         def proc_ct_login(self, key_val):
-                self.user = pp_user.add_user(key_val['BIDNO'], key_val['PASSWD'], self)
+                self.user = pp_user.add_user(key_val['BIDNO'], key_val['PASSWD'], self, pp_server_dict)         # XXX pp_server_dict 以后由控制客户端 选择 1 2 XXX
                 self.client = self.user.client
                 self.login_ok = True
                 self.put(self.make_proto_ct_login_ack())
@@ -484,6 +482,11 @@ class ct_handler(proto_ct_server):
 
         def proc_ct_unknow(self, key_val):
                 self.put(self.make_proto_ct_unknow_ack())
+                return True
+
+        def proc_ct_logoff(self):
+                bidno = self.user.bidno
+                pp_user.del_user(bidno)
                 return True
 
 class pr_handler(proto_pr_server):

@@ -57,5 +57,5 @@ logger = make_log(log = 'logger')
 printer = make_log(log = 'printer', fmt = False)
 
 ct_printer = make_log(log = 'ct_printer', level = 'debug', fmt = False)
-pp_printer = make_log(log = 'pp_printer', level = 'info',  fmt = False)
+pp_printer = make_log(log = 'pp_printer', level = 'warning',  fmt = False)
 

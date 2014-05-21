@@ -129,6 +129,9 @@ class proto_ct_server(base_ct_server):
         @abstractmethod
         def proc_ct_price_shoot(self, key_val): pass
 
+        @abstractmethod
+        def proc_ct_logoff(self): pass
+
         #------------------------------------------------------------------------
 
         def proc_ct_recv(self):
@@ -174,6 +177,7 @@ class proto_ct_server(base_ct_server):
                 except:
                         print_exc()
                 finally:
+                        self.proc_ct_logoff()
                         self.buff_sender.stop()
                 logger.debug('Thread %s : %s stoped' % (self.__class__.__name__, self.client_address))
 
@@ -222,6 +226,9 @@ class ct_handler(proto_ct_server):
 
         def proc_ct_price_shoot(self, key_val):
                 self.put(self.make_proto_ct_price_shoot_ack(1))
+                return True
+
+        def proc_ct_logoff(self):
                 return True
 
 if __name__ == "__main__":

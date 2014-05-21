@@ -72,7 +72,7 @@ class proto_udp():
                 string = self.decode(buff).decode('gb18030')
                 key_val = self.do_parse_ack(string)
                 self.udp_ack.append(key_val)
-                printer.warning(string)
+                printer.info(string)
                 printer.warning(key_val)
                 printer.warning('')
                 return key_val
@@ -126,7 +126,7 @@ class proto_udp():
                         self.client.bidno,
                         self.get_vcode(self.login.pid, self.client.bidno)
                         ))
-                printer.warning(self.format_req)
+                printer.info(self.format_req)
                 return self.format_req.encode()
 
         def do_logoff_req(self):
@@ -138,7 +138,7 @@ class proto_udp():
                         self.client.bidno,
                         self.get_vcode(self.login.pid, self.client.bidno)
                         ))
-                printer.warning(self.logoff_req)
+                printer.info(self.logoff_req)
                 return self.logoff_req.encode()
 
         def do_client_req(self):
@@ -150,7 +150,7 @@ class proto_udp():
                         self.client.bidno,
                         self.get_vcode(self.login.pid, self.client.bidno)
                         ))
-                printer.warning(self.client_req)
+                printer.info(self.client_req)
                 return self.client_req.encode()
 
         def make_format_req(self):
