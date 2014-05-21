@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from abc                        import ABCMeta, abstractmethod
-from threading                  import Thread, Event, Condition, Lock, Event, Semaphore
+from threading                  import Thread, Event, Lock, Semaphore
 from pp_log                     import logger, printer
 from traceback                  import print_exc
 from time                       import sleep
@@ -92,9 +92,10 @@ class pp_sender(pp_subthread):
                                         continue
                                 self.proc(buff)
                                 sleep(0)
+                except  KeyboardInterrupt:
+                        pass
                 except:
                         print_exc()
-                        #pass
                 logger.debug('Thread %s : %s stoped' % (self.__class__.__name__, self.ident))
 
 #--------------------------------------------------------------------------------------------
@@ -130,7 +131,7 @@ class price_sender(pp_sender):
                         handler_list.append(handler)
                 self.lock_handler.release()
                 for handler in handler_list :
-                        handler.send(buff)              # TODO 用 buff 做参数造个协议再发送 TODO
+                        handler.send(buff)
 
         def send(self, buff):
                 last_price = self.last_price
