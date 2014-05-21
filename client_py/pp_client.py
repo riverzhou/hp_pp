@@ -336,15 +336,13 @@ class pp_client(pp_subthread, proto_pp_client):
 
 class pp_machine():
         def __init__(self, mcode = None, loginimage_number = None):
-                if mcode != None :
-                        self.mcode = mcode
-                else:
-                        self.mcode = self.create_mcode()
+                if mcode == None :
+                        mcode = self.create_mcode()
+                if loginimage_number == None :
+                        loginimage_number = self.create_number()
 
-                if loginimage_number != None :
-                        self.loginimage_number = loginimage_number
-                else:
-                        self.loginimage_number = self.create_number()
+                self.mcode = mcode
+                self.loginimage_number = loginimage_number
 
         def create_mcode(self):
                 return ''.join([(string.ascii_letters+string.digits)[x] for x in random.sample(range(0,62),random.randint(10,20))])
@@ -485,10 +483,9 @@ class ct_handler(proto_ct_server):
                 if self.login_ok == True :
                         try :
                                 bidno = self.user.bidno
-                        except AttributeError :
-                                pass
-                        else:
                                 pp_user.del_user(bidno)
+                        except (AttributeError, KeyError):
+                                pass
                 return True
 
 class pr_handler(proto_pr_server):
