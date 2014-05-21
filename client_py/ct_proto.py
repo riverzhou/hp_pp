@@ -5,31 +5,62 @@ from threading                  import Thread, Event, Condition, Lock, Event, Se
 from struct                     import pack, unpack
 from socketserver               import ThreadingTCPServer, BaseRequestHandler
 from traceback                  import print_exc
-from time                       import time, localtime, strftime
 from hashlib                    import md5
 from time                       import sleep
-from socket                     import socket, gethostbyname, AF_INET, SOCK_STREAM, SOCK_DGRAM
-import random, string
 
 from pp_thread                  import pp_subthread, buff_sender
 from pp_log                     import logger, ct_printer as printer
 
 from xml.etree                  import ElementTree
 
-ThreadingTCPServer.allow_reuse_address = True
-Thread.daemon  = True
-
-#----------------------------
+#==================================================================================================================
 
 CT_SERVER = ('', 3000)
 
-#--------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------------------
 
-class proto_ct_client():
+class base_ct_server(BaseRequestHandler):
         __metaclass__ = ABCMeta
 
+        def put(self, string):
+                size, proto, option = (12 + len(string), 0, 0)
+                buff = pack('iii',size, proto, option)
+                buff += string.encode()
+                self.buff_sender.send(buff)
+                #printer.debug(string)
 
-class proto_ct_server(BaseRequestHandler):
+        def get(self):
+                head = self.request.recv(12)
+                if not head or len(head) != 12:
+                        return
+                size, proto, option = unpack('iii', head)
+                data = self.request.recv(size)
+                if not head:
+                        return
+                result = {}
+                result['size'] = size
+                result['proto'] = proto
+                result['option'] = option
+                result['data'] = data
+                printer.debug(data.decode())
+                return result
+
+        def parse(self, xml_string):
+                key_val = {}
+                try:
+                        root = ElementTree.fromstring(xml_string)
+                        for child in root:
+                                key_val[child.tag] = child.text
+                except :
+                        printer.error(xml_string)
+                        print_exc()
+                printer.debug(key_val)
+                printer.debug('')
+                return key_val
+
+#--------------------------------------------------------------------------------------------
+
+class proto_ct_server(base_ct_server):
         __metaclass__ = ABCMeta
 
         #<<登录>>
@@ -135,50 +166,16 @@ class proto_ct_server(BaseRequestHandler):
                 try:
                         while True:
                                 result = self.proc_ct_recv()
-                                if not result :
+                                if result == None :
                                         break
                                 sleep(0)
+                except  KeyboardInterrupt:
+                        pass
                 except:
                         print_exc()
                 finally:
                         self.buff_sender.stop()
                 logger.debug('Thread %s : %s stoped' % (self.__class__.__name__, self.client_address))
-
-        def put(self, string):
-                size, proto, option = (12 + len(string), 0, 0)
-                buff = pack('iii',size, proto, option)
-                buff += string.encode()
-                self.buff_sender.send(buff)
-                #printer.debug(string)
-
-        def get(self):
-                head = self.request.recv(12)
-                if not head or len(head) != 12:
-                        return
-                size, proto, option = unpack('iii', head)
-                data = self.request.recv(size)
-                if not head:
-                        return
-                result = {}
-                result['size'] = size
-                result['proto'] = proto
-                result['option'] = option
-                result['data'] = data
-                printer.debug(data.decode())
-                return result
-
-        def parse(self, xml_string):
-                key_val = {}
-                try:
-                        root = ElementTree.fromstring(xml_string)
-                        for child in root:
-                                key_val[child.tag] = child.text
-                except :
-                        printer.error(xml_string)
-                        print_exc()
-                printer.debug(key_val)
-                printer.debug('')
-                return key_val
 
 #================================= for test ===========================================
 
@@ -228,6 +225,8 @@ class ct_handler(proto_ct_server):
                 return True
 
 if __name__ == "__main__":
+        ThreadingTCPServer.allow_reuse_address = True
+        Thread.daemon  = True
         server = ThreadingTCPServer(CT_SERVER, ct_handler)
         server.serve_forever()
 

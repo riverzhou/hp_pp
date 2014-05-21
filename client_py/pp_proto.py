@@ -3,16 +3,13 @@
 from abc                        import ABCMeta, abstractmethod
 from struct                     import pack, unpack
 from traceback                  import print_exc
-from time                       import time, localtime, strftime
 from hashlib                    import md5
 from time                       import sleep
-from socket                     import gethostbyname
 from xml.etree                  import ElementTree
-import random, string
 
 from pp_log                     import logger, pp_printer as printer
 
-#======================================================================================
+#==================================================================================================================
 
 pp_server_dict = {
         'login'    : ('tblogin.alltobid.com',   443),
@@ -30,9 +27,9 @@ pp_server_dict_2 = {
         'udp'      : ('tbudp2.alltobid.com',    999),
 }
 
-pp_price_list = ('73800','73900','74000','74100','74200','74300','74400','74500')
+#pp_price_list = ('73800','73900','74000','74100','74200','74300','74400','74500')
 
-#--------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------------------
 
 class proto_udp():
         def __init__(self, client, login):
