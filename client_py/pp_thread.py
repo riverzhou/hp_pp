@@ -2,10 +2,13 @@
 
 from abc                        import ABCMeta, abstractmethod
 from threading                  import Thread, Event, Condition, Lock, Event, Semaphore
-
+from pp_log                     import logger, printer
+from traceback                  import print_exc
+from time                       import sleep
 
 Thread.daemon  = True
 
+#--------------------------------------------------------------------------------------------
 
 class pp_subthread(Thread):
         __metaclass__ = ABCMeta
@@ -29,48 +32,117 @@ class pp_subthread(Thread):
         def wait_for_stop(self):
                 self.event_stop.wait()
 
-
 #--------------------------------------------------------------------------------------------
 
-class buff_sender(pp_subthread):
-        def __init__(self, sock) :
+class pp_sender(pp_subthread):
+        __metaclass__ = ABCMeta
+
+        def __init__(self):
                 pp_subthread.__init__(self)
-                self.sock = sock
                 self.buff_list = []
                 self.lock_buff = Lock()
-                self.sem_buff = Semaphore()
-
-        def run(self):
-                try:
-                        self.started_set()
-                        while True:
-                                if self.stop == True:
-                                        return
-                                self.sem_buff.acquire()
-                                if self.stop == True:
-                                        return
-                                self.lock_buff.acquire()
-                                if self.stop == True:
-                                        self.lock_buff.release()
-                                        return
-                                if len(self.buff_list) == 0 :
-                                        self.lock_buff.release()
-                                        continue
-                                buff = self.buff_list[0]
-                                del(self.buff_list[0])
-                                self.lock_buff.release()
-                                self.sock.send(buff)
-                except:
-                        pass
-
-        def send(self, buff):
-                self.lock_buff.acquire()
-                self.buff_list.append(buff)
-                self.lock_buff.release()
-                self.sem_buff.release()
+                self.sem_buff = Semaphore(value=0)
+                self.flag_fifo = True
 
         def stop(self):
                 pp_subthread.stop(self)
                 self.sem_buff.release()
                 self.lock_buff.release()
+
+        def put(self, buff):
+                self.lock_buff.acquire()
+                self.buff_list.append(buff)
+                self.lock_buff.release()
+                self.sem_buff.release()
+                return True
+
+        def get(self):
+                if self.stop == True:
+                        return False
+                self.sem_buff.acquire()
+                if self.stop == True:
+                        return False
+                self.lock_buff.acquire()
+                if self.stop == True:
+                        self.lock_buff.release()
+                        return False
+                if len(self.buff_list) == 0 :
+                        self.lock_buff.release()
+                        return None
+                if self.flag_fifo == True :
+                        i = 0
+                else :
+                        i = -1
+                buff = self.buff_list[i]
+                del(self.buff_list[i])
+                self.lock_buff.release()
+                return buff
+
+        @abstractmethod
+        def proc(self, buff): pass
+
+        def run(self):
+                logger.debug('Thread %s : %s started' % (self.__class__.__name__, self.ident))
+                try:
+                        self.started_set()
+                        while True:
+                                buff = self.get()
+                                if buff == False :
+                                        break
+                                if buff == None :
+                                        continue
+                                self.proc(buff)
+                                sleep(0)
+                except:
+                        print_exc()
+                        #pass
+                logger.debug('Thread %s : %s stoped' % (self.__class__.__name__, self.ident))
+
+#--------------------------------------------------------------------------------------------
+
+class buff_sender(pp_sender):
+        def __init__(self, sock):
+                pp_sender.__init__(self)
+                self.sock = sock
+
+        def send(self, buff):
+                return self.put(buff)
+
+        def proc(self, buff):
+                self.sock.send(buff)
+
+#--------------------------------------------------------------------------------------------
+
+class price_sender(pp_sender):
+        def __init__(self) :
+                pp_sender.__init__(self)
+                self.flag_fifo = False                  # 栈模式
+                self.handler_list = []
+                self.lock_handler = Lock()
+
+        def proc(self, buff):
+                handler_list = ()
+                self.lock_handler.acquire()
+                for handler in self.handler_list :
+                        handler_list.append(handler)
+                self.lock_handler.release()
+                for handler in handler_list :
+                        handler.send(buff)
+
+        def send(self, buff):
+                return self.put(buff)
+
+        def reg(self, handler):
+                self.lock_handler.acquire()
+                if not handler in self.handler_list :
+                        self.handler_list.append(handler)
+                self.lock_handler.release()
+
+        def unreg(self, handler):
+                self.lock_handler.acquire()
+                for i in rangle(len(self.handler_list)) :
+                        if self.handler_list[i] == handler :
+                                del(self.handler_list[i])
+                                break
+                self.lock_handler.release()
 
