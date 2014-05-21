@@ -355,24 +355,21 @@ class pp_machine():
 #------------------------------------------------------------------------------------------------------------------
 
 class pp_user():
-        def __init__(self, bidno, passwd, handler, server_dict, machine):
+        def __init__(self, bidno, passwd, handler, server_dict, machine = pp_machine()):
                 self.bidno = bidno
                 self.passwd = passwd
                 self.handler = handler
-                if machine != None :
-                        self.machine = machine
-                else :
-                        self.machine = pp_machine()
+                self.machine = machine
                 self.client = pp_client(self, machine, server_dict)
 
         def logoff(self):
                 self.client.stop()
 
         @staticmethod
-        def add_user(bidno, passwd, handler, server_dict, machine = None):
+        def add_user(bidno, passwd, handler, server_dict, machine = pp_machine()):
                 global pp_user_dict, lock_pp_user_dict
                 lock_pp_user_dict.acquire()
-                user = pp_user(bidno, passwd, handler, machine)
+                user = pp_user(bidno, passwd, handler, server_dict, machine)
                 pp_user_dict[bidno] = user
                 lock_pp_user_dict.release()
                 user.client.start()
@@ -470,9 +467,9 @@ class ct_handler(proto_ct_server):
                 return True
 
         def proc_ct_login(self, key_val):
+                self.login_ok = True
                 self.user = pp_user.add_user(key_val['BIDNO'], key_val['PASSWD'], self, pp_server_dict)         # XXX pp_server_dict 以后由控制客户端 选择 1 2 XXX
                 self.client = self.user.client
-                self.login_ok = True
                 self.put(self.make_proto_ct_login_ack())
                 return True
 
@@ -485,8 +482,13 @@ class ct_handler(proto_ct_server):
                 return True
 
         def proc_ct_logoff(self):
-                bidno = self.user.bidno
-                pp_user.del_user(bidno)
+                if self.login_ok == True :
+                        try :
+                                bidno = self.user.bidno
+                        except AttributeError :
+                                pass
+                        else:
+                                pp_user.del_user(bidno)
                 return True
 
 class pr_handler(proto_pr_server):
