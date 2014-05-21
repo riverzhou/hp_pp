@@ -15,7 +15,7 @@ class pp_subthread(Thread):
 
         def __init__(self):
                 Thread.__init__(self)
-                self.stop = False
+                self.flag_stop = False
                 self.event_stop = Event()
                 self.event_started = Event()
 
@@ -26,7 +26,7 @@ class pp_subthread(Thread):
                 self.event_started.set()
 
         def stop(self):
-                self.stop = True
+                self.flag_stop = True
                 self.event_stop.set()
 
         def wait_for_stop(self):
@@ -47,7 +47,6 @@ class pp_sender(pp_subthread):
         def stop(self):
                 pp_subthread.stop(self)
                 self.sem_buff.release()
-                self.lock_buff.release()
 
         def put(self, buff):
                 self.lock_buff.acquire()
@@ -57,13 +56,13 @@ class pp_sender(pp_subthread):
                 return True
 
         def get(self):
-                if self.stop == True:
+                if self.flag_stop == True:
                         return False
                 self.sem_buff.acquire()
-                if self.stop == True:
+                if self.flag_stop == True:
                         return False
                 self.lock_buff.acquire()
-                if self.stop == True:
+                if self.flag_stop == True:
                         self.lock_buff.release()
                         return False
                 if len(self.buff_list) == 0 :
@@ -119,17 +118,24 @@ class price_sender(pp_sender):
                 self.flag_fifo = False                  # 栈模式
                 self.handler_list = []
                 self.lock_handler = Lock()
+                self.last_price = 0
 
         def proc(self, buff):
+                if buff <= self.last_price :
+                        return
+                self.last_price = buff
                 handler_list = ()
                 self.lock_handler.acquire()
                 for handler in self.handler_list :
                         handler_list.append(handler)
                 self.lock_handler.release()
                 for handler in handler_list :
-                        handler.send(buff)
+                        handler.send(buff)              # TODO 用 buff 做参数造个协议再发送 TODO
 
         def send(self, buff):
+                last_price = self.last_price
+                if buff <= last_price :
+                        return
                 return self.put(buff)
 
         def reg(self, handler):
