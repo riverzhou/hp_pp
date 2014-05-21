@@ -51,7 +51,7 @@ class base_ct_server(BaseRequestHandler):
                         root = ElementTree.fromstring(xml_string)
                         for child in root:
                                 key_val[child.tag] = child.text
-                except :
+                except:
                         printer.error(xml_string)
                         print_exc()
                 printer.debug(key_val)
