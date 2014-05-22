@@ -1,6 +1,8 @@
 *.swp
-udp_client
-udp_server.pyo
-udp_server.pyc
+*.pyo
+*.pyc
+*.log
+*.dump
+__pycache__
 core
-
+udp_client
