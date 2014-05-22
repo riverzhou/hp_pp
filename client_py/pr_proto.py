@@ -14,7 +14,7 @@ from pp_log                     import logger, ct_printer as printer
 
 PR_SERVER = ('', 3030)
 
-daemon_pr = price_sender()
+daemon_pr = price_sender()      # daemon_pr.last_price 是最新价格，全局可访问
 
 #------------------------------------------------------------------------------------------------------------------
 

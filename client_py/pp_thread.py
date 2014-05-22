@@ -119,7 +119,7 @@ class price_sender(pp_sender):
                 self.flag_fifo = False                  # 栈模式
                 self.handler_list = []
                 self.lock_handler = Lock()
-                self.last_price = 0
+                self.last_price = 0                     # daemon_pr.last_price 是最新价格，全局可访问
 
         def proc(self, buff):
                 if buff <= self.last_price :

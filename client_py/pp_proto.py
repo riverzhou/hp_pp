@@ -32,6 +32,13 @@ pp_server_dict_2 = {
 #------------------------------------------------------------------------------------------------------------------
 
 class proto_udp():
+        tag_dict = {
+                '目前最低可成交价'      :  'price',
+                '目前已投标人数'        :  'number',
+                '系统目前时间'          :  'systime',
+                '最低可成交价出价时间'  :  'lowtime',
+                }
+
         def __init__(self, client, login):
                 self.client = client
                 self.login = login
@@ -51,11 +58,16 @@ class proto_udp():
                                 key_val[data[0].strip()] = data[1].strip()
                 return key_val
 
-        def parse_info(self, buff):
+        def parse_info(self, buff, echo = False):
+                info_val = {}
                 info = self.do_parse_ack(self.decode(buff).decode('gb18030'))['INFO']
                 key_val = self.do_parse_info(info)
-                self.info_ack.append(key_val)
-                return key_val
+                for key in self.tag_dict :
+                        info_val[self.tag_dict[key]] = key_val[key]
+                if echo != False :
+                        printer.debug(key_val)
+                        logger.error(sorted(info_val.items())
+                return info_val
 
         def do_parse_ack(self, string):
                 key_val = {}
@@ -73,7 +85,7 @@ class proto_udp():
                 key_val = self.do_parse_ack(string)
                 self.udp_ack.append(key_val)
                 printer.info(string)
-                printer.error(key_val)
+                printer.error(sorted(key_val.items())
                 printer.error('')
                 return key_val
 

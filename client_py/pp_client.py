@@ -272,27 +272,21 @@ class client_login(pp_subthread, proto_client_login):
 
         def do_logoff_udp(self):
                 self.udp_sock.sendto(self.proto_udp.make_logoff_req(), self.udp_server_addr)
-                #udp_recv = self.recv_udp()
-                #self.proto_udp.print_ack(udp_recv)
-                #self.proto_udp.parse_ack(udp_recv)
 
         def do_client_udp(self):
                 self.udp_sock.sendto(self.proto_udp.make_client_req(), self.udp_server_addr)
                 udp_recv = self.recv_udp()
-                self.proto_udp.print_ack(udp_recv)
                 self.proto_udp.parse_ack(udp_recv)
 
         def do_format_udp(self):
                 self.udp_sock.sendto(self.proto_udp.make_format_req(), self.udp_server_addr)
                 udp_recv = self.recv_udp()
-                self.proto_udp.print_ack(udp_recv)
                 self.proto_udp.parse_ack(udp_recv)
 
         def do_update_status(self):
-                self.udp_sock.sendto(self.proto_udp.make_format_req(), self.udp_server_addr)
                 udp_recv = self.recv_udp()
-                self.proto_udp.print_info(udp_recv)
-                self.proto_udp.parse_info(udp_recv)
+                info_val = self.proto_udp.parse_info(udp_recv, True)    # True 或者 不填，表示是否写入 logger
+                daemon_pr.send(int(info_val['price']))                  # 打印奴会把最新的最高的价格存在全局对象里。daemon_pr.last_price
 
         def recv_udp(self):
                 while True:
