@@ -22,8 +22,9 @@ CT_SERVER = ('', 3000)
 class base_ct_server(BaseRequestHandler):
         __metaclass__ = ABCMeta
 
-        def put(self, string):
-                size, proto, option = (12 + len(string), 0, 0)
+        def put(self, tuple_proto):
+                string , proto, option  = tuple_proto
+                size = 12 + len(string)
                 buff = pack('iii',size, proto, option)
                 buff += string.encode()
                 self.buff_sender.send(buff)
@@ -65,36 +66,36 @@ class proto_ct_server(base_ct_server):
 
         #<<登录>>
         def make_proto_ct_nologin_ack(self):
-                return '<XML><TYPE>NOLOGIN</TYPE></XML>'
+                return '<XML><TYPE>NOLOGIN</TYPE></XML>' , 0 , 0
 
         def make_proto_ct_unknow_ack(self):
-                return '<XML><TYPE>UNKNOW</TYPE></XML>'
+                return '<XML><TYPE>UNKNOW</TYPE></XML>' , 0 , 0
 
         def make_proto_ct_login_ack(self):
-                return '<XML><TYPE>CT_LOGIN</TYPE><INFO>OK</INFO></XML>'
+                return '<XML><TYPE>CT_LOGIN</TYPE><INFO>OK</INFO></XML>' , 3001 , 0
 
         #<<模式1>>
         def make_proto_ct_image_decode_req(self, bidid, sessionid, image):
-                return ('<XML><TYPE>IMAGE_DECODE</TYPE><BIDID>%d</BIDID><SESSIONID>%s</SESSIONID><IMAGE>%s</IMAGE></XML>' % (bidid, sessionid, image))
+                return ('<XML><TYPE>IMAGE_DECODE</TYPE><BIDID>%d</BIDID><SESSIONID>%s</SESSIONID><IMAGE>%s</IMAGE></XML>' % (bidid, sessionid, image)) , 3006 , 0
 
         def make_proto_ct_image_warmup_ack(self, bidid):
-                return ('<XML><TYPE>IMAGE_WARMUP</TYPE><BIDID>%d</BIDID><INFO>OK</INFO></XML>' % bidid)
+                return ('<XML><TYPE>IMAGE_WARMUP</TYPE><BIDID>%d</BIDID><INFO>OK</INFO></XML>' % bidid) , 3003 , 0
 
         def make_proto_ct_price_warmup_ack(self, bidid):
-                return ('<XML><TYPE>PRICE_WARMUP</TYPE><BIDID>%d</BIDID><INFO>OK</INFO></XML>' % bidid)
+                return ('<XML><TYPE>PRICE_WARMUP</TYPE><BIDID>%d</BIDID><INFO>OK</INFO></XML>' % bidid) , 3005 , 0
 
         def make_proto_ct_image_shoot_ack(self, bidid):
-                return ('<XML><TYPE>IMAGE_SHOOT</TYPE><BIDID>%d</BIDID><INFO>OK</INFO></XML>' % bidid)
+                return ('<XML><TYPE>IMAGE_SHOOT</TYPE><BIDID>%d</BIDID><INFO>OK</INFO></XML>' % bidid) , 3009 , 0
 
         #<<模式2>>
         def make_proto_ct_image_pool_ack(self, bidid):
-                return ('<XML><TYPE>IMAGE_POOL</TYPE><BIDID>%d</BIDID><INFO>OK</INFO></XML>' % bidid)
+                return ('<XML><TYPE>IMAGE_POOL</TYPE><BIDID>%d</BIDID><INFO>OK</INFO></XML>' % bidid) , 3023 , 0
 
         def make_proto_ct_pool_decode_req(self, bidid, sessionid, image):
-                return ('<XML><TYPE>POOL_DECODE</TYPE><BIDID>%d</BIDID><SESSIONID>%s</SESSIONID><IMAGE>%s</IMAGE></XML>' % (bidid, sessionid, image))
+                return ('<XML><TYPE>POOL_DECODE</TYPE><BIDID>%d</BIDID><SESSIONID>%s</SESSIONID><IMAGE>%s</IMAGE></XML>' % (bidid, sessionid, image)) , 3024 , 0
 
         def make_proto_ct_price_shoot_ack(self, bidid):
-                return ('<XML><TYPE>PRICE_SHOOT</TYPE><BIDID>%d</BIDID><INFO>OK</INFO></XML>' % bidid)
+                return ('<XML><TYPE>PRICE_SHOOT</TYPE><BIDID>%d</BIDID><INFO>OK</INFO></XML>' % bidid) , 3021 , 0
 
         #------------------------------------------------------------------------
 
