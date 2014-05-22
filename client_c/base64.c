@@ -75,7 +75,7 @@ inline char GetB64Char(int index)
 #define B3(a) (a >> 24 & 0xFF)
 
 // 编码后的长度一般比原文多占1/3的存储空间，请保证base64code有足够的空间
-inline int Base64Encode(char * base64code, const char * src, int src_len) 
+int Base64Encode(char * base64code, const char * src, int src_len) 
 {   
 	int i=0;
 	if (src_len == 0)
@@ -177,7 +177,7 @@ inline int GetB64Index(char ch)
 }
 
 // 解码后的长度一般比原文少用占1/4的存储空间，请保证buf有足够的空间
-inline int Base64Decode(char * buf, const char * base64code, int src_len) 
+int Base64Decode(char * buf, const char * base64code, int src_len) 
 {
 	if (src_len == 0)
 		src_len = strlen(base64code);
