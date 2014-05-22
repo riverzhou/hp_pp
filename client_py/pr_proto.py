@@ -78,7 +78,7 @@ class pr_handler(proto_pr_server):
 
 if __name__ == "__main__":
         ThreadingTCPServer.allow_reuse_address = True
-	ThreadingTCPServer.request_queue_size  = 512
+        ThreadingTCPServer.request_queue_size  = 512
         Thread.daemon  = True
         daemon_pr.start()
         daemon_pr.started()

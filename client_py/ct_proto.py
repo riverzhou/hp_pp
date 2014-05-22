@@ -234,7 +234,7 @@ class ct_handler(proto_ct_server):
 
 if __name__ == "__main__":
         ThreadingTCPServer.allow_reuse_address = True
-	ThreadingTCPServer.request_queue_size  = 512
+        ThreadingTCPServer.request_queue_size  = 512
         Thread.daemon  = True
         server = ThreadingTCPServer(CT_SERVER, ct_handler)
         server.serve_forever()
