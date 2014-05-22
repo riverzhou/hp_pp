@@ -83,7 +83,6 @@ class proto_udp():
         def parse_ack(self, buff):
                 string = self.decode(buff).decode('gb18030')
                 key_val = self.do_parse_ack(string)
-                self.udp_ack.append(key_val)
                 printer.info(string)
                 printer.error(sorted(key_val.items()))
                 printer.error('')
