@@ -14,6 +14,8 @@ from pp_log                     import logger, ct_printer as printer
 
 PR_SERVER = ('', 3030)
 
+daemon_pr = price_sender()
+
 #------------------------------------------------------------------------------------------------------------------
 
 class proto_pr_server(base_ct_server):
@@ -63,8 +65,6 @@ class pr_handler(proto_pr_server):
 if __name__ == "__main__":
         ThreadingTCPServer.allow_reuse_address = True
         Thread.daemon  = True
-        global daemon_pr
-        daemon_pr = price_sender()
         daemon_pr.start()
         daemon_pr.started()
         server = ThreadingTCPServer(PR_SERVER, pr_handler)

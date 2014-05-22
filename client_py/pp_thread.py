@@ -147,7 +147,7 @@ class price_sender(pp_sender):
 
         def unreg(self, handler):
                 self.lock_handler.acquire()
-                for i in rangle(len(self.handler_list)) :
+                for i in range(len(self.handler_list)) :
                         if self.handler_list[i] == handler :
                                 del(self.handler_list[i])
                                 break

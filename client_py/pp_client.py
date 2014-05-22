@@ -15,7 +15,7 @@ from pp_log                     import logger, printer
 from pp_thread                  import pp_subthread, price_sender
 from pp_proto                   import pp_server_dict, pp_server_dict_2, proto_pp_client, proto_client_login, proto_client_bid, proto_bid_image, proto_bid_price, proto_udp
 from ct_proto                   import CT_SERVER, proto_ct_server
-from pr_proto                   import PR_SERVER, proto_pr_server
+from pr_proto                   import PR_SERVER, proto_pr_server, daemon_pr
 
 
 #==================================================================================================================
@@ -527,6 +527,11 @@ class pp_pr(pp_subthread):
 
 #------------------------------------------------------------------------------------------------------------------
 
+server_pr = pp_pr()
+server_ct = pp_ct()
+
+#------------------------------------------------------------------------------------------------------------------
+
 def pp_init_user():
         machine = ct_machine()
         ct_add_user('98765432','4321', ct_handler())
@@ -544,16 +549,13 @@ def pp_init_dns():
 
 def pp_init_pr():
         global server_pr, daemon_pr
-        daemon_pr = price_sender()
         daemon_pr.start()
         daemon_pr.started()
-        server_pr = pp_pr()
         server_pr.start()
         server_pr.started()
 
 def pp_init_ct():
         global server_ct
-        server_ct = pp_ct()
         server_ct.start()
         server_ct.started()
 
