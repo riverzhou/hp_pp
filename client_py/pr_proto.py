@@ -21,7 +21,7 @@ class proto_pr_server(base_ct_server):
 
         #<<刷价格>>
         def make_proto_pr_price_flush_req(self, price):
-                return ('<XML><TYPE>PRICE_FLUSH</TYPE><PRICE>%d</PRICE></XML>' % price)
+                return ('<XML><TYPE>PRICE_FLUSH</TYPE><PRICE>%d</PRICE></XML>' % price) , 0 , 0
 
         def proc_ct_recv(self):
                 result = self.get()
