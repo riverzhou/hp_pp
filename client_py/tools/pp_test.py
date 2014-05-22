@@ -107,7 +107,7 @@ func_list =     {
 
 def usage():
         string = ''
-        cmds = sorted(func_list.keys())
+        cmds = sorted(func_list)
         for cmd in cmds:
                 string += ('./pp_test.py %s\n' % cmd)
         print(string)
