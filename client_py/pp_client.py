@@ -21,6 +21,7 @@ from pr_proto                   import PR_SERVER, proto_pr_server, daemon_pr
 #==================================================================================================================
 
 ThreadingTCPServer.allow_reuse_address = True
+ThreadingTCPServer.request_queue_size  = 512
 Thread.daemon  = True
 
 pp_user_dict = {}
