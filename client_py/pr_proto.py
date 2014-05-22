@@ -22,8 +22,22 @@ class proto_pr_server(base_ct_server):
         __metaclass__ = ABCMeta
 
         #<<刷价格>>
-        def make_proto_pr_price_flush_req(self, price):
-                return ('<XML><TYPE>PRICE_FLUSH</TYPE><PRICE>%d</PRICE></XML>' % price) , 0 , 0
+        def make_proto_pr_price_flush_req(self, info_val):
+                return ( ( (
+                        '<XML>'+
+                        '<TYPE>PRICE_FLUSH</TYPE>'+
+                        '<PRICE>%s</PRICE>'+
+                        '<NUMBER>%s</NUMBER>'+
+                        '<SYSTIME>%s</SYSTIME>'+
+                        '<LOWTIME></LOWTIME>'+
+                        '</XML>'
+                        ) % (
+                        info_val['price'],
+                        info_val['number'],
+                        info_val['systime'],
+                        info_val['lowtime']
+                        ) ) ,
+                        0 , 0 )
 
         def proc_ct_recv(self):
                 result = self.get()
@@ -54,8 +68,8 @@ class proto_pr_server(base_ct_server):
                         daemon_pr.unreg(self)
                 logger.debug('Thread %s : %s stoped' % (self.__class__.__name__, self.client_address))
 
-        def send(self, price):
-                self.put(self.make_proto_pr_price_flush_req(price))
+        def send(self, info_val):
+                self.put(self.make_proto_pr_price_flush_req(info_val))
 
 #================================= for test ===========================================
 

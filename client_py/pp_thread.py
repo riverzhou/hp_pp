@@ -133,11 +133,12 @@ class price_sender(pp_sender):
                 for handler in handler_list :
                         handler.send(buff)
 
-        def send(self, buff):
+        def send(self, info_val):
+                price = int(info_val['price'])
                 last_price = self.last_price
-                if buff <= last_price :
+                if price <= last_price :
                         return
-                return self.put(buff)
+                return self.put(price)
 
         def reg(self, handler):
                 self.lock_handler.acquire()

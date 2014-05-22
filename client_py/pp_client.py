@@ -286,7 +286,7 @@ class client_login(pp_subthread, proto_client_login):
         def do_update_status(self):
                 udp_recv = self.recv_udp()
                 info_val = self.proto_udp.parse_info(udp_recv, True)    # True 或者 不填，表示是否写入 logger
-                daemon_pr.send(int(info_val['price']))                  # 打印奴会把最新的最高的价格存在全局对象里。daemon_pr.last_price
+                daemon_pr.send(info_val)                                # 打印奴会把最新的最高的价格存在全局对象里。daemon_pr.last_price
 
         def recv_udp(self):
                 while True:
