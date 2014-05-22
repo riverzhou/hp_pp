@@ -22,25 +22,26 @@ from pp_proto                   import pp_server_dict, pp_server_dict_2, proto_p
 from ct_proto                   import CT_SERVER, proto_ct_server
 from pr_proto                   import PR_SERVER, proto_pr_server
 
-#==========================================================
 
-from hashlib                    import md5
+#==================================================================================================================
 
-#----------------------------------------------------------
+#==================================================================================================================
+# 单步测试客户端  参数设置区域 （开始）
+#==================================================================================================================
 
-test_user =     { 
+test_user    =  {
                 'bidno'         :'88888888', 
                 'passwd'        : '4444',
                 }
 
-test_bid =      {
+test_bid     =      {
                 'price_amount'  : '74000',
                 'image_amount'  : '74000',
                 'image_number'  : '666666',
                 'sid'           : 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
                 }
 
-test_login =    {
+test_login   =  {
                 'sid'           : 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
                 }
 
@@ -48,10 +49,12 @@ server_group =  0               # 0/1
 
 fake_version =  '178'
 
-flag_fake_cc =  False
-flag_fake_vr =  False
+#==================================================================================================================
+# 单步测试客户端  参数设置区域 （完成）
+#==================================================================================================================
 
 #==================================================================================================================
+
 
 ThreadingTCPServer.allow_reuse_address = True
 Thread.daemon  = True
@@ -62,7 +65,7 @@ event_pp_quit = Event()
 
 #------------------------------------------------------------------------------------------------------------------
 
-class _bid_price(pp_subthread, proto_bid_price):
+class bid_price(pp_subthread, proto_bid_price):
         def __init__(self, user, client, bid, bidid):
                 pp_subthread.__init__(self)
                 proto_bid_price.__init__(self, user, client, bid, bidid)
@@ -120,7 +123,7 @@ class _bid_price(pp_subthread, proto_bid_price):
                 key_val = self.proto_ssl_price.parse_ack(recv_ssl)
                 return True
 
-class _bid_image(pp_subthread, proto_bid_image):
+class bid_image(pp_subthread, proto_bid_image):
         def __init__(self, user, client, bid, bidid):
                 pp_subthread.__init__(self)
                 proto_bid_image.__init__(self, user, client, bid, bidid)
@@ -238,7 +241,7 @@ class client_bid(pp_subthread, proto_client_bid):
                         print_exc()
                 logger.debug('client %s : bid thread %s stoped' % (self.client.bidno, self.bidid))
 
-class _client_login(pp_subthread, proto_client_login):
+class client_login(pp_subthread, proto_client_login):
         def __init__(self, user, client):
                 pp_subthread.__init__(self)
                 proto_client_login.__init__(self, user, client)
@@ -573,6 +576,19 @@ def pp_init_dns():
 
 #==================================================================================================================
 
+#==================================================================================================================
+# 单步测试客户端 重写区域 （开始）
+#==================================================================================================================
+
+from hashlib import md5
+
+#----------------------------------------------------------
+
+flag_fake_cc =  False
+flag_fake_vr =  False
+
+machine      =  pp_machine('Enmh80vDVlPG')
+machine2     =  pp_machine('C0HeVkQXFzRd1co')
 
 
 #----------------------------------------------------------
@@ -610,7 +626,7 @@ def fake_req(req):
 
 #----------------------------------------------------------
 
-class client_login(_client_login):
+class client_login(client_login):
         def do_shoot(self):
                 self.ssl_sock.connect(self.ssl_server_addr)
 
@@ -625,7 +641,7 @@ class client_login(_client_login):
                 return key_val
 
 
-class bid_image(_bid_image):
+class bid_image(bid_image):
         def do_shoot(self):
                 price = test_bid['image_amount']
                 sid   = test_login['sid']
@@ -641,7 +657,7 @@ class bid_image(_bid_image):
                 return key_val
 
 
-class bid_price(_bid_price):
+class bid_price(bid_price):
         def do_shoot(self):
                 price  = test_bid['price_amount']
                 sid    = test_bid['sid']
@@ -656,4 +672,10 @@ class bid_price(_bid_price):
                 key_val = self.proto_ssl_price.parse_ack(recv_ssl)
 
                 return key_val
+
+#==================================================================================================================
+
+#==================================================================================================================
+# 单步测试客户端 重写区域 （完成）
+#==================================================================================================================
 

@@ -6,12 +6,7 @@ sys.path.append('..')
 #==========================================================
 
 from pp_client import *
-
 from pp_log    import logger, printer
-
-from hashlib   import md5
-from traceback import print_exc
-import pickle
 
 #----------------------------------------------------------
 
@@ -89,15 +84,9 @@ def test_price_vrerr():
         user.client.bid[0].price.do_warmup()
         user.client.bid[0].price.do_shoot()
 
-#----------------------------------------------------------
-
-def pp_init_mac():
-        global machine, machine2, server_dict, pp_server_dict, pp_server_dict_2, server_group
+def test_init_dns():
+        global pp_server_dict, pp_server_dict_2, server_dict
         server_dict = (pp_server_dict, pp_server_dict_2)[server_group]
-        machine     = pp_machine('Enmh80vDVlPG')
-        machine2    = pp_machine('C0HeVkQXFzRd1co')
-
-#----------------------------------------------------------
 
 #----------------------------------------------------------
 
@@ -123,6 +112,8 @@ def usage():
                 string += ('./pp_test.py %s\n' % cmd)
         print(string)
                         
+#----------------------------------------------------------
+
 def pp_test(argv):
         if len(argv) != 2 :
                 usage()
@@ -132,9 +123,11 @@ def pp_test(argv):
                 return 
         #pp_init_dump()
         pp_init_dns()
-        pp_init_mac()
+        test_init_dns()
         func_list[argv[1]]()
         #pp_write_dump()
+
+#----------------------------------------------------------
 
 if __name__ == "__main__":
         pp_test(sys.argv)
