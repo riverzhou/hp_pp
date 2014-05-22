@@ -66,7 +66,7 @@ class proto_udp():
                         info_val[self.tag_dict[key]] = key_val[key]
                 if echo != False :
                         printer.debug(key_val)
-                        logger.error(sorted(info_val.items())
+                        logger.error(sorted(info_val.items()))
                 return info_val
 
         def do_parse_ack(self, string):
@@ -85,7 +85,7 @@ class proto_udp():
                 key_val = self.do_parse_ack(string)
                 self.udp_ack.append(key_val)
                 printer.info(string)
-                printer.error(sorted(key_val.items())
+                printer.error(sorted(key_val.items()))
                 printer.error('')
                 return key_val
 
