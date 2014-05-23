@@ -38,7 +38,6 @@ class bid_price(pp_subthread, proto_bid_price):
                 self.event_warmup = bid.event_price_warmup
                 self.event_shoot = bid.event_price_shoot
 
-                self.ssl_sock = ssl.SSLContext(ssl.PROTOCOL_SSLv23).wrap_socket(socket(AF_INET, SOCK_STREAM))
                 self.ssl_server_addr = self.client.server_dict["toubiao"]['addr']
 
         def stop(self):
@@ -59,6 +58,7 @@ class bid_price(pp_subthread, proto_bid_price):
                                 self.event_shoot.wait()
                                 if self.stop_flag == True: break
                                 self.do_shoot()
+                                self.do_cooldown()
                                 break
                 except  KeyboardInterrupt:
                         pass
@@ -67,7 +67,23 @@ class bid_price(pp_subthread, proto_bid_price):
                 logger.debug('client %s : bid thread %d : %s thread stoped' % (self.client.bidno, self.bidid, self.__class__.__name__))
 
         def do_warmup(self):
+                self.do_cooldown()
+                self.ssl_sock = ssl.SSLContext(ssl.PROTOCOL_SSLv23).wrap_socket(socket(AF_INET, SOCK_STREAM))
                 self.ssl_sock.connect(self.ssl_server_addr)
+
+        def do_cooldown(self):
+                #try:
+                #        self.ssl_sock.shutdown(SHUT_RDWR)
+                #except:
+                #        pass
+                try:
+                        self.ssl_sock.close()
+                except:
+                        pass
+                try:
+                        del(self.ssl_sock)
+                except:
+                        pass
 
         def do_shoot(self):
                 self.bid.lock_dict.acquire()
@@ -81,8 +97,13 @@ class bid_price(pp_subthread, proto_bid_price):
                         return False
                 number = self.bid.sid_number_dict[sid]
                 self.bid.lock_dict.release()
-                self.ssl_sock.send(self.proto_ssl_price.make_req(price, number, sid))
-                recv_ssl = self.ssl_sock.recv(self.proto_ssl_price.ack_len)
+                try:
+                        self.ssl_sock.send(self.proto_ssl_price.make_req(price, number, sid))
+                except:
+                        self.do_warmup()
+                        self.ssl_sock.send(self.proto_ssl_price.make_req(price, number, sid))
+                finally:
+                        recv_ssl = self.ssl_sock.recv(self.proto_ssl_price.ack_len)
                 if not recv_ssl:
                         return False
                 key_val = self.proto_ssl_price.parse_ack(recv_ssl)
@@ -98,7 +119,6 @@ class bid_image(pp_subthread, proto_bid_image):
                 self.sem_warmup = bid.sem_image_warmup
                 self.sem_shoot  = bid.sem_image_shoot
 
-                #self.ssl_sock = ssl.SSLContext(ssl.PROTOCOL_SSLv23).wrap_socket(socket(AF_INET, SOCK_STREAM))
                 self.ssl_server_addr = self.client.server_dict["toubiao"]['addr']
 
         def stop(self):
@@ -132,19 +152,35 @@ class bid_image(pp_subthread, proto_bid_image):
                 logger.debug('client %s : bid thread %d : %s thread stoped' % (self.client.bidno, self.bidid, self.__class__.__name__))
 
         def do_warmup(self):
+                self.do_cooldown()
                 self.ssl_sock = ssl.SSLContext(ssl.PROTOCOL_SSLv23).wrap_socket(socket(AF_INET, SOCK_STREAM))
                 self.ssl_sock.connect(self.ssl_server_addr)
 
         def do_cooldown(self):
-                self.ssl_sock.shutdown(SHUT_RDWR)
-                self.ssl_sock.close()
+                #try:
+                #        self.ssl_sock.shutdown(SHUT_RDWR)
+                #except:
+                #        pass
+                try:
+                        self.ssl_sock.close()
+                except:
+                        pass
+                try:
+                        del(self.ssl_sock)
+                except:
+                        pass
 
         def do_shoot(self):
                 self.bid.lock_dict.acquire()
                 price = self.bid.image_amount
                 self.bid.lock_dict.release()
-                self.ssl_sock.send(self.proto_ssl_image.make_req(price, self.client.login.sid))
-                recv_ssl = self.ssl_sock.recv(self.proto_ssl_image.ack_len)
+                try:
+                        self.ssl_sock.send(self.proto_ssl_image.make_req(price, self.client.login.sid))
+                except:
+                        self.do_warmup()
+                        self.ssl_sock.send(self.proto_ssl_image.make_req(price, self.client.login.sid))
+                finally:
+                        recv_ssl = self.ssl_sock.recv(self.proto_ssl_image.ack_len)
                 if not recv_ssl:
                         return False
                 key_val = self.proto_ssl_image.parse_ack(recv_ssl)
@@ -211,12 +247,10 @@ class client_login(pp_subthread, proto_client_login):
                 pp_subthread.__init__(self)
                 proto_client_login.__init__(self, user, client)
 
+                self.event_login_ok = Event()
                 self.event_shoot = Event()
                 self.event_shoot.set()
 
-                self.event_login_ok = Event()
-
-                self.ssl_sock = ssl.SSLContext(ssl.PROTOCOL_SSLv23).wrap_socket(socket(AF_INET, SOCK_STREAM))
                 self.ssl_server_addr = self.client.server_dict["login"]['addr']
                 self.udp_sock = socket(AF_INET, SOCK_DGRAM)
                 self.udp_sock.bind(('',0))
@@ -248,6 +282,7 @@ class client_login(pp_subthread, proto_client_login):
                 logger.debug('client %s : login thread stoped' % (self.client.bidno))
 
         def do_shoot(self):
+                self.ssl_sock = ssl.SSLContext(ssl.PROTOCOL_SSLv23).wrap_socket(socket(AF_INET, SOCK_STREAM))
                 self.ssl_sock.connect(self.ssl_server_addr)
                 self.ssl_sock.send(self.proto_ssl_login.make_req())
                 recv_ssl = self.ssl_sock.recv(self.proto_ssl_login.ack_len)
