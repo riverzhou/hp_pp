@@ -40,7 +40,10 @@ class proto_pr_server(base_ct_server):
                         3030 , 0 )
 
         def proc_ct_recv(self):
-                result = self.get()
+                try:
+                        result = self.get()
+                except:
+                        result = None
                 if not result:
                         return None
                 #key_val = self.parse(result['data'].decode())

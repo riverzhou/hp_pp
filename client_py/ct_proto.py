@@ -31,12 +31,18 @@ class base_ct_server(BaseRequestHandler):
                 #printer.debug(string)
 
         def get(self):
-                head = self.request.recv(12)
-                if not head or len(head) != 12:
+                try :
+                        head = self.request.recv(12)
+                except:
+                        head = None
+                if not head or len(head) != 12 :
                         return
                 size, proto, option = unpack('iii', head)
-                data = self.request.recv(size)
-                if not head:
+                try:
+                        data = self.request.recv(size)
+                except:
+                        data = None
+                if not data or len(data) == 0 :
                         return
                 result = {}
                 result['size'] = size
