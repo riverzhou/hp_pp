@@ -65,8 +65,9 @@ class proto_udp():
                 for key in self.tag_dict :
                         info_val[self.tag_dict[key]] = key_val[key]
                 if echo != False :
-                        printer.debug(key_val)
-                        logger.error(sorted(info_val.items()))
+                        printer.debug(info)
+                        printer.debug(sorted(info_val.items()))
+                        printer.debug('')
                 return info_val
 
         def do_parse_ack(self, string):
@@ -77,15 +78,15 @@ class proto_udp():
                         for child in root:
                                 key_val[child.tag] = child.text
                 except :
-                        logger.error(string)
+                        printer.error(string)
                 return key_val
 
         def parse_ack(self, buff):
                 string = self.decode(buff).decode('gb18030')
                 key_val = self.do_parse_ack(string)
                 printer.info(string)
-                printer.error(sorted(key_val.items()))
-                printer.error('')
+                printer.info(sorted(key_val.items()))
+                printer.info('')
                 return key_val
 
         def print_buff(self, buff):
@@ -293,7 +294,7 @@ class proto_ssl_login(proto_ssl):
                 key_val['pid'] = self.ack[0]['PID']
                 key_val['sid'] = self.ack[1]
                 printer.info(string)
-                printer.warning(key_val)
+                printer.warning(sorted(key_val.items()))
                 printer.warning('')
                 return key_val
 
@@ -336,8 +337,13 @@ class proto_ssl_image(proto_ssl):
                 key_val = {}
                 key_val['image'] = self.ack[0]['IMAGE_CONTENT']
                 key_val['sid'] = self.ack[1]
-                printer.info(string)
-                printer.warning(key_val)
+                info_val = {}
+                info_val['errcode'] = self.ack[0]['ERRORCODE']
+                info_val['errstr'] = self.ack[0]['ERRORSTRING']
+                info_val['sid'] = self.ack[1]
+                printer.debug(string)
+                #printer.warning(sorted(key_val.items()))
+                printer.warning(sorted(info_val.items()))
                 printer.warning('')
                 return key_val
 
@@ -387,7 +393,7 @@ class proto_ssl_price(proto_ssl):
                 key_val['price'] = self.ack[0]['BIDAMOUNT']
                 key_val['sid'] = self.ack[1]
                 printer.info(string)
-                printer.warning(key_val)
+                printer.warning(sorted(key_val.items()))
                 printer.warning('')
                 return key_val
 

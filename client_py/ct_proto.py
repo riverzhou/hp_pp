@@ -55,7 +55,7 @@ class base_ct_server(BaseRequestHandler):
                 except:
                         printer.error(xml_string)
                         print_exc()
-                printer.debug(key_val)
+                printer.debug(sorted(key_val.items()))
                 printer.debug('')
                 return key_val
 
@@ -152,7 +152,7 @@ class proto_ct_server(base_ct_server):
                 return True
 
         def handle(self):
-                logger.debug('Thread %s : %s started' % (self.__class__.__name__, self.client_address))
+                logger.info('Thread %s : %s started' % (self.__class__.__name__, self.client_address))
                 self.func_dict = {
                         'CT_LOGIN':     self.proc_ct_login,
                         'IMAGE_WARMUP': self.proc_ct_image_warmup,
@@ -180,7 +180,7 @@ class proto_ct_server(base_ct_server):
                 finally:
                         self.proc_ct_logoff()
                         self.buff_sender.stop()
-                logger.debug('Thread %s : %s stoped' % (self.__class__.__name__, self.client_address))
+                logger.info('Thread %s : %s stoped' % (self.__class__.__name__, self.client_address))
 
 #================================= for test ===========================================
 

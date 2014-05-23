@@ -344,7 +344,7 @@ class pp_client(pp_subthread, proto_pp_client):
                         self.bid.append(client_bid(user, self, i))
 
         def run(self):
-                logger.debug('Thread %s : %s started' % (self.__class__.__name__, self.bidno))
+                logger.info('Thread %s : %s started' % (self.__class__.__name__, self.bidno))
                 try:
                         self.login.start()
                         self.login.started()
@@ -360,7 +360,7 @@ class pp_client(pp_subthread, proto_pp_client):
                         pass
                 except:
                         print_exc()
-                logger.debug('Thread %s : %s stoped' % (self.__class__.__name__, self.bidno))
+                logger.info('Thread %s : %s stoped' % (self.__class__.__name__, self.bidno))
 
 #------------------------------------------------------------------------------------------------------------------
 
@@ -529,7 +529,7 @@ class pp_ct(pp_subthread):
                 self.server = ThreadingTCPServer(CT_SERVER, ct_handler)
 
         def run(self):
-                logger.debug('Thread %s started' % (self.__class__.__name__))
+                logger.info('Thread %s started' % (self.__class__.__name__))
                 try:
                         self.started_set()
                         self.server.serve_forever()
@@ -537,7 +537,7 @@ class pp_ct(pp_subthread):
                         pass
                 except:
                         print_exc()
-                logger.debug('Thread %s stoped' % (self.__class__.__name__))
+                logger.info('Thread %s stoped' % (self.__class__.__name__))
 
 class pp_pr(pp_subthread):
         def __init__(self):
@@ -545,7 +545,7 @@ class pp_pr(pp_subthread):
                 self.server = ThreadingTCPServer(PR_SERVER, pr_handler)
 
         def run(self):
-                logger.debug('Thread %s started' % (self.__class__.__name__))
+                logger.info('Thread %s started' % (self.__class__.__name__))
                 try:
                         self.started_set()
                         self.server.serve_forever()
@@ -553,7 +553,7 @@ class pp_pr(pp_subthread):
                         pass
                 except:
                         print_exc()
-                logger.debug('Thread %s stoped' % (self.__class__.__name__))
+                logger.info('Thread %s stoped' % (self.__class__.__name__))
 
 #------------------------------------------------------------------------------------------------------------------
 

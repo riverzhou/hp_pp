@@ -44,12 +44,12 @@ class proto_pr_server(base_ct_server):
                 if not result:
                         return None
                 #key_val = self.parse(result['data'].decode())
-                printer.error(result)
-                #printer.error(key_val)
+                #printer.error(result)
+                #printer.error(sorted(key_val.items()))
                 return True
 
         def handle(self):
-                logger.debug('Thread %s : %s started' % (self.__class__.__name__, self.client_address))
+                logger.info('Thread %s : %s started' % (self.__class__.__name__, self.client_address))
                 self.buff_sender = self.request
                 # 注册句柄到 price_sender 线程
                 global daemon_pr
@@ -66,7 +66,7 @@ class proto_pr_server(base_ct_server):
                         print_exc()
                 finally:
                         daemon_pr.unreg(self)
-                logger.debug('Thread %s : %s stoped' % (self.__class__.__name__, self.client_address))
+                logger.info('Thread %s : %s stoped' % (self.__class__.__name__, self.client_address))
 
         def send(self, info_val):
                 self.put(self.make_proto_pr_price_flush_req(info_val))

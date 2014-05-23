@@ -53,9 +53,9 @@ def make_log(name = None, log = None,  level = 'debug' , console = True, fmt = T
         return logger
 
 
-logger = make_log(log = 'logger')
-printer = make_log(log = 'printer', fmt = False)
+logger     = make_log(name = None, log = 'logger',     level = 'info',    console = True, fmt = True)
+printer    = make_log(name = None, log = 'printer',    level = 'info',    console = True, fmt = False)
 
-ct_printer = make_log(log = 'ct_printer', level = 'debug', fmt = False)
-pp_printer = make_log(log = 'pp_printer', level = 'warning',  fmt = False)
+ct_printer = make_log(name = None, log = 'ct_printer', level = 'info',    console = True, fmt = False)
+pp_printer = make_log(name = None, log = 'pp_printer', level = 'warning', console = True, fmt = False)
 
