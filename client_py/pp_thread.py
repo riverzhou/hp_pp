@@ -121,24 +121,25 @@ class price_sender(pp_sender):
                 self.lock_handler = Lock()
                 self.last_price = 0                     # daemon_pr.last_price 是最新价格，全局可访问
 
-        def proc(self, buff):
-                if buff <= self.last_price :
+        def proc(self, info_val):
+                price = int(info_val['price'])
+                if price <= self.last_price :
                         return
-                self.last_price = buff
-                handler_list = ()
+                self.last_price = price
+                handler_list = []
                 self.lock_handler.acquire()
                 for handler in self.handler_list :
                         handler_list.append(handler)
                 self.lock_handler.release()
                 for handler in handler_list :
-                        handler.send(buff)
+                        handler.send(info_val)
 
         def send(self, info_val):
                 price = int(info_val['price'])
                 last_price = self.last_price
                 if price <= last_price :
                         return
-                return self.put(price)
+                return self.put(info_val)
 
         def reg(self, handler):
                 self.lock_handler.acquire()
