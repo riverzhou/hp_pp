@@ -70,6 +70,33 @@ class proto_udp():
                 #printer.error('')
                 return key_val
 
+
+        @staticmethod
+        def udp_make_format_ack(key_val):
+                return ( ( (
+                        '<TYPE>FORMAT</TYPE>'+
+                        '<BIDNO>%s</BIDNO>'+
+                        '<VCODE>%s</VCODE>'
+                        ) % (
+                        key_val['BIDNO'],
+                        key_val['VCODE'],
+                        ) ).encode('gb18030'),
+                        key_val['addr']
+                        )
+
+        @staticmethod
+        def udp_make_client_ack(key_val):
+                return ( ( (
+                        '<TYPE>CLIENT</TYPE>'+
+                        '<BIDNO>%s</BIDNO>'+
+                        '<VCODE>%s</VCODE>'
+                        ) % (
+                        key_val['BIDNO'],
+                        key_val['VCODE'],
+                        ) ).encode('gb18030'),
+                        key_val['addr']
+                        )
+
 #------------------------------------------------------
 
 class udp_handle(BaseRequestHandler):
@@ -81,6 +108,14 @@ class udp_handle(BaseRequestHandler):
                 logger.info(string)
                 logger.info(sorted(key_val.items()))
                 logger.info('')
+                #self.proc(key_val)
+
+        def proc(self, key_val):
+                #proto_udp.udp_make_client_ack(key_val)
+                #proto_udp.udp_make_format_ack(key_val)
+
+        def put(self, string, addr):
+                self.request[1].sendto(proto_udp.encode(string.encode('gb18030')), addr)
 
         def get(self):
                 return proto_udp.decode(self.request[0]).decode('gb18030')
