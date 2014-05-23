@@ -255,7 +255,7 @@ class client_login(pp_subthread, proto_client_login):
                 self.udp_sock = socket(AF_INET, SOCK_DGRAM)
                 self.udp_sock.bind(('',0))
                 self.udp_server_addr = self.client.server_dict["udp"]['addr']
-                logger.info('client %s : login bind udp_sock @%s ' % (self.client.bidno,self.udp_sock.getsockname()))
+                logger.info('Client %s : login bind udp_sock @%s ' % (self.client.bidno,self.udp_sock.getsockname()))
 
         def stop(self):
                 self.do_logoff_udp()
