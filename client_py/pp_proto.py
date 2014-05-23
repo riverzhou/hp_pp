@@ -7,7 +7,7 @@ from hashlib                    import md5
 from time                       import sleep
 from xml.etree                  import ElementTree
 
-from pp_log                     import logger, pp_printer as printer
+from pp_log                     import logger, printer
 
 #==================================================================================================================
 

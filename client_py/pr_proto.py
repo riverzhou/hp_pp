@@ -8,7 +8,7 @@ from time                       import sleep
 
 from ct_proto                   import base_ct_server
 from pp_thread                  import pp_subthread, buff_sender, price_sender
-from pp_log                     import logger, ct_printer as printer
+from pp_log                     import logger, printer
 
 #==================================================================================================================
 

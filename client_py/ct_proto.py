@@ -9,7 +9,7 @@ from hashlib                    import md5
 from time                       import sleep
 
 from pp_thread                  import pp_subthread, buff_sender
-from pp_log                     import logger, ct_printer as printer
+from pp_log                     import logger, printer
 
 from xml.etree                  import ElementTree
 
