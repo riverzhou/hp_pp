@@ -37,7 +37,7 @@ class proto_pr_server(base_ct_server):
                         info_val['systime'],
                         info_val['lowtime']
                         ) ) ,
-                        0 , 0 )
+                        3030 , 0 )
 
         def proc_ct_recv(self):
                 result = self.get()
