@@ -51,13 +51,13 @@ class bid_price(pp_subthread, proto_bid_price):
                 try:
                         self.started_set()
                         while True :
-                                if self.flag_stop == True: break
+                                if self.stop_flag == True: break
                                 self.event_warmup.wait()
-                                if self.flag_stop == True: break
+                                if self.stop_flag == True: break
                                 self.do_warmup()
-                                if self.flag_stop == True: break
+                                if self.stop_flag == True: break
                                 self.event_shoot.wait()
-                                if self.flag_stop == True: break
+                                if self.stop_flag == True: break
                                 self.do_shoot()
                                 break
                 except  KeyboardInterrupt:
@@ -113,15 +113,15 @@ class bid_image(pp_subthread, proto_bid_image):
                 try:
                         self.started_set()
                         while True: 
-                                if self.flag_stop == True: break
+                                if self.stop_flag == True: break
                                 #self.event_warmup.wait()
                                 self.sem_warmup.acquire()
-                                if self.flag_stop == True: break
+                                if self.stop_flag == True: break
                                 self.do_warmup()
-                                if self.flag_stop == True: break
+                                if self.stop_flag == True: break
                                 #self.event_shoot.wait()
                                 self.sem_shoot.acquire()
-                                if self.flag_stop == True: break
+                                if self.stop_flag == True: break
                                 self.do_shoot()
                                 self.do_cooldown()
                                 sleep(0)
@@ -234,9 +234,9 @@ class client_login(pp_subthread, proto_client_login):
                 try:
                         self.started_set()
                         while True :
-                                if self.flag_stop == True: break
+                                if self.stop_flag == True: break
                                 self.event_shoot.wait()
-                                if self.flag_stop == True: break
+                                if self.stop_flag == True: break
                                 self.do_shoot()
                                 break
                 except  KeyboardInterrupt:
@@ -262,7 +262,7 @@ class client_login(pp_subthread, proto_client_login):
                 self.do_format_udp()
                 self.do_client_udp()
                 while True:
-                        if self.flag_stop == True:
+                        if self.stop_flag == True:
                                 break
                         self.do_update_status()
                         sleep(0)

@@ -15,7 +15,7 @@ class pp_subthread(Thread):
 
         def __init__(self):
                 Thread.__init__(self)
-                self.flag_stop = False
+                self.stop_flag = False
                 self.event_stop = Event()
                 self.event_started = Event()
 
@@ -26,7 +26,7 @@ class pp_subthread(Thread):
                 self.event_started.set()
 
         def stop(self):
-                self.flag_stop = True
+                self.stop_flag = True
                 self.event_stop.set()
 
         def wait_for_stop(self):
@@ -56,13 +56,13 @@ class pp_sender(pp_subthread):
                 return True
 
         def get(self):
-                if self.flag_stop == True:
+                if self.stop_flag == True:
                         return False
                 self.sem_buff.acquire()
-                if self.flag_stop == True:
+                if self.stop_flag == True:
                         return False
                 self.lock_buff.acquire()
-                if self.flag_stop == True:
+                if self.stop_flag == True:
                         self.lock_buff.release()
                         return False
                 if len(self.buff_list) == 0 :
