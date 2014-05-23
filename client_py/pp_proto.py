@@ -391,6 +391,8 @@ class proto_ssl_price(proto_ssl):
                 key_val['time'] = self.ack[0]['BIDTIME']
                 key_val['count'] = self.ack[0]['BIDCOUNT']
                 key_val['price'] = self.ack[0]['BIDAMOUNT']
+                key_val['name'] = self.ack[0]['CLIENTNAME']
+                key_val['bidno'] = self.ack[0]['BIDNUMBER']
                 key_val['sid'] = self.ack[1]
                 printer.info(string)
                 printer.warning(sorted(key_val.items()))
