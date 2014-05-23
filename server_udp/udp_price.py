@@ -54,7 +54,6 @@ UDPServer.request_queue_size  = 100
 
 class proto_udp():
         __metaclass__ = ABCMeta
-        #strftime('%H:%M:%S',localtime(time()))
 
         @staticmethod
         def decode(data):
@@ -128,7 +127,7 @@ class proto_udp():
                 return key_val
 
         def udp_make_a_info(self, key_val):
-                return ( (
+                info = ( (
                         '<TYPE>INFO</TYPE><INFO>A拍卖会：2014年5月24日上海市个人非营业性客车额度投标拍卖会\r\n'+
                         '投放额度数：7400\r\n'+
                         '本场拍卖会警示价：72600\r\n'+
@@ -140,16 +139,18 @@ class proto_udp():
                         '系统目前时间：%s\r\n'+
                         '目前已投标人数：%s\r\n'+
                         '目前最低可成交价：%s\r\n'+
-                        '最低可成交价出价时间：$s</INFO>\r\n'
+                        '最低可成交价出价时间：%s</INFO>\r\n'
                         ) % (
-                        key_val['time'],
+                        key_val['systime'],
                         key_val['number'],
                         key_val['price'],
-                        key_val['time'],
-                        ) ).encode('gb18030')
+                        key_val['lowtime']
+                        ) )
+                print(info)
+                return info.encode('gb18030')
 
         def udp_make_b_info(self, key_val):
-                return ( (
+                info = ( (
                         '<TYPE>INFO</TYPE><INFO>B拍卖会：2014年4月19日上海市个人非营业性客车额度投标拍卖会\r\n'+
                         '投放额度数：8200\r\n'+
                         '目前已投标人数：%s\r\n'+
@@ -164,36 +165,87 @@ class proto_udp():
                         '目前修改价格区间：%s至%s</INFO>\r\n'
                         ) % (
                         key_val['number'],
-                        key_val['time'],
+                        key_val['systime'],
                         key_val['price'],
-                        key_val['time'],
+                        key_val['lowtime'],
                         str(int(key_val['price']) - 300),
-                        str(int(key_val['price']) + 300),
-                        ) ).encode('gb18030')
+                        str(int(key_val['price']) + 300)
+                        ) )
+                print(info)
+                return info.encode('gb18030')
 
 #------------------------------------------------------
 
 class info_maker(pp_subthread, proto_udp):
+        #strftime('%H:%M:%S',localtime(time()))
         def __init__(self):
                 pp_subthread.__init__(self)
                 proto_udp.__init__(self)
+                self.addr_list = []
+                self.lock_addr = Lock()
+                self.number = 0
+                self.price  = 100
 
         def run(self):
                 logger.debug('Thread %s : %s started' % (self.__class__.__name__, self.ident))
                 self.started_set()
                 try:
                         while True:
-                                key_val = {}
-                                #print(self.udp_make_a_info(key_val))
-                                sleep(5)
-                                key_val = {}
-                                #print(self.udp_make_b_info(key_val))
-                                sleep(5)
+                                count = 0
+                                time_a = 600            # 上半场持续时间（秒）
+                                time_b = 600            # 下半场持续时间（秒）
+                                if count < time_a :
+                                        self.proc_a()
+                                        count += 1
+                                elif count < time_a + time_b :
+                                        self.proc_b()
+                                        count += 1
+                                else :
+                                        self.proc_reset()
+                                        count = 0
+                                sleep(1)
                 except KeyboardInterrupt:
                         pass
                 except :
                         print_exc()
                 logger.debug('Thread %s : %s stoped' % (self.__class__.__name__, self.ident))
+
+        def proc_reset(self):
+                self.number = 1
+                self.price  = 100
+
+        def proc_a(self):
+                if len(self.addr_list) == 0 :
+                        return
+                key_val = {}
+                key_val['systime']   = strftime('%H:%M:%S',localtime(time()))
+                key_val['lowtime']   = strftime('%H:%M:%S',localtime(time()))
+                key_val['number']    = self.number
+                key_val['price']     = self.price
+                self.number += 1
+                self.price  += 100
+                self.proc(self.udp_make_a_info(key_val))
+
+        def proc_b(self):
+                if len(self.addr_list) == 0 :
+                        return
+                key_val = {}
+                key_val['systime']   = strftime('%H:%M:%S',localtime(time()))
+                key_val['lowtime']   = strftime('%H:%M:%S',localtime(time()))
+                key_val['number']    = self.number
+                key_val['price']     = self.price
+                self.number += 1
+                self.price  += 100
+                self.proc(self.udp_make_b_info(key_val))
+
+        def proc(self, info):
+                addr_list = []
+                self.lock_addr.acquire()
+                for addr in self.addr_list :
+                        addr_list.append(addr)
+                self.lock_addr.release()
+                for addr in addr_list :
+                        daemon_bs.put((info, addr))
 
         def do_a_info(self):
                 pass
@@ -201,24 +253,38 @@ class info_maker(pp_subthread, proto_udp):
         def do_b_info(self):
                 pass
 
+        def reg(self, addr):
+                self.lock_addr.acquire()
+                if not addr in self.addr_list :
+                        self.addr_list.append(addr)
+                self.lock_addr.release()
+
+        def unreg(self, addr):
+                self.lock_addr.acquire()
+                for i in range(len(self.addr_list)) :
+                        if self.addr_list[i] == addr :
+                                del(self.addr_list[i])
+                                break
+                self.lock_addr.release()
+
+#----------------------------
 
 class buff_sender(pp_sender):
 
-        def proc(self, buff):  # buff 为 (data, addr)
-                data, addr = buff
-                data = proto_udp.encode(data)
+        def proc(self, buff):  # buff 为 (info, addr)
+                info, addr = buff
+                data = proto_udp.encode(info)
                 server_udp.socket.sendto(data, addr)
-                print(buff)
-                print()
 
 #------------------------------------------------------
+
 class udp_handle(BaseRequestHandler):
 
         def handle(self):
                 proto_dict = {
                         'FORMAT' : self.proc_format ,
                         'CLIENT' : self.proc_client ,
-                        'LOGOUT' : self.proc_logout ,
+                        'LOGOFF' : self.proc_logoff ,
                         }
                 string = self.get()
                 key_val = proto_udp.parse_ack(string)
@@ -233,12 +299,11 @@ class udp_handle(BaseRequestHandler):
         def get(self):
                 return proto_udp.decode(self.request[0]).decode('gb18030')
 
-        def proc_logout(self, key_val):
-                #unreg
-                pass
+        def proc_logoff(self, key_val):
+                daemon_im.unreg(key_val['addr'])
 
         def proc_format(self, key_val):
-                #reg
+                daemon_im.reg(key_val['addr'])
                 daemon_bs.put(proto_udp.udp_make_format_ack(key_val))
 
         def proc_client(self, key_val):
