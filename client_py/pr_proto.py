@@ -53,7 +53,9 @@ class proto_pr_server(base_ct_server):
 
         def handle(self):
                 logger.info('Thread %s : %s started' % (self.__class__.__name__, self.client_address))
-                self.buff_sender = self.request
+                self.buff_sender = buff_sender(self.request)
+                self.buff_sender.start()
+                self.buff_sender.started()
                 # 注册句柄到 price_sender 线程
                 global daemon_pr
                 daemon_pr.reg(self)
