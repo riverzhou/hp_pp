@@ -120,7 +120,7 @@ class proto_udp():
                         for child in root:
                                 key_val[child.tag] = child.text
                 except :
-                        logger.error(string)
+                        printer.error(string)
                 printer.info(string)
                 printer.error(sorted(key_val.items()))
                 printer.error('')
@@ -187,7 +187,7 @@ class info_maker(pp_subthread, proto_udp):
                 self.price  = 100
 
         def run(self):
-                logger.debug('Thread %s : %s started' % (self.__class__.__name__, self.ident))
+                printer.debug('Thread %s : %s started' % (self.__class__.__name__, self.ident))
                 self.started_set()
                 try:
                         count  = 0
@@ -208,7 +208,7 @@ class info_maker(pp_subthread, proto_udp):
                         pass
                 except :
                         print_exc()
-                logger.debug('Thread %s : %s stoped' % (self.__class__.__name__, self.ident))
+                printer.debug('Thread %s : %s stoped' % (self.__class__.__name__, self.ident))
 
         def proc_reset(self):
                 self.number = 1

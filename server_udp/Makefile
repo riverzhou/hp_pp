@@ -10,5 +10,5 @@ all:
 	strip udp_client
 
 clean:
-	$(rm) udp_client core
+	$(rm) udp_client core *.log
 
