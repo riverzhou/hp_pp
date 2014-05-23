@@ -29,7 +29,7 @@ class proto_pr_server(base_ct_server):
                         '<PRICE>%s</PRICE>'+
                         '<NUMBER>%s</NUMBER>'+
                         '<SYSTIME>%s</SYSTIME>'+
-                        '<LOWTIME></LOWTIME>'+
+                        '<LOWTIME>%s</LOWTIME>'+
                         '</XML>'
                         ) % (
                         info_val['price'],
