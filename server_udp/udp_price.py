@@ -190,10 +190,10 @@ class info_maker(pp_subthread, proto_udp):
                 logger.debug('Thread %s : %s started' % (self.__class__.__name__, self.ident))
                 self.started_set()
                 try:
+                        count  = 0
+                        time_a = 600            # 上半场持续时间（秒）
+                        time_b = 600            # 下半场持续时间（秒）
                         while True:
-                                count = 0
-                                time_a = 600            # 上半场持续时间（秒）
-                                time_b = 600            # 下半场持续时间（秒）
                                 if count < time_a :
                                         self.proc_a()
                                         count += 1
