@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-class foobar_printer():
+class foobar_logger():
         def debug(self, log):
                 pass
         def info(self, log):
@@ -12,9 +12,6 @@ class foobar_printer():
         def critical(self, log):
                 pass
 
-class foobar_logger(foobar_printer):
-        pass
-
 logger  = foobar_logger()
-printer = foobar_printer()
+printer = foobar_logger()
 
