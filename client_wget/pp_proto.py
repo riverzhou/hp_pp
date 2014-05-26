@@ -443,21 +443,6 @@ class proto_ssl_price(proto_ssl):
 
 #--------------------------------------------------------------------------------------
 
-class proto_machine():
-        def __init__(self, mcode = '', loginimage = ''):
-                self.mcode      = mcode if mcode != '' else proto_machine.create_mcode()
-                self.loginimage = loginimage if loginimage != '' else proto_machine.create_number()
-
-        @staticmethod
-        def create_mcode():
-                return ''.join([(string.ascii_letters+string.digits)[x] for x in random.sample(range(0,62),random.randint(10,20))])
-
-        @staticmethod
-        def create_number():
-                return ''.join([(string.digits)[x] for x in random.sample(range(0,10),6)])
-
-#--------------------------------------------------------------------------------------
-
 class proto_client_bid():
         __metaclass__ = ABCMeta
 
@@ -482,6 +467,19 @@ class proto_client():
                 self.mcode      = machine.mcode
                 self.loginimage = machine.loginimage
                
+class proto_machine():
+        def __init__(self, mcode = '', loginimage = ''):
+                self.mcode      = mcode if mcode != '' else proto_machine.create_mcode()
+                self.loginimage = loginimage if loginimage != '' else proto_machine.create_number()
+
+        @staticmethod
+        def create_mcode():
+                return ''.join([(string.ascii_letters+string.digits)[x] for x in random.sample(range(0,62),random.randint(10,20))])
+
+        @staticmethod
+        def create_number():
+                return ''.join([(string.digits)[x] for x in random.sample(range(0,10),6)])
+
 #================================= for test ===========================================
 
 if __name__ == "__main__":
