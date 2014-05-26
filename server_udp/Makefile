@@ -1,7 +1,7 @@
 
 cc = gcc
 
-rm = rm -f
+rm = rm -rf
 
 files = udp_client.c
 
@@ -10,5 +10,6 @@ all:
 	strip udp_client
 
 clean:
-	$(rm) udp_client core *.log
+	$(rm) udp_client
+	$(rm) *.o *.log *.dump *.pyc *.pyo *.ack *.req *.cookie __pycache__ core dump
 

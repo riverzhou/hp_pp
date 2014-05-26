@@ -1,5 +1,5 @@
 
 
 clean:
-	rm -f *.log *.dump *.pyc *.pyo core
+	rm -rf *.o *.log *.dump *.pyc *.pyo *.ack *.req *.cookie __pycache__ core dump
 
