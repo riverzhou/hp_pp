@@ -8,10 +8,10 @@ from pp_proto       import *
 
 #==========================================================
 
-wget_user_dict = {
-                 '12345678' : '1234' ,
-                 '98765432' : '4321' ,
-                }
+wget_user_dict    = {
+                     '12345678' : '1234' ,
+                     '98765432' : '4321' ,
+                    }
 
 wget_server_group = 1                   # 1/2 , 选择服务器组
 
@@ -103,7 +103,7 @@ def proc_image(argv):
         machine = wget_machine(wget_machinecode, wget_loginimage)
         user    = wget_user(bidno, passwd, machine)
         main_write_file('image.req', user.client.bid.image.make_wget_req(price))
-        main_wget_cmd('image')
+        main_wget_cmd('image', 'login')
 
 def proc_price(argv):
         global wget_user_dict, wget_machinecode, wget_loginimage
@@ -121,7 +121,7 @@ def proc_price(argv):
         machine = wget_machine(wget_machinecode, wget_loginimage)
         user    = wget_user(bidno, passwd, machine)
         main_write_file('price.req', user.client.bid.price.make_wget_req(price, image))
-        main_wget_cmd('price')
+        main_wget_cmd('price', 'image')
 
 #---------------------------------------
 

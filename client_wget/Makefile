@@ -1,5 +1,5 @@
 
 
 clean:
-	rm -f *.ack *.req *.cookie
+	rm -rf *.ack *.req *.cookie __pycache__
 
