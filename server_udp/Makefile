@@ -10,6 +10,6 @@ all:
 	strip udp_client
 
 clean:
-	$(rm) udp_client
-	$(rm) *.o *.log *.dump *.pyc *.pyo *.ack *.req *.cookie __pycache__ core dump
+	@$(rm) udp_client
+	@$(rm) *.o *.log *.dump *.pyc *.pyo *.ack *.req *.cookie __pycache__ core dump
 

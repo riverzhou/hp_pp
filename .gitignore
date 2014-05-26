@@ -1,0 +1,9 @@
+*.swp
+*.pyo
+*.pyc
+*.log
+*.req
+*.ack
+*.cookie
+__pycache__
+core

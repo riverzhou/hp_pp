@@ -10,6 +10,6 @@ all:
 	strip dm_client
 
 clean:
-	$(rm) dm_client
-	$(rm) *.o *.log *.dump *.pyc *.pyo *.ack *.req *.cookie __pycache__ core dump
+	@$(rm) dm_client
+	@$(rm) *.o *.log *.dump *.pyc *.pyo *.ack *.req *.cookie __pycache__ core dump
 
