@@ -1,6 +1,6 @@
 # make clean
 
-exclude_dirs := .git
+exclude_dirs := .git reqack
 
 dirs := $(shell find . -maxdepth 1 -type d)
 dirs := $(basename $(patsubst ./%,%,$(dirs)))
