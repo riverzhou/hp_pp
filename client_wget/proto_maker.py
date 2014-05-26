@@ -134,6 +134,7 @@ def main_wget_cmd(operate, load = ''):
                 ' -i %s.req'+
                 ' -O %s.ack'+
                 ' --save-cookies=%s.cookie'+
+                ' --keep-session-cookies'+
                 ' %s'
                 ) % (
                 wget_agent,
