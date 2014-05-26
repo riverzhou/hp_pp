@@ -128,8 +128,9 @@ def proc_price(argv):
 def main_wget_cmd(operate, load = ''):
         global wget_agent
         wget_cmd = ((
-                'wget --no-check-certificate'+
-                ' -U %s'+
+                'wget'+
+                ' --no-check-certificate'+
+                ' -U "%s"'+
                 ' -i %s.req'+
                 ' -O %s.ack'+
                 ' --save-cookies=%s.cookie'+
