@@ -36,14 +36,14 @@ class base_ct_server(BaseRequestHandler):
                 except:
                         head = None
                 if not head or len(head) != 12 :
-                        return
+                        return None
                 size, proto, option = unpack('iii', head)
                 try:
                         data = self.request.recv(size)
                 except:
                         data = None
                 if not data or len(data) == 0 :
-                        return
+                        return None
                 result = {}
                 result['size'] = size
                 result['proto'] = proto
