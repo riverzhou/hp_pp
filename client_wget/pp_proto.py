@@ -191,9 +191,14 @@ class proto_ssl():
 
         def get_dict_from_xml(self, xml_string):
                 key_val = {}
-                root = ElementTree.fromstring(xml_string)
-                for child in root:
-                        key_val[child.tag] = child.text
+                try:
+                        root = ElementTree.fromstring(xml_string)
+                        for child in root:
+                                key_val[child.tag] = child.text
+                except:
+                        printer.error(string)
+                if key_val == {} :
+                        printer.error(string)
                 return key_val
 
         def split_html_xml_from_string(self, string):
