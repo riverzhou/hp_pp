@@ -86,7 +86,7 @@ def make_log(name = None, log = None,  level = 'debug' , console = True, fmt = T
 #=========================================================================================
 
 logger     = make_log(name = 'log.log',     log = 'logger',     level = 'debug', console = True, fmt = True,  color = True)
-printer    = make_log(name = 'pri.log',     log = 'printer',    level = 'info',  console = True, fmt = False, color = False)
+printer    = make_log(name = 'pri.log',     log = 'printer',    level = 'debug', console = True, fmt = False, color = False)
 
 #ct_printer = make_log(name = 'ctpri.log' , log = 'ct_printer', level = 'info',  console = False, fmt = False, color = True)
 #pp_printer = make_log(name = 'pppri.log' , log = 'pp_printer', level = 'info',  console = False, fmt = False, color = True)
