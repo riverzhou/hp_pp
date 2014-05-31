@@ -93,16 +93,6 @@ class proto_ct_server(base_ct_server):
         def make_proto_ct_image_shoot_ack(self, bidid):
                 return ('<XML><TYPE>IMAGE_SHOOT</TYPE><BIDID>%d</BIDID><INFO>OK</INFO></XML>' % bidid) , 3009 , 0
 
-        #<<模式2>>
-        def make_proto_ct_image_pool_ack(self, bidid):
-                return ('<XML><TYPE>IMAGE_POOL</TYPE><BIDID>%d</BIDID><INFO>OK</INFO></XML>' % bidid) , 3023 , 0
-
-        def make_proto_ct_pool_decode_req(self, bidid, sessionid, image):
-                return ('<XML><TYPE>POOL_DECODE</TYPE><BIDID>%d</BIDID><SESSIONID>%s</SESSIONID><IMAGE>%s</IMAGE></XML>' % (bidid, sessionid, image)) , 3024 , 0
-
-        def make_proto_ct_price_shoot_ack(self, bidid):
-                return ('<XML><TYPE>PRICE_SHOOT</TYPE><BIDID>%d</BIDID><INFO>OK</INFO></XML>' % bidid) , 3021 , 0
-
         #------------------------------------------------------------------------
 
         #<<继承后重写>>
@@ -126,15 +116,6 @@ class proto_ct_server(base_ct_server):
 
         @abstractmethod
         def proc_ct_image_shoot(self, key_val): pass
-
-        @abstractmethod
-        def proc_ct_image_pool(self, key_val): pass
-
-        @abstractmethod
-        def proc_ct_pool_decode(self, key_val): pass
-
-        @abstractmethod
-        def proc_ct_price_shoot(self, key_val): pass
 
         @abstractmethod
         def proc_ct_logoff(self): pass
@@ -161,13 +142,11 @@ class proto_ct_server(base_ct_server):
                 logger.info('Thread %s : %s started' % (self.__class__.__name__, self.client_address))
                 self.func_dict = {
                         'CT_LOGIN':     self.proc_ct_login,
+                        'CT_LOGOFF':    self.proc_ct_logoff,
                         'IMAGE_WARMUP': self.proc_ct_image_warmup,
                         'PRICE_WARMUP': self.proc_ct_price_warmup,
                         'IMAGE_SHOOT':  self.proc_ct_image_shoot,
                         'IMAGE_DECODE': self.proc_ct_image_decode,
-                        'IMAGE_POOL' :  self.proc_ct_image_pool,
-                        'POOL_DECODE':  self.proc_ct_pool_decode,
-                        'PRICE_SHOOT':  self.proc_ct_price_shoot,
                         }
                 self.login_ok = False
                 self.buff_sender = buff_sender(self.request)
@@ -221,18 +200,6 @@ class ct_handler(proto_ct_server):
 
         def proc_ct_image_shoot(self, key_val):
                 self.put(self.make_proto_ct_image_shoot_ack(1))
-                return True
-
-        def proc_ct_image_pool(self, key_val):
-                self.put(self.make_proto_ct_image_pool_ack(1))
-                return True
-
-        def proc_ct_pool_decode(self, key_val):
-                self.put(self.make_proto_ct_pool_decode_req(1, 'CCCCCCC', 'xxxxxxxx'))
-                return True
-
-        def proc_ct_price_shoot(self, key_val):
-                self.put(self.make_proto_ct_price_shoot_ack(1))
                 return True
 
         def proc_ct_logoff(self):
