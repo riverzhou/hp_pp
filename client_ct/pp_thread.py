@@ -113,45 +113,14 @@ class buff_sender(pp_sender):
 
 #--------------------------------------------------------------------------------------------
 
-class price_sender(pp_sender):
-        def __init__(self) :
+class cmd_sender(pp_sender):
+        def __init__(self, handler):
                 pp_sender.__init__(self)
-                self.flag_fifo = False                  # 栈模式
-                self.handler_list = []
-                self.lock_handler = Lock()
-                self.last_price = 0                     # daemon_pr.last_price 是最新价格，全局可访问
+                self.handler = handler
 
-        def proc(self, info_val):
-                price = int(info_val['price'])
-                if price <= self.last_price :
-                        return
-                self.last_price = price
-                handler_list = []
-                self.lock_handler.acquire()
-                for handler in self.handler_list :
-                        handler_list.append(handler)
-                self.lock_handler.release()
-                for handler in handler_list :
-                        handler.send(info_val)
+        def send(self, key_val):
+                return self.put(key_val)
 
-        def send(self, info_val):
-                price = int(info_val['price'])
-                last_price = self.last_price
-                if price <= last_price :
-                        return
-                return self.put(info_val)
-
-        def reg(self, handler):
-                self.lock_handler.acquire()
-                if not handler in self.handler_list :
-                        self.handler_list.append(handler)
-                self.lock_handler.release()
-
-        def unreg(self, handler):
-                self.lock_handler.acquire()
-                for i in range(len(self.handler_list)) :
-                        if self.handler_list[i] == handler :
-                                del(self.handler_list[i])
-                                break
-                self.lock_handler.release()
+        def proc(self, key_val):
+                self.handler.send(key_val)
 
