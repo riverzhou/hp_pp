@@ -260,6 +260,14 @@ class proto_ssl():
                         ))
                 return self.get_md5(seed)
 
+        def image_decode(self, string):
+                s1 = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+/'
+                s2 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+                output = ''
+                for i in string:
+                        output += s2[s1.find(i)]
+                return output
+
 class proto_ssl_login(proto_ssl):
         def __init__(self, client, login):
                 self.client = client
