@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import logging
+import platform
 
 #=========================================================================================
 
@@ -40,6 +41,8 @@ class foobar_logger():
 #-----------------------------------------------------------------------------------------
 
 def make_log(name = None, log = None,  level = 'debug' , console = True, fmt = True, color = True):
+
+        color = False if platform.system() == 'Windows' else color
 
         LEVELS = {
                 'debug'   : logging.DEBUG,
