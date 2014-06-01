@@ -418,7 +418,7 @@ class proto_ssl_image(proto_ssl):
                 string = buff.decode()
                 proto_ssl.parse_ack(self, string)
                 key_val = {}
-                key_val['image'] = self.ack[0]['IMAGE_CONTENT']
+                key_val['image'] = self.image_decode(self.ack[0]['IMAGE_CONTENT'])
                 key_val['sid'] = self.ack[1]
                 info_val = {}
                 info_val['errcode'] = self.ack[0]['ERRORCODE']
