@@ -57,7 +57,9 @@ class base_ct_client():
                         return None
                 size, proto, option = unpack('iii', head)
                 try:
-                        data = self.sock.recv(size)
+                        data = b''
+                        while len(data) < size - 12 :
+                                data += self.sock.recv(size)
                 except:
                         data = None
                 if not data or len(data) == 0 :
@@ -188,25 +190,25 @@ class ctrl_ct(base_ct_client, pp_subthread):
                 info_val['sessionid'] = key_val['SESSIONID']
                 info_val['image']     = key_val['IMAGE']
                 self.sessionid        = key_val['SESSIONID']
-                self.handle.update_image_decode(info_val)
+                self.handler.update_image_decode(info_val)
 
         def proc_ct_image_warmup(self, key_val):
                 info_val = {}
                 info_val['cmd']   = 'ack'
                 info_val['bidid'] = key_val['BIDID']
-                self.handle.update_image_warmup(info_val)
+                self.handler.update_image_warmup(info_val)
 
         def proc_ct_price_warmup(self, key_val):
                 info_val = {}
                 info_val['cmd']   = 'ack'
                 info_val['bidid'] = bidid = key_val['BIDID']
-                self.handle.update_price_warmup(info_val)
+                self.handler.update_price_warmup(info_val)
 
         def proc_ct_image_shoot(self, key_val):
                 info_val = {}
                 info_val['cmd']   = 'ack'
                 info_val['bidid'] = bidid = key_val['BIDID']
-                self.handle.update_image_shoot(info_val)
+                self.handler.update_image_shoot(info_val)
 
         def proc_ct_logoff(self):
                 pass

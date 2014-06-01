@@ -2,7 +2,10 @@
 
 from tkinter    import Tk, Toplevel
 from pickle     import dump, load
-from traceback  import  print_exc
+from traceback  import print_exc
+from PIL        import Image, ImageTk
+from io         import BytesIO
+from base64     import b64decode
 
 from MainWin    import Console, GEOMETRY
 
@@ -50,31 +53,35 @@ class Console(Console):
         def button_image_warmup_clicked(self, event):
                 key_val = {}
                 key_val['cmd']    = 'image_warmup'
+                key_val['bidid']  = '1'
                 self.cmd_sender.send(key_val)
                 print(sorted(key_val.items()))
 
         def button_price_warmup_clicked(self, event):
                 key_val = {}
                 key_val['cmd']    = 'price_warmup'
+                key_val['bidid']  = '1'
                 self.cmd_sender.send(key_val)
                 print(sorted(key_val.items()))
 
         def button_image_price_clicked(self, event):
                 key_val = {}
-                key_val['cmd']    = 'image_price'
+                key_val['cmd']    = 'image_shoot'
+                key_val['bidid']  = '1'
                 key_val['price']  = self.get_input_image_price()
                 self.cmd_sender.send(key_val)
                 print(sorted(key_val.items()))
 
         def button_image_number_clicked(self, event):
                 key_val = {}
-                key_val['cmd']    = 'image_number'
+                key_val['cmd']    = 'image_decode'
+                key_val['bidid']  = '1'
                 key_val['number'] = self.get_input_image_number()
                 self.cmd_sender.send(key_val)
                 print(sorted(key_val.items()))
 
         def button_connect_clicked(self, event):
-                addr = (self.get_input_ip(), int(self.get_input_port()))
+                addr = (self.input_ip.get(), int(self.input_port.get()))
                 print(addr)
                 daemon_pr.connect(addr)
                 daemon_ct.connect(addr)
@@ -82,8 +89,8 @@ class Console(Console):
                 daemon_ct.wait_for_connect()
                 key_val = {}
                 key_val['cmd']    = 'login'
-                key_val['bidno']  = self.get_input_bidno()
-                key_val['passwd'] = self.get_input_passwd()
+                key_val['bidno']  = self.input_bidno.get()
+                key_val['passwd'] = self.input_passwd.get()
                 print(sorted(key_val.items()))
                 self.cmd_sender.send(key_val)
 
@@ -93,18 +100,6 @@ class Console(Console):
                 db['bidno']    = key_val['bidno']
                 db['passwd']   = key_val['passwd']
                 self.save_database(db)
-
-        def get_input_ip(self):
-                return self.input_ip.get()
-
-        def get_input_port(self):
-                return self.input_port.get()
-
-        def get_input_bidno(self):
-                return self.input_bidno.get()
-
-        def get_input_passwd(self):
-                return self.input_passwd.get()
 
         def get_input_image_price(self):
                 return self.input_image_price.get()
@@ -125,7 +120,11 @@ class Console(Console):
                 pass
 
         def update_image_decode(self, key_val):
-                pass
+                image = key_val['image']
+                photo = ImageTk.PhotoImage(Image.open(BytesIO(b64decode(image)))) 
+                self.output_image['image'] = photo
+                self.output_image.update_idletasks()
+
 
 #===========================================================
 

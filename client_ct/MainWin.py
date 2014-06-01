@@ -2,10 +2,14 @@
 
 from tkinter        import *
 
+
+#==============================================================================
+
 #geometry('591x592+650+150')
 
 GEOMETRY = '591x592+650+150'
 
+#------------------------------------------------------------------------------
 
 class Console:
     def __init__(self, master=None):
@@ -32,7 +36,7 @@ class Console:
         self.frame_bid.configure(width=505)
 
         self.button_image_warmup = Button (self.frame_bid)
-        self.button_image_warmup.place(relx=0.24,rely=0.08,height=35,width=79)
+        self.button_image_warmup.place(relx=0.3,rely=0.08,height=35,width=79)
         self.button_image_warmup.configure(activebackground="#d9d9d9")
         self.button_image_warmup.configure(activeforeground="#000000")
         self.button_image_warmup.configure(background=_bgcolor)
@@ -61,7 +65,7 @@ class Console:
 
         self.input_image_price = Entry (self.frame_bid)
         self.input_image_price.place(relx=0.3,rely=0.37,relheight=0.1
-                ,relwidth=0.36)
+                ,relwidth=0.19)
         self.input_image_price.configure(background="white")
         self.input_image_price.configure(disabledforeground="#a3a3a3")
         self.input_image_price.configure(font=font12)
@@ -71,10 +75,11 @@ class Console:
         self.input_image_price.configure(insertbackground="black")
         self.input_image_price.configure(selectbackground="#c4c4c4")
         self.input_image_price.configure(selectforeground="black")
+        self.input_image_price.configure(width=94)
 
         self.input_image_number = Entry (self.frame_bid)
         self.input_image_number.place(relx=0.3,rely=0.65,relheight=0.1
-                ,relwidth=0.36)
+                ,relwidth=0.19)
         self.input_image_number.configure(background="white")
         self.input_image_number.configure(disabledforeground="#a3a3a3")
         self.input_image_number.configure(font=font12)
@@ -84,9 +89,10 @@ class Console:
         self.input_image_number.configure(insertbackground="black")
         self.input_image_number.configure(selectbackground="#c4c4c4")
         self.input_image_number.configure(selectforeground="black")
+        self.input_image_number.configure(width=94)
 
         self.button_image_price = Button (self.frame_bid)
-        self.button_image_price.place(relx=0.75,rely=0.37,height=35,width=95)
+        self.button_image_price.place(relx=0.55,rely=0.37,height=35,width=95)
         self.button_image_price.configure(activebackground="#d9d9d9")
         self.button_image_price.configure(activeforeground="#000000")
         self.button_image_price.configure(background=_bgcolor)
@@ -100,7 +106,7 @@ class Console:
         self.button_image_price.bind('<Button-1>',self.button_image_price_clicked)
 
         self.button_image_number = Button (self.frame_bid)
-        self.button_image_number.place(relx=0.75,rely=0.65,height=35,width=95)
+        self.button_image_number.place(relx=0.55,rely=0.61,height=35,width=95)
         self.button_image_number.configure(activebackground="#d9d9d9")
         self.button_image_number.configure(activeforeground="#000000")
         self.button_image_number.configure(background=_bgcolor)
@@ -114,7 +120,7 @@ class Console:
         self.button_image_number.bind('<Button-1>',self.button_image_number_clicked)
 
         self.Label5 = Label (self.frame_bid)
-        self.Label5.place(relx=0.14,rely=0.37,height=23,width=30)
+        self.Label5.place(relx=0.12,rely=0.37,height=23,width=30)
         self.Label5.configure(activebackground="#f9f9f9")
         self.Label5.configure(activeforeground="black")
         self.Label5.configure(background=_bgcolor)
@@ -124,16 +130,16 @@ class Console:
         self.Label5.configure(highlightcolor="black")
         self.Label5.configure(text='''价格''')
 
-        self.Label7 = Label (self.frame_bid)
-        self.Label7.place(relx=0.14,rely=0.65,height=23,width=30)
-        self.Label7.configure(activebackground="#f9f9f9")
-        self.Label7.configure(activeforeground="black")
-        self.Label7.configure(background=_bgcolor)
-        self.Label7.configure(disabledforeground="#a3a3a3")
-        self.Label7.configure(foreground="#000000")
-        self.Label7.configure(highlightbackground="#d9d9d9")
-        self.Label7.configure(highlightcolor="black")
-        self.Label7.configure(text='''图片''')
+        self.output_image = Label (self.frame_bid)
+        self.output_image.place(relx=0.02,rely=0.61,height=43,width=130)
+        self.output_image.configure(activebackground="#f9f9f9")
+        self.output_image.configure(activeforeground="black")
+        self.output_image.configure(background=_bgcolor)
+        self.output_image.configure(disabledforeground="#a3a3a3")
+        self.output_image.configure(foreground="#000000")
+        self.output_image.configure(highlightbackground="#d9d9d9")
+        self.output_image.configure(highlightcolor="black")
+        self.output_image.configure(text='''图片''')
 
         self.frame_server = Frame (master)
         self.frame_server.place(relx=0.07,rely=0.05,relheight=0.41
@@ -288,6 +294,9 @@ class Console:
             sys.stdout.flush()
 
 
+
+
+#=============================================================================
 
 
 if __name__ == '__main__':
