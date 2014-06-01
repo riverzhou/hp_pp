@@ -9,9 +9,10 @@ from pp_log  import logger, printer
 from pp_thread                  import pp_subthread, cmd_sender
 from ct_proto                   import ctrl_ct
 from pr_proto                   import ctrl_pr 
+from pp_db                      import *
+
 
 #===========================================================
-
 #-----------------------------------------------------------
 
 class Console(Console):
@@ -125,6 +126,10 @@ def ct_main():
         ct_init_tk()
 
 if __name__ == '__main__':
-        ct_main()
-
+        load_dump()
+        try:
+                ct_main()
+        except KeyboardInterrupt:
+                pass
+        save_dump()
 
