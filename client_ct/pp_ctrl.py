@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 
-from tkinter import Tk, Toplevel
+from tkinter    import Tk, Toplevel
+from pickle     import dump, load
+from traceback  import  print_exc
 
-from MainWin import Console, GEOMETRY
+from MainWin    import Console, GEOMETRY
 
-from pp_log  import logger, printer
+from pp_log     import logger, printer
 
-from pp_thread                  import pp_subthread, cmd_sender
-from ct_proto                   import ctrl_ct
-from pr_proto                   import ctrl_pr 
-from pp_db                      import *
+from pp_thread  import pp_subthread, cmd_sender
+from ct_proto   import ctrl_ct
+from pr_proto   import ctrl_pr
 
 
 #===========================================================
@@ -19,11 +20,32 @@ class Console(Console):
         def __init__(self, master=None):
                 global daemon_ct, daemon_pr
                 super(Console, self).__init__(master)
+                self.load_database()
                 daemon_pr.reg(self)
                 daemon_ct.reg(self)
                 self.cmd_sender = cmd_sender(daemon_ct)
                 self.cmd_sender.start()
                 self.cmd_sender.started()
+
+        def load_database(self):
+                global database
+                if not hasattr(database, 'db') :
+                        return
+
+                server_ip   = database.db['server_ip']   if 'server_ip'   in database.db else ''
+                server_port = database.db['server_port'] if 'server_port' in database.db else ''
+                bidno       = database.db['bidno']       if 'bidno'       in database.db else ''
+                passwd      = database.db['passwd']      if 'passwd'      in database.db else ''
+
+                self.input_ip.insert(0, server_ip)
+                self.input_port.insert(0, server_port)
+                self.input_bidno.insert(0, bidno)
+                self.input_passwd.insert(0, passwd)
+
+        def save_database(self, key_val):
+                global database
+                for key in key_val:
+                        database.db[key] = key_val[key]
 
         def button_image_warmup_clicked(self, event):
                 key_val = {}
@@ -65,6 +87,13 @@ class Console(Console):
                 print(sorted(key_val.items()))
                 self.cmd_sender.send(key_val)
 
+                db ={}
+                db['server_ip']   = addr[0]
+                db['server_port'] = str(addr[1])
+                db['bidno']    = key_val['bidno']
+                db['passwd']   = key_val['passwd']
+                self.save_database(db)
+
         def get_input_ip(self):
                 return self.input_ip.get()
 
@@ -97,6 +126,42 @@ class Console(Console):
 
         def update_image_decode(self, key_val):
                 pass
+
+#===========================================================
+
+class DataBase():
+        pass
+
+database = DataBase()
+db_name  = 'pp_db.dump'
+
+#-----------------------------------------------------------
+
+def load_dump():
+        global db_name, database
+        try:
+                f = open(db_name, 'rb')
+                database = load(f)
+                f.close()
+                logger.info('DataBase Loaded')
+                print(database.db)
+        except FileNotFoundError:
+                database.db = {}
+                logger.info('DataBase Created')
+        except:
+                print_exc()
+
+
+def save_dump():
+        global db_name, database
+        try:
+                f = open(db_name, 'wb')
+                dump(database, f, 4)
+                f.close()
+                logger.info('DataBase Saved')
+                print(database.db)
+        except:
+                print_exc()
 
 #===========================================================
 
