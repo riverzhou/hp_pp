@@ -29,6 +29,75 @@ pp_server_dict_2 = {
 
 #pp_price_list = ('73800','73900','74000','74100','74200','74300','74400','74500')
 
+#==================================================================================================================
+
+kv = {
+                '0':'A',
+                '1':'B',
+                '2':'C',
+                '3':'D',
+                '4':'E',
+                '5':'F',
+                '6':'G',
+                '7':'H',
+                '8':'I',
+                '9':'J',
+                'A':'K',
+                'B':'L',
+                'C':'M',
+                'D':'N',
+                'E':'O',
+                'F':'P',
+                'G':'Q',
+                'H':'R',
+                'I':'S',
+                'J':'T',
+                'K':'U',
+                'L':'V',
+                'M':'W',
+                'N':'X',
+                'O':'Y',
+                'P':'Z',
+                'Q':'a',
+                'R':'b',
+                'S':'c',
+                'T':'d',
+                'U':'e',
+                'V':'f',
+                'W':'g',
+                'X':'h',
+                'Y':'i',
+                'Z':'j',
+                'a':'k',
+                'b':'l',
+                'c':'m',
+                'd':'n',
+                'e':'o',
+                'f':'p',
+                'g':'q',
+                'h':'r',
+                'i':'s',
+                'j':'t',
+                'k':'u',
+                'l':'v',
+                'm':'w',
+                'n':'x',
+                'o':'y',
+                'p':'z',
+                'q':'0',
+                'r':'1',
+                's':'2',
+                't':'3',
+                'u':'4',
+                'v':'5',
+                'w':'6',
+                'x':'7',
+                'y':'8',
+                'z':'9',
+                '+':'+',
+                '/':'/',
+            }
+
 #------------------------------------------------------------------------------------------------------------------
 
 class proto_udp():
@@ -261,11 +330,11 @@ class proto_ssl():
                 return self.get_md5(seed)
 
         def image_decode(self, string):
-                s1 = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+/'
-                s2 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+                global kv
+                key_val = kv
                 output = ''
                 for i in string:
-                        output += s2[s1.find(i)]
+                        output += key_val[i]
                 return output
 
 class proto_ssl_login(proto_ssl):
