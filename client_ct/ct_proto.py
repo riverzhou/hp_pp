@@ -48,21 +48,26 @@ class base_ct_client():
                 self.buff_sender.send(buff)
                 #printer.debug(string)
 
-        def get(self):
+        def recv(self, sock, toread) :
+                buff = bytearray(toread)
+                view = memoryview(buff)
                 try :
-                        head = self.sock.recv(12)
+                        while toread :
+                                nbytes = sock.recv_into(view, toread)
+                                view = view[nbytes:]
+                                toread -= nbytes
                 except:
-                        head = None
-                if not head or len(head) != 12 :
+                        buff = None
+                return buff
+
+        def get(self):
+                head = self.recv(self.sock, 12)
+                if not head or len(head) != 12:
                         return None
                 size, proto, option = unpack('iii', head)
-                try:
-                        data = b''
-                        while len(data) < size - 12 :
-                                data += self.sock.recv(size)
-                except:
-                        data = None
-                if not data or len(data) == 0 :
+
+                data = self.recv(self.sock, size - 12)
+                if not data or len(data) != size - 12:
                         return None
                 result = {}
                 result['size'] = size

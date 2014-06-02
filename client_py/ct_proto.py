@@ -30,19 +30,25 @@ class base_ct_server(BaseRequestHandler):
                 self.buff_sender.send(buff)
                 #printer.debug(string)
 
-        def get(self):
+        def recv(self, sock, toread) :
+                buff = bytearray(toread)
+                view = memoryview(buff)
                 try :
-                        head = self.request.recv(12)
+                        while toread :
+                                nbytes = sock.recv_into(view, toread)
+                                view = view[nbytes:]
+                                toread -= nbytes
                 except:
-                        head = None
-                if not head or len(head) != 12 :
+                        buff = None
+                return buff
+
+        def get(self):
+                head = self.recv(self.request, 12)
+                if not head or len(head) == 0:
                         return None
                 size, proto, option = unpack('iii', head)
-                try:
-                        data = self.request.recv(size)
-                except:
-                        data = None
-                if not data or len(data) == 0 :
+                data = self.recv(self.request, size - 12)
+                if not data or len(data) != size - 12 :
                         return None
                 result = {}
                 result['size'] = size
