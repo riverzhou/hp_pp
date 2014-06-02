@@ -98,10 +98,10 @@ class bid_price(pp_subthread, proto_bid_price):
                 number = self.bid.sid_number_dict[sid]
                 self.bid.lock_dict.release()
                 try:
-                        self.ssl_sock.send(self.proto_ssl_price.make_req(price, number, sid))
+                        self.ssl_sock.sendall(self.proto_ssl_price.make_req(price, number, sid))
                 except:
                         self.do_warmup()
-                        self.ssl_sock.send(self.proto_ssl_price.make_req(price, number, sid))
+                        self.ssl_sock.sendall(self.proto_ssl_price.make_req(price, number, sid))
                 finally:
                         recv_ssl = self.ssl_sock.recv(self.proto_ssl_price.ack_len)
                 if not recv_ssl:
@@ -175,10 +175,10 @@ class bid_image(pp_subthread, proto_bid_image):
                 price = self.bid.image_amount
                 self.bid.lock_dict.release()
                 try:
-                        self.ssl_sock.send(self.proto_ssl_image.make_req(price, self.client.login.sid))
+                        self.ssl_sock.sendall(self.proto_ssl_image.make_req(price, self.client.login.sid))
                 except:
                         self.do_warmup()
-                        self.ssl_sock.send(self.proto_ssl_image.make_req(price, self.client.login.sid))
+                        self.ssl_sock.sendall(self.proto_ssl_image.make_req(price, self.client.login.sid))
                 finally:
                         recv_ssl = self.ssl_sock.recv(self.proto_ssl_image.ack_len)
                 if not recv_ssl:
@@ -284,7 +284,7 @@ class client_login(pp_subthread, proto_client_login):
         def do_shoot(self):
                 self.ssl_sock = ssl.SSLContext(ssl.PROTOCOL_SSLv23).wrap_socket(socket(AF_INET, SOCK_STREAM))
                 self.ssl_sock.connect(self.ssl_server_addr)
-                self.ssl_sock.send(self.proto_ssl_login.make_req())
+                self.ssl_sock.sendall(self.proto_ssl_login.make_req())
                 recv_ssl = self.ssl_sock.recv(self.proto_ssl_login.ack_len)
                 if not recv_ssl:
                         return False

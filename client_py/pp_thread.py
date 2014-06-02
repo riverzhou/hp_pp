@@ -109,7 +109,7 @@ class buff_sender(pp_sender):
                 return self.put(buff)
 
         def proc(self, buff):
-                self.sock.send(buff)
+                self.sock.sendall(buff)
 
 #--------------------------------------------------------------------------------------------
 
