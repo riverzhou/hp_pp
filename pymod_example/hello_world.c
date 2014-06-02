@@ -1,5 +1,7 @@
 #include <Python.h>
 
+#include "myhello.h"
+
 static PyObject* add_function(PyObject *self, PyObject *args)
 {
 	int num1, num2;
@@ -12,6 +14,19 @@ static PyObject* add_function(PyObject *self, PyObject *args)
 	return result;
 }
 
+static PyObject* hello_function(PyObject *self, PyObject *args)
+{
+	int n;
+	PyObject *result=NULL;
+	if (!PyArg_ParseTuple(args, "n", &n)) {
+		printf("传入参数错误！\n");
+		return NULL;
+	}
+	myhello(n);
+	result = PyLong_FromLong(n);
+	return result;
+}
+
 static PyObject* test_function(PyObject *self)
 {
 	PyObject_Print(self, stdout, 0);
@@ -21,8 +36,9 @@ static PyObject* test_function(PyObject *self)
 }
 
 static PyMethodDef hello_world_methods[] = {
-	{"test", (PyCFunction)test_function, METH_NOARGS, "hello_world extending test"},
-	{"add", (PyCFunction)add_function, METH_VARARGS, NULL},
+	{"test",  (PyCFunction)test_function, METH_NOARGS, "hello_world extending test"},
+	{"add",   (PyCFunction)add_function, METH_VARARGS, NULL},
+	{"hello", (PyCFunction)hello_function, METH_VARARGS, NULL},
 	{NULL, NULL, 0, NULL}
 };
 

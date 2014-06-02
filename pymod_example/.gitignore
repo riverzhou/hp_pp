@@ -1,0 +1,9 @@
+*.swp
+*.pyo
+*.pyc
+*.log
+*.o
+*.so
+build
+__pycache__
+core
