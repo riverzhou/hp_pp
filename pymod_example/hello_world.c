@@ -10,7 +10,7 @@ static PyObject* add_function(PyObject *self, PyObject *args)
 		printf("传入参数错误！\n");
 		return NULL;
 	}
-	result = PyLong_FromLong(num1+num2);
+	result = Py_BuildValue("i", num1+num2);
 	return result;
 }
 
@@ -18,7 +18,7 @@ static PyObject* hello_function(PyObject *self, PyObject *args)
 {
 	int n;
 	PyObject *result=NULL;
-	if (!PyArg_ParseTuple(args, "n", &n)) {
+	if (!PyArg_ParseTuple(args, "i", &n)) {
 		printf("传入参数错误！\n");
 		return NULL;
 	}
