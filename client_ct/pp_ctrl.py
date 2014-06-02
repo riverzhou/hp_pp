@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from tkinter    import Tk, Toplevel
+from tkinter    import Tk 
 from pickle     import dump, load
 from traceback  import print_exc
 from PIL        import Image, ImageTk
@@ -10,14 +10,11 @@ from base64     import b64decode
 from MainWin    import Console, GEOMETRY
 
 from pp_log     import logger, printer
-
-from pp_thread  import pp_subthread, cmd_sender
+from pp_thread  import cmd_sender
 from ct_proto   import ctrl_ct
 from pr_proto   import ctrl_pr
 
-
 #===========================================================
-#-----------------------------------------------------------
 
 class Console(Console):
         def __init__(self, master=None):
@@ -47,8 +44,14 @@ class Console(Console):
 
         def save_database(self, key_val):
                 global database
+                if not hasattr(database, 'db') :
+                        database.db = {}
                 for key in key_val:
                         database.db[key] = key_val[key]
+
+        #-------------------------------------
+        # 按钮触发处理
+        #-------------------------------------
 
         def button_image_warmup_clicked(self, event):
                 key_val = {}
@@ -68,7 +71,7 @@ class Console(Console):
                 key_val = {}
                 key_val['cmd']    = 'image_shoot'
                 key_val['bidid']  = '1'
-                key_val['price']  = self.get_input_image_price()
+                key_val['price']  = self.input_image_price.get()
                 self.cmd_sender.send(key_val)
                 print(sorted(key_val.items()))
 
@@ -76,7 +79,7 @@ class Console(Console):
                 key_val = {}
                 key_val['cmd']    = 'image_decode'
                 key_val['bidid']  = '1'
-                key_val['number'] = self.get_input_image_number()
+                key_val['number'] = self.input_image_number.get()
                 self.cmd_sender.send(key_val)
                 print(sorted(key_val.items()))
 
@@ -101,11 +104,9 @@ class Console(Console):
                 db['passwd']   = key_val['passwd']
                 self.save_database(db)
 
-        def get_input_image_price(self):
-                return self.input_image_price.get()
-
-        def get_input_image_number(self):
-                return self.input_image_number.get()
+        #-------------------------------------
+        # sock 回调接口
+        #-------------------------------------
 
         def update_info(self, key_val):
                 print(sorted(key_val.items()))
@@ -124,7 +125,6 @@ class Console(Console):
                 photo = ImageTk.PhotoImage(Image.open(BytesIO(b64decode(image)))) 
                 self.output_image['image'] = photo
                 self.output_image.update_idletasks()
-
 
 #===========================================================
 
@@ -188,6 +188,8 @@ def ct_main():
         ct_init_ct()
         logger.info('Client Started ...')
         ct_init_tk()
+
+#-----------------------------------------------------------
 
 if __name__ == '__main__':
         load_dump()
