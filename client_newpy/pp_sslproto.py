@@ -257,7 +257,7 @@ class proto_ssl_image(proto_ssl):
                 string   = buff.decode('gb18030')
                 info_val = self.parse_ack(string)
                 key_val  = {}
-                key_val['image']   = info_val['IMAGE_CONTENT']
+                key_val['image']   = self.image_decode(info_val['IMAGE_CONTENT'])
                 key_val['errcode'] = info_val['ERRORCODE']
                 key_val['errstr']  = info_val['ERRORSTRING']
                 #key_val['sid']  = ''                    # XXX TODO XXX  从包头的分析中得到
