@@ -40,7 +40,7 @@ class udp_proto():
                 key_val = self.do_parse_info(info)
                 if key_val == None : return None
                 try:
-                        info_val[self.tag_dict[key]] = key_val[key] for key in self.tag_dict
+                        for key in self.tag_dict:  info_val[self.tag_dict[key]] = key_val[key]
                 except KeyError:
                         printer.error(sorted(key_val.items()))
                 if echo != False :
@@ -139,7 +139,8 @@ class udp_proto():
                 for i in range(len1) :
                         offset = i*4
                         pack_into('i', view, offset, ~unpack_from('i', buff, offset)[0])
-                return bytes(view[0:len0])
+                data = bytes(data[0:len0])
+                return data
 
         def encode(self, buff):
                 return self.decode(buff)
