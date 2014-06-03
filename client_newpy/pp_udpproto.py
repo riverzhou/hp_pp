@@ -127,18 +127,19 @@ class udp_proto():
                 return self.get_md5_up(pid + bidno)
 
         def decode(self, buff):
-                data = b''
                 len0 = len(buff)
                 len1 = len0 // 4
                 len2 = len0 % 4
                 if len2 != 0:
                         len1 += 1
-                for i in range(4 - len2):
-                        buff += b'0'
+                        buff += b'\0\0\0'
+                data = bytearray(len0+len2)
+                view = memoryview(data)
+                buff = memoryview(buff)
                 for i in range(len1) :
-                        data += pack('i', ~unpack('i', buff[i*4:i*4+4])[0])
-                data = data[0:len0]
-                return data
+                        offset = i*4
+                        pack_into('i', view, offset, ~unpack_from('i', buff, offset)[0])
+                return bytes(view[0:len0])
 
         def encode(self, buff):
                 return self.decode(buff)
