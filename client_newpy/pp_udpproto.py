@@ -150,7 +150,7 @@ class udp_proto():
                 for b in buff:
                         out += hex(b)
                         out += ' '
-                print(out)
+                printer.debug(out)
 
 #--------------------------------------------------------------------------------------
 
