@@ -108,12 +108,12 @@ class proto_ssl():
                 self.mcode       = key_val['mcode']
                 self.bidno       = key_val['bidno']
                 self.passwd      = key_val['passwd']
-                self.login_image = key_val['login_image']  if 'login_image' in key_val
-                self.login_pid   = key_val['login_pid']    if 'login_pid'   in key_val
-                self.login_sid   = key_val['login_sid']    if 'login_sid'   in key_val
-                self.image_sid   = key_val['image_sid']    if 'image_sid'   in key_val
-                self.host_name   = key_val['host_name']    if 'host_name'   in key_val
-                self.host_ip     = key_val['host_ip']      if 'host_ip'     in key_val
+                self.login_image = key_val['login_image']  if 'login_image' in key_val  else None
+                self.login_pid   = key_val['login_pid']    if 'login_pid'   in key_val  else None
+                self.login_sid   = key_val['login_sid']    if 'login_sid'   in key_val  else None
+                self.image_sid   = key_val['image_sid']    if 'image_sid'   in key_val  else None
+                self.host_name   = key_val['host_name']    if 'host_name'   in key_val  else None
+                self.host_ip     = key_val['host_ip']      if 'host_ip'     in key_val  else None
 
         def make_header(self, sessionid = None):
                 '''
