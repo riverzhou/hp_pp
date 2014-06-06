@@ -58,7 +58,41 @@ def parse_info(info):
         if '<TYPE>INFO</TYPE><INFO>B' in info : return parse_info_b(info)
         return None
 
-def write_result_a(result, res):
+def write_result_a_full(res, time, number):
+        string = '%s - %s\n' % (time, number)
+        res['a_full'].write(string.encode())
+        return True
+
+def write_result_a_60(res, time, number):
+        end_time = '10:31:00'
+        if sub_time(time, end_time)   > 0 : return None
+        string = '%s - %s\n' % (time, number)
+        res['a_60'].write(string.encode())
+        return True
+
+def write_result_b_30(res, time, price):
+        start_time = '11:29:30'
+        if sub_time(time, start_time) < 0 : return None
+        string = '%s - %s\n' % (time, price)
+        res['b_30'].write(string.encode())
+        return True
+
+def write_result_b_60(res, time, price):
+        start_time = '11:29:00'
+        if sub_time(time, start_time) < 0 : return None
+        string = '%s - %s\n' % (time, price)
+        res['b_60'].write(string.encode())
+        return True
+
+def write_result_a(res, time, number):
+        write_result_a_full(res, time, number)
+        write_result_a_60(res, time, number)
+
+def write_result_b(res, time, price):
+        write_result_b_30(res, time, price)
+        write_result_b_60(res, time, price)
+
+def proc_result_a(res, result):
         last_time   = None
         last_number = None
         for parse in result:
@@ -68,8 +102,7 @@ def write_result_a(result, res):
                 if last_time == None :
                         last_time   = time
                         last_number = number
-                        string = '%s - %s\n' % (time, number)
-                        res.write(string.encode())
+                        write_result_a(res, time, number)
                         continue
                 delta_time = sub_time(time, last_time)
                 if delta_time <= 0 :
@@ -78,15 +111,13 @@ def write_result_a(result, res):
                         lost_time = last_time
                         for i in range(delta_time - 1) :
                                 lost_time = add_time(lost_time)
-                                string = '%s - %s\n' % (lost_time, last_number)
-                                res.write(string.encode())
+                                write_result_a(res, lost_time, last_number)
                 last_time   = time
                 last_number = number
-                string = '%s - %s\n' % (time, number)
-                res.write(string.encode())
+                write_result_a(res, time, number)
         return True
 
-def write_result_b(result, res):
+def proc_result_b(res, result):
         last_time   = None
         last_price  = None
         for parse in result:
@@ -96,8 +127,7 @@ def write_result_b(result, res):
                 if last_time == None :
                         last_time   = time
                         last_price  = price 
-                        string = '%s - %s\n' % (time, price)
-                        res.write(string.encode())
+                        write_result_b(res, time, price)
                         continue
                 delta_time = sub_time(time, last_time)
                 if delta_time <= 0 :
@@ -106,19 +136,23 @@ def write_result_b(result, res):
                         lost_time = last_time
                         for i in range(delta_time - 1) :
                                 lost_time = add_time(lost_time)
-                                string = '%s - %s\n' % (lost_time, last_price)
-                                res.write(string.encode())
+                                write_result_b(res, lost_time, last_price)
                 last_time   = time
                 last_price  = price 
-                string = '%s - %s\n' % (time, price)
-                res.write(string.encode())
+                write_result_b(res, time, price)
         return True
 
 def parse_ack():
-        ack   = open('udp.ack', 'rb')
-        res_a = open('a.res', 'wb')
-        res_b = open('b.res', 'wb')
-        res   = res_a, res_b
+        ack             = open('udp.ack', 'rb')
+        res_a_full      = open('a_full.res', 'wb')
+        res_a_60        = open('a_60.res', 'wb')
+        res_b_30        = open('b_30.res', 'wb')
+        res_b_60        = open('b_60.res', 'wb')
+        res             = {}
+        res['a_full']   = res_a_full
+        res['a_60']     = res_a_60
+        res['b_30']     = res_b_30
+        res['b_60']     = res_b_60
         result = []
         while True:
                 head = ack.read(4)
@@ -131,10 +165,11 @@ def parse_ack():
                 parse = parse_info(info)
                 if parse != None : result.append(parse)
                 #if parse != None : print(parse)
-        write_result_a(result, res_a)
-        write_result_b(result, res_b)
-        res_a.close()
-        res_b.close()
+        proc_result_a(res, result)
+        proc_result_b(res, result)
+        for key in res: res[key].close()
 
 if __name__ == '__main__' :
         parse_ack()
+
+

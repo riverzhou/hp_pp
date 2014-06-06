@@ -59,18 +59,19 @@ def read_file(name_file):
         f.close()
         return x, y
 
-def main():
-        x, y = read_file('b.res')
+def main(mode):
+        x, y = read_file('b_%s.res' % mode)
         key_val = {}
         key_val['list_x']       = x
-        key_val['list_y']       = y
+        key_val['list_y']       = [int(item) for item in y]
         key_val['label_x']      = '时间(秒)'
         key_val['label_y']      = '价格(元)'
         key_val['name_title']   = '拍 牌 投 标'
         key_val['name_line']    = 'Price'
-        key_val['name_file']    = 'price.png'
+        key_val['name_file']    = ('b_%s.png' % mode)
         create_pic(key_val)       
 
 if __name__ == '__main__':
-        main()
+        main('60')
+        #main('30')
 
