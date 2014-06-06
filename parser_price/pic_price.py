@@ -3,8 +3,10 @@
 import numpy 
 from   matplotlib           import pyplot, font_manager
 from   matplotlib.ticker    import MultipleLocator, FuncFormatter
+from   sys                  import argv
 
 plfonts = font_manager.FontProperties(fname='./msyh.ttf')
+MultipleLocator.MAXTICKS = 3600
 
 def formatter_x(x, p):
         global list_x
@@ -13,8 +15,26 @@ def formatter_x(x, p):
                 return ''
         return list_x[x]
 
+def set_locator(mode, list_x, list_y):
+        pyplot.ylim(int(min(list_y)-100), int(max(list_y))+300)
+        xaxis = pyplot.gca().xaxis
+        yaxis = pyplot.gca().yaxis
+
+        xaxis.set_major_locator(MultipleLocator(1))
+        xaxis.set_minor_locator(MultipleLocator(1))
+        xaxis.set_major_formatter(FuncFormatter( formatter_x))
+        yaxis.set_major_locator(MultipleLocator(100))
+        yaxis.set_minor_locator(MultipleLocator(100))
+        for label in xaxis.get_ticklabels():
+                label.set_rotation(45)
+        for line  in xaxis.get_ticklines(minor=True):
+                line.set_markersize(10)
+        for line  in yaxis.get_ticklines(minor=True):
+                line.set_markersize(10)
+
 def create_pic(key_val):
         global list_x
+        mode            = key_val['mode']
         list_x          = key_val['list_x']
         list_y          = key_val['list_y']
         label_x         = key_val['label_x']
@@ -28,24 +48,10 @@ def create_pic(key_val):
         pyplot.xlabel(label_x,   fontproperties = plfonts)
         pyplot.ylabel(label_y,   fontproperties = plfonts)
         pyplot.title(name_title, fontproperties = plfonts)
-        pyplot.ylim(int(min(list_y)), int(max(list_y))+300)
         pyplot.subplots_adjust(bottom = 0.15)
-        #pyplot.gca().xaxis.set_major_locator(MultipleLocator(max(int(len(list_x)/15),1)))
-        pyplot.gca().xaxis.set_major_locator(MultipleLocator(1))
-        pyplot.gca().xaxis.set_minor_locator(MultipleLocator(1))
-        pyplot.gca().xaxis.set_major_formatter(FuncFormatter( formatter_x))
-        #pyplot.gca().yaxis.set_major_locator(MultipleLocator(max(int(int((int(max(list_y))-int(min(list_y)))/len(list_x))/100)*100, 100)))
-        pyplot.gca().yaxis.set_major_locator(MultipleLocator(100))
-        pyplot.gca().yaxis.set_minor_locator(MultipleLocator(100))
-        for label in pyplot.gca().xaxis.get_ticklabels():
-                label.set_rotation(45)
-        for line  in pyplot.gca().xaxis.get_ticklines(minor=True):
-                line.set_markersize(10)
-        for line  in pyplot.gca().yaxis.get_ticklines(minor=True):
-                line.set_markersize(10)
+        set_locator(mode, list_x, list_y)
         pyplot.grid()
         pyplot.legend()
-
         if name_file != None : pyplot.savefig(name_file)
         pyplot.show()
 
@@ -59,19 +65,31 @@ def read_file(name_file):
         f.close()
         return x, y
 
+def check_argv(argv):
+        if len(argv) != 2                         : return usage()
+        if argv [1] != '60' and argv [1] != '30'  : return usage()
+        return True
+
+def usage():
+        print   (
+                './pic_price.py  60\n'+
+                './pic_price.py  30\n'
+                )
+        return False
+
 def main(mode):
         x, y = read_file('b_%s.res' % mode)
         key_val = {}
+        key_val['mode']         = mode
         key_val['list_x']       = x
         key_val['list_y']       = [int(item) for item in y]
         key_val['label_x']      = '时间(秒)'
         key_val['label_y']      = '价格(元)'
-        key_val['name_title']   = '拍 牌 投 标'
+        key_val['name_title']   = '拍 牌 投 标 - 下 半 场'
         key_val['name_line']    = 'Price'
         key_val['name_file']    = ('b_%s.png' % mode)
         create_pic(key_val)       
 
 if __name__ == '__main__':
-        main('60')
-        #main('30')
+        if check_argv(argv) : main(argv[1])
 
