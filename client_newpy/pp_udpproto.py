@@ -130,10 +130,9 @@ class udp_proto():
                 len0 = len(buff)
                 len1 = len0 // 4
                 len2 = len0 % 4
-                if len2 != 0:
-                        len1 += 1
-                        buff += b'\0\0\0'
-                data = bytearray(len0+len2)
+                if len2 != 0 : len1 += 1
+                buff += b'\0\0\0\0'
+                data = bytearray(len0 + 4)
                 view = memoryview(data)
                 buff = memoryview(buff)
                 for i in range(len1) :
