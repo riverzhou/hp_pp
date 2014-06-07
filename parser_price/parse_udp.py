@@ -7,8 +7,7 @@ def sub_time(time2, time1):
         h2 , m2, s2 = time2.split(':')
         h1 , m1, s1 = int(h1), int(m1), int(s1)
         h2 , m2, s2 = int(h2), int(m2), int(s2)
-        if h2 < h1 : h2 += 24
-        return (h2-h1)*3600 + (m2-m1)*60 + (s2-s1)
+        return ((h2-h1)*3600 + (m2-m1)*60 + (s2-s1))
 
 def add_time(time):
         h , m, s = time.split(':')
