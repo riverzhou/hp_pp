@@ -4,6 +4,7 @@
 from struct                     import pack, unpack
 from hashlib                    import md5
 from xml.etree                  import ElementTree
+import random, string
 
 from pp_log                     import logger, printer
 
@@ -102,7 +103,7 @@ class proto_ssl():
         image_ack_len = 8192
 
         version = '177'
-        agent   = 'Mozilla/3.0+(compatible;+IndyLibrary)'
+        agent   = 'Mozilla/3.0 (compatible; Indy Library)'
 
         def __init__(self, key_val):
                 self.mcode       = key_val['mcode']         if 'mcode'       in key_val  else None
@@ -115,19 +116,28 @@ class proto_ssl():
                 self.host_name   = key_val['host_name']     if 'host_name'   in key_val  else None
                 self.host_ip     = key_val['host_ip']       if 'host_ip'     in key_val  else None
 
-        def make_header(self, sessionid = None):
-                '''
-                ' HTTP/1.0\r\n'+
-                'Content-Type: text/html\r\n'+
-                'Host: %s:443\r\n'+
-                'Accept: text/html, */*\r\n'+
-                'User-Agent: Mozilla/3.0 (compatible; IndyLibrary)\r\n\r\n'
-                '''
+        def make_ssl_head(self, sessionid = None):
+                headers = {}
+                #headers['Content-Type'] = 'text/html'
+                #headers['Accept']       = 'text/html'
+                headers['Host']         = self.host_name
+                headers['User-Agent']   = self.agent
+                if sessionid != None : headers['JSESSIONID'] = sessionid
+                return headers
 
         def get_wget_req(self, host, path):
-                return (('https://%s%s') % (host, path.decode('gb18030'))).encode()
+                return (('https://%s%s') % (host, path)).encode()
 
         #-------------------------------------------
+
+        def get_sid_from_head(self, head):
+                p1 = head.find('JSESSIONID')
+                s1 = head[p1:]
+                p2 = s1.find(';')
+                s2 = s1[0:p2]
+                p3 = s2.find('=')
+                s3 = s2[p3+1:]
+                return s3.strip()
 
         def parse_ssl_ack(self, string):
                 #printer.debug(string)
@@ -212,10 +222,10 @@ class proto_ssl_login(proto_ssl):
                         self.bidno,
                         self.passwd,
                         self.mcode,
-                        self.get_login_checkcode(image),
+                        self.get_login_checkcode(),
                         self.version,
                         self.login_image
-                        )).encode('gb18030')
+                        ))
 
         def make_wget_login_req(self):
                 return self.get_wget_req(host_name, self.make_login_req())
@@ -224,9 +234,12 @@ class proto_ssl_login(proto_ssl):
                 string   = buff.decode('gb18030')
                 info_val = self.parse_ssl_ack(string)
                 key_val  = {}
-                key_val['name'] = info_val['CLIENTNAME']
-                key_val['pid']  = info_val['PID']
-                #key_val['sid']  = ''                    # XXX TODO XXX  从包头的分析中得到
+                if 'ERRORCODE' in info_val :
+                        key_val['errcode']  = info_val['ERRORCODE']
+                        key_val['errstring']= info_val['ERRORSTRING']
+                else:
+                        key_val['name'] = info_val['CLIENTNAME']
+                        key_val['pid']  = info_val['PID']
                 printer.info(string)
                 printer.info(sorted(key_val.items()))
                 printer.info('')
@@ -249,19 +262,21 @@ class proto_ssl_image(proto_ssl):
                         price,
                         self.version,
                         self.get_image_checkcode(price)
-                        )).encode('gb18030')
+                        ))
 
         def make_wget_image_req(self, price):
                 return self.get_wget_req(host_name, self.make_image_req(price))
 
         def parse_image_ack(self, buff):
-                string   = buff.decode('gb18030')
+                #string   = buff.decode('gb18030')
+                string   = buff.decode()                        # XXX XXX XXX
                 info_val = self.parse_ssl_ack(string)
                 key_val  = {}
-                key_val['image']   = self.image_decode(info_val['IMAGE_CONTENT'])
-                key_val['errcode'] = info_val['ERRORCODE']
-                key_val['errstr']  = info_val['ERRORSTRING']
-                #key_val['sid']  = ''                    # XXX TODO XXX  从包头的分析中得到
+                if info_val['ERRORCODE'] != '0' :
+                        key_val['errcode']  = info_val['ERRORCODE']
+                        key_val['errstring']= info_val['ERRORSTRING']
+                else:
+                        key_val['image']    = self.image_decode(info_val['IMAGE_CONTENT'])
                 printer.info(string)
                 printer.info(sorted(key_val.items()))
                 printer.info('')
@@ -288,25 +303,42 @@ class proto_ssl_price(proto_ssl):
                         self.get_price_checkcode(price, image),
                         self.version,
                         image
-                        )).encode('gb18030')
+                        ))
 
         def make_wget_price_req(self, price, image):
                 return self.get_wget_req(host_name, self.make_price_req(price, image))
 
         def parse_price_ack(self, buff):
-                string   = buff.decode('gb18030')
+                #string   = buff.decode('gb18030')
+                string   = buff.decode()                        # XXX XXX XXX
                 info_val = self.parse_ssl_ack(string)
                 key_val  = {}
-                key_val['time']  = info_val['BIDTIME']
-                key_val['count'] = info_val['BIDCOUNT']
-                key_val['price'] = info_val['BIDAMOUNT']
-                key_val['name']  = info_val['CLIENTNAME']
-                key_val['bidno'] = info_val['BIDNUMBER']
-                #key_val['sid']  = ''                    # XXX TODO XXX  从包头的分析中得到
+                if info_val['ERRORCODE'] != '0' :
+                        key_val['errcode']  = info_val['ERRORCODE']
+                        key_val['errstring']= info_val['ERRORSTRING']
+                else:
+                        key_val['time']  = info_val['BIDTIME']
+                        key_val['count'] = info_val['BIDCOUNT']
+                        key_val['price'] = info_val['BIDAMOUNT']
+                        key_val['name']  = info_val['CLIENTNAME']
+                        key_val['bidno'] = info_val['BIDNUMBER']
                 printer.info(string)
                 printer.info(sorted(key_val.items()))
                 printer.info('')
                 return key_val
+
+#----------------------------------------------
+
+class proto_machine():
+        def __init__(self, mcode = '', image = ''):
+                self.mcode = mcode if mcode != '' else self.create_mcode()
+                self.image = image if image != '' else self.create_number()
+
+        def create_mcode(self):
+                return ''.join([(string.ascii_letters+string.digits)[x] for x in random.sample(range(0,62),random.randint(10,20))])
+
+        def create_number(self):
+                return ''.join([(string.digits)[x] for x in random.sample(range(0,10),6)])
 
 #----------------------------------------------
 

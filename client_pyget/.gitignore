@@ -2,5 +2,9 @@
 *.pyo
 *.pyc
 *.log
+*.req
+*.ack
+*.dump
+*.cookie
 __pycache__
 core
