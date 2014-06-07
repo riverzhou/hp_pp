@@ -105,15 +105,15 @@ class proto_ssl():
         agent   = 'Mozilla/3.0+(compatible;+IndyLibrary)'
 
         def __init__(self, key_val):
-                self.mcode       = key_val['mcode']
-                self.bidno       = key_val['bidno']
-                self.passwd      = key_val['passwd']
-                self.login_image = key_val['login_image']  if 'login_image' in key_val  else None
-                self.login_pid   = key_val['login_pid']    if 'login_pid'   in key_val  else None
-                self.login_sid   = key_val['login_sid']    if 'login_sid'   in key_val  else None
-                self.image_sid   = key_val['image_sid']    if 'image_sid'   in key_val  else None
-                self.host_name   = key_val['host_name']    if 'host_name'   in key_val  else None
-                self.host_ip     = key_val['host_ip']      if 'host_ip'     in key_val  else None
+                self.mcode       = key_val['mcode']         if 'mcode'       in key_val  else None
+                self.bidno       = key_val['bidno']         if 'bidno'       in key_val  else None
+                self.passwd      = key_val['passwd']        if 'passwd'      in key_val  else None
+                self.login_image = key_val['login_image']   if 'login_image' in key_val  else None
+                self.login_pid   = key_val['login_pid']     if 'login_pid'   in key_val  else None
+                self.login_sid   = key_val['login_sid']     if 'login_sid'   in key_val  else None
+                self.image_sid   = key_val['image_sid']     if 'image_sid'   in key_val  else None
+                self.host_name   = key_val['host_name']     if 'host_name'   in key_val  else None
+                self.host_ip     = key_val['host_ip']       if 'host_ip'     in key_val  else None
 
         def make_header(self, sessionid = None):
                 '''
@@ -147,7 +147,7 @@ class proto_ssl():
                 seed = ('%s%s%s%sAAA'
                         % (
                         self.version, 
-                        self.get_bidcode(self.bidno, self.passwd, price)
+                        self.get_bidcode(self.bidno, self.passwd, price),
                         image, 
                         self.mcode
                         ))
@@ -159,7 +159,7 @@ class proto_ssl():
         def get_image_checkcode(self, price):
                 seed = ('%d#%s@%s'
                         % (
-                        int(self.bidno) - int(price)
+                        int(self.bidno) - int(price),
                         self.version, 
                         self.passwd
                         ))
@@ -235,7 +235,7 @@ class proto_ssl_login(proto_ssl):
 #----------------------------------------------
 
 class proto_ssl_image(proto_ssl):
-        def make_image_req((self, price):
+        def make_image_req(self, price):
                 return ((
                         '/car/gui/imagecode.aspx'+
                         '?BIDNUMBER=%s'+                                                # 8
@@ -256,7 +256,7 @@ class proto_ssl_image(proto_ssl):
 
         def parse_image_ack(self, buff):
                 string   = buff.decode('gb18030')
-                info_val = self.parse_ack(string)
+                info_val = self.parse_ssl_ack(string)
                 key_val  = {}
                 key_val['image']   = self.image_decode(info_val['IMAGE_CONTENT'])
                 key_val['errcode'] = info_val['ERRORCODE']
@@ -295,7 +295,7 @@ class proto_ssl_price(proto_ssl):
 
         def parse_price_ack(self, buff):
                 string   = buff.decode('gb18030')
-                info_val = self.parse_ack(string)
+                info_val = self.parse_ssl_ack(string)
                 key_val  = {}
                 key_val['time']  = info_val['BIDTIME']
                 key_val['count'] = info_val['BIDCOUNT']
