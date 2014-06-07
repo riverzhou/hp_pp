@@ -1,16 +1,13 @@
 #!/usr/bin/env python3
 
-from traceback          import print_exc
 from base64             import b64decode
 from tkinter            import Tk, Label
 from PIL                import Image, ImageTk
 from io                 import BytesIO
 
-from pickle             import dump, load
-
 from pp_sslproto        import proto_ssl_image
 
-
+#-------------------------------------------------
 
 def get_image():
         buff = open('image.ack','rb').read()
@@ -27,6 +24,8 @@ def show_photo(image):
         label.configure(image = photo)
         label.pack()
         root.mainloop()
+
+#-------------------------------------------------
 
 if __name__ == '__main__' :
         show_photo(get_image())
