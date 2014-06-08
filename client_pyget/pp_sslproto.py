@@ -116,13 +116,15 @@ class proto_ssl():
                 self.host_name   = key_val['host_name']     if 'host_name'   in key_val  else None
                 self.host_ip     = key_val['host_ip']       if 'host_ip'     in key_val  else None
 
+        '''HTTP/1.0\r\nContent-Type: text/html\r\nHost: tblogin.alltobid.com:443\r\nAccept: text/html, */*\r\nUser-Agent: Mozilla/3.0 (compatible; IndyLibrary)\r\n\r\n'''
+        '''HTTP/1.0\r\nContent-Type: text/html\r\nHost: toubiao2.alltobid.com:443\r\nAccept: text/html, */*\r\nUser-Agent: Mozilla/3.0 (compatible; Indy Library)\r\nCookie: JSESSIONID=%s\r\n\r\n'''
         def make_ssl_head(self, sessionid = None):
                 headers = {}
-                #headers['Content-Type'] = 'text/html'
-                #headers['Accept']       = 'text/html'
-                headers['Host']         = self.host_name
-                headers['User-Agent']   = self.agent
-                if sessionid != None : headers['JSESSIONID'] = sessionid
+                headers['Content-Type'] = 'text/html'
+                headers['Accept']       = 'text/html, */*'
+                headers['Host']         = '%s:443' % self.host_name
+                headers['User-Agent']   = '%s'     % self.agent
+                if sessionid != None : headers['Cookie'] = 'JSESSIONID=%s' % sessionid
                 return headers
 
         def get_wget_req(self, host, path):
