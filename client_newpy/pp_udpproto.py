@@ -3,73 +3,47 @@
 from struct                     import pack, unpack
 from traceback                  import print_exc
 from hashlib                    import md5
-from xml.etree                  import ElementTree
 
 from pp_log                     import logger, printer
 
 #==================================================================================================================
 
 class udp_proto():
-        tag_dict = {
-                '目前最低可成交价'      :  'price',
-                '目前已投标人数'        :  'number',
-                '系统目前时间'          :  'systime',
-                '最低可成交价出价时间'  :  'lowtime',
-                }
 
-        def __init__(self, client, login):
-                self.client = client
-                self.login = login
-                self.udp_ack = []
-                self.info_ack = []
-
-        #-----------------------------------------------------
-
-        def do_parse_info(self, info):
+        def parse_info_a(self, info):
+                p1 = info.find('<INFO>') + len('<INFO>')
+                p2 = info.find('</INFO>')
+                info = info[p1:p2]
+                info = info.split('^')
                 key_val = {}
-                key_val['CODE'] = info[0]
-                if key_val['CODE'] != 'A' and key_val['CODE'] != 'B' : return None
-                for line in info.split('\n') :
-                        data = line.split('：', 1)
-                        key_val[data[0].strip()] = data[1].strip() if len(data) == 2
+                key_val['code']         = 'A'
+                key_val['systime']      = info[9]
+                key_val['price']        = info[11]
+                key_val['ltime']        = info[12]
+                key_val['number']       = info[10]
                 return key_val
 
-        def parse_info(self, buff, echo = False):
-                info_val = {}
-                info = self.do_parse_ack(self.decode(buff).decode('gb18030'))['INFO']
-                key_val = self.do_parse_info(info)
-                if key_val == None : return None
-                try:
-                        for key in self.tag_dict:  info_val[self.tag_dict[key]] = key_val[key]
-                except KeyError:
-                        printer.error(sorted(key_val.items()))
-                if echo != False :
-                        printer.debug(info)
-                        printer.debug(sorted(info_val.items()))
-                        printer.debug('')
-                return info_val
-
-        #-----------------------------------------------------
-
-        def do_parse_ack(self, string):
+        def parse_info_b(self, info):
+                p1 = info.find('<INFO>') + len('<INFO>')
+                p2 = info.find('</INFO>')
+                info = info[p1:p2]
+                info = info.split('^')
                 key_val = {}
-                try:
-                        xml_string = '<XML>' + string.strip() + '</XML>'
-                        root = ElementTree.fromstring(xml_string)
-                        for child in root:
-                                key_val[child.tag] = child.text
-                except :
-                        printer.error(string)
-                return key_val
+                key_val['code']         = 'B'
+                key_val['systime']      = info[9]
+                key_val['price']        = info[10]
+                key_val['ltime']        = info[11]
+                key_val['hprice']       = info[13]
+                return  key_val
 
-        def parse_ack(self, buff,  echo = False):
+        def parse_info(self, info):
+                if '<TYPE>INFO</TYPE><INFO>A' in info : return parse_info_a(info)
+                if '<TYPE>INFO</TYPE><INFO>B' in info : return parse_info_b(info)
+                return None
+
+        def parse_ack(self, buff) :
                 string = self.decode(buff).decode('gb18030')
-                key_val = self.do_parse_ack(string)
-                if echo != False :
-                        printer.debug(string)
-                        printer.debug(sorted(key_val.items()))
-                        printer.debug('')
-                return key_val
+                return self.parse_info(string)
 
         #-----------------------------------------------------
 
