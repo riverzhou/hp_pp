@@ -4,7 +4,7 @@
 
 import sys
 
-from pp_proto       import *
+from pp_sslproto        import *
 
 #==========================================================
 
@@ -19,56 +19,7 @@ wget_machinecode  = 'ABCDEFGHI'
 #wget_machinecode = ''                  # 为空串表示自动生成随机特征码
 wget_loginimage   = ''
 
-wget_agent        = 'Mozilla/3.0+(compatible;+IndyLibrary)'
-
-#==========================================================
-#----------------------------------------------------------
-
-class worker_login(proto_ssl_login):
-        pass
-
-class worker_image(proto_ssl_image):
-        pass
-
-class worker_price(proto_ssl_price):
-        pass
-
-#----------------------------------------------------------
-
-class wget_client_bid(proto_client_bid):
-        def __init__(self, client):
-                proto_client_bid.__init__(self, client)
-
-                global price_server, image_server
-                self.image   = worker_image()
-                self.price   = worker_price()
-                self.image.reg(client, self, image_server)
-                self.price.reg(client, self, price_server)
-
-class wget_client_login(proto_client_login):
-        def __init__(self, client):
-                proto_client_login.__init__(self, client)
-
-                global login_server
-                self.ssl     = worker_login()
-                self.ssl.reg(client, self, login_server)
-
-class wget_client(proto_client):
-        def __init__(self, user, machine):
-                proto_client.__init__(self, user, machine)
-
-                self.login   = wget_client_login(self)
-                self.bid     = wget_client_bid(self)
-
-class wget_machine(proto_machine):
-        pass
-
-class wget_user():
-        def __init__(self, bidno, passwd, machine = None):
-                self.bidno   = bidno
-                self.passwd  = passwd
-                self.machine = machine if machine != None else wget_machine()
-                self.client  = wget_client(self, self.machine)
+wget_agent        = 'Mozilla/3.0 (compatible; Indy Library)'
 
 #==========================================================
 
@@ -82,10 +33,17 @@ def proc_login(argv):
         if not bidno in wget_user_dict :
                 return print('unknow bidno')
 
-        passwd  = wget_user_dict[bidno]
-        machine = wget_machine(wget_machinecode, wget_loginimage)
-        user    = wget_user(bidno, passwd, machine)
-        main_write_file('login.req', user.client.login.ssl.make_wget_req(user.client.loginimage))
+        machine = proto_machine(wget_machinecode, wget_loginimage)
+
+        key_val = {}
+        key_val['bidno']        = bidno
+        key_val['passwd']       = wget_user_dict[bidno]
+        key_val['mcode']        = machine.mcode
+        key_val['login_image']  = machine.image
+        key_val['host_name']    = login_server
+        #key_val['host_ip']      = gethostbyname(image_server)
+
+        main_write_file('login.req', proto_ssl_login(key_val).make_wget_login_req())
         main_wget_cmd('login')
 
 def proc_image(argv):
@@ -99,10 +57,17 @@ def proc_image(argv):
         if not bidno in wget_user_dict :
                 return print('unknow bidno')
 
-        passwd  = wget_user_dict[bidno]
-        machine = wget_machine(wget_machinecode, wget_loginimage)
-        user    = wget_user(bidno, passwd, machine)
-        main_write_file('image.req', user.client.bid.image.make_wget_req(price))
+        machine = proto_machine(wget_machinecode, wget_loginimage)
+
+        key_val = {}
+        key_val['bidno']        = bidno
+        key_val['passwd']       = wget_user_dict[bidno]
+        key_val['mcode']        = machine.mcode
+        #key_val['login_image']  = machine.image
+        key_val['host_name']    = image_server
+        #key_val['host_ip']      = gethostbyname(image_server)
+
+        main_write_file('image.req', proto_ssl_image(key_val).make_wget_image_req(price))
         main_wget_cmd('image', 'login')
 
 def proc_price(argv):
@@ -117,10 +82,17 @@ def proc_price(argv):
         if not bidno in wget_user_dict :
                 return print('unknow bidno')
 
-        passwd  = wget_user_dict[bidno]
-        machine = wget_machine(wget_machinecode, wget_loginimage)
-        user    = wget_user(bidno, passwd, machine)
-        main_write_file('price.req', user.client.bid.price.make_wget_req(price, image))
+        machine = proto_machine(wget_machinecode, wget_loginimage)
+
+        key_val = {}
+        key_val['bidno']        = bidno
+        key_val['passwd']       = wget_user_dict[bidno]
+        key_val['mcode']        = machine.mcode
+        #key_val['login_image']  = machine.image
+        key_val['host_name']    = image_server
+        #key_val['host_ip']      = gethostbyname(image_server)
+
+        main_write_file('price.req', proto_ssl_price(key_val).make_wget_price_req(price, image))
         main_wget_cmd('price', 'image')
 
 #---------------------------------------
