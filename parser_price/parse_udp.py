@@ -42,6 +42,7 @@ def parse_info_a(info):
         p1 = info.find('<INFO>') + len('<INFO>')
         p2 = info.find('</INFO>')
         info = info[p1:p2]
+        #print(info)
         info = info.split('^')
         return 'A',info[9],info[11],info[10], info[12]
 
@@ -49,6 +50,7 @@ def parse_info_b(info):
         p1 = info.find('<INFO>') + len('<INFO>')
         p2 = info.find('</INFO>')
         info = info[p1:p2]
+        #print(info)
         info = info.split('^')
         return 'B',info[9],info[10],info[11]
 

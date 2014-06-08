@@ -6,6 +6,7 @@
 *.png
 *.txt
 *.ttf
+*.res
 *.pcap
 pcap
 __pycache__
