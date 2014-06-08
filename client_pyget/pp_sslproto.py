@@ -231,7 +231,7 @@ class proto_ssl_login(proto_ssl):
                         ))
 
         def make_wget_login_req(self):
-                return self.get_wget_req(host_name, self.make_login_req())
+                return self.get_wget_req(self.host_name, self.make_login_req())
 
         def parse_login_ack(self, buff):
                 string   = buff.decode('gb18030')
@@ -268,7 +268,7 @@ class proto_ssl_image(proto_ssl):
                         ))
 
         def make_wget_image_req(self, price):
-                return self.get_wget_req(host_name, self.make_image_req(price))
+                return self.get_wget_req(self.host_name, self.make_image_req(price))
 
         def parse_image_ack(self, buff):
                 string   = buff.decode('gb18030')
@@ -308,7 +308,7 @@ class proto_ssl_price(proto_ssl):
                         ))
 
         def make_wget_price_req(self, price, image):
-                return self.get_wget_req(host_name, self.make_price_req(price, image))
+                return self.get_wget_req(self.host_name, self.make_price_req(price, image))
 
         def parse_price_ack(self, buff):
                 string   = buff.decode('gb18030')
