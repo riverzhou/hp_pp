@@ -4,6 +4,7 @@
 from struct                     import pack, unpack
 from hashlib                    import md5
 from xml.etree                  import ElementTree
+from collections                import OrderedDict
 import random, string
 
 from pp_log                     import logger, printer
@@ -118,13 +119,13 @@ class proto_ssl():
 
         '''HTTP/1.0\r\nContent-Type: text/html\r\nHost: tblogin.alltobid.com:443\r\nAccept: text/html, */*\r\nUser-Agent: Mozilla/3.0 (compatible; IndyLibrary)\r\n\r\n'''
         '''HTTP/1.0\r\nContent-Type: text/html\r\nHost: toubiao2.alltobid.com:443\r\nAccept: text/html, */*\r\nUser-Agent: Mozilla/3.0 (compatible; Indy Library)\r\nCookie: JSESSIONID=%s\r\n\r\n'''
-        def make_ssl_head(self, sessionid = None):
-                headers = {}
+        def make_ssl_head(self, sid = None):
+                headers = OrderedDict()
                 headers['Content-Type'] = 'text/html'
-                headers['Accept']       = 'text/html, */*'
                 headers['Host']         = '%s:443' % self.host_name
+                headers['Accept']       = 'text/html, */*'
                 headers['User-Agent']   = '%s'     % self.agent
-                if sessionid != None : headers['Cookie'] = 'JSESSIONID=%s' % sessionid
+                if sessionid != None : headers['Cookie'] = 'JSESSIONID=%s' % sid
                 return headers
 
         def get_wget_req(self, host, path):
