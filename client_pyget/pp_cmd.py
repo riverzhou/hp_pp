@@ -47,22 +47,17 @@ def proc_login(argv):
         key_val['host_ip']      = gethostbyname(login_server)
 
         proto    = proto_ssl_login(key_val)
-        print(proto.make_ssl_head())
         info_val = pyget(login_server, proto.make_login_req(), proto.make_ssl_head())
-        print(sorted(info_val.items()))
-        print()
-        print()
+        print(sorted(info_val.items()), '\n\n')
 
         if info_val['status'] != 200 :
                 print('ack status error!!!')
-                print(sorted(info_val.items()))
-                print()
+                print(sorted(info_val.items()), '\n\n')
                 return
 
         ack_sid  = proto.get_sid_from_head(info_val['head'])
         ack_val  = proto.parse_login_ack(info_val['body'])
-        print(ack_sid, sorted(ack_val.items()))
-        print()
+        print(ack_sid, sorted(ack_val.items()), '\n\n')
 
         return ack_sid, ack_val
 
@@ -89,21 +84,17 @@ def proc_image(argv):
 
         proto    = proto_ssl_image(key_val)
         info_val = pyget(image_server, proto.make_image_req(price), proto.make_ssl_head())
-        print(sorted(info_val.items()))
-        print()
-        print()
+        print(sorted(info_val.items()),'\n\n')
 
         if info_val['status'] != 200 :
                 print('ack status error!!!')
-                print(sorted(info_val.items()))
-                print()
+                print(sorted(info_val.items()), '\n\n')
                 return
 
         ack_sid  = proto.get_sid_from_head(info_val['head'])
         ack_val  = proto.parse_image_ack(info_val['body'])
         database.db['image_sid'] = ack_sid
-        print(ack_sid, sorted(ack_val.items()))
-        print()
+        print(ack_sid, sorted(ack_val.items()), '\n\n')
 
         show_photo(ack_val['image'])
 
@@ -133,25 +124,21 @@ def proc_price(argv):
 
         image_sid = database.db['image_sid']  if 'image_sid' in database.db else None
         if image_sid == None :
-                print('no image_sid')
-                print()
+                print('no image_sid', '\n\n')
+                return
 
         proto    = proto_ssl_price(key_val)
         info_val = pyget(price_server, proto.make_price_req(price, image), proto.make_ssl_head(image_sid))
-        print(sorted(info_val.items()))
-        print()
-        print()
+        print(sorted(info_val.items()), '\n\n')
 
         if info_val['status'] != 200 :
                 print('ack status error!!!')
-                print(sorted(info_val.items()))
-                print()
+                print(sorted(info_val.items()), '\n\n')
                 return
 
         ack_sid  = proto.get_sid_from_head(info_val['head'])
         ack_val  = proto.parse_price_ack(info_val['body'])
-        print(ack_sid, sorted(ack_val.items()))
-        print()
+        print(ack_sid, sorted(ack_val.items()), '\n\n')
 
         return ack_sid, ack_val
 

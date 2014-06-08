@@ -125,7 +125,7 @@ class proto_ssl():
                 headers['Host']         = '%s:443' % self.host_name
                 headers['Accept']       = 'text/html, */*'
                 headers['User-Agent']   = '%s'     % self.agent
-                if sessionid != None : headers['Cookie'] = 'JSESSIONID=%s' % sid
+                if sid != None : headers['Cookie'] = 'JSESSIONID=%s' % sid
                 return headers
 
         def get_wget_req(self, host, path):
@@ -271,8 +271,7 @@ class proto_ssl_image(proto_ssl):
                 return self.get_wget_req(host_name, self.make_image_req(price))
 
         def parse_image_ack(self, buff):
-                #string   = buff.decode('gb18030')
-                string   = buff.decode()                        # XXX XXX XXX
+                string   = buff.decode('gb18030')
                 info_val = self.parse_ssl_ack(string)
                 key_val  = {}
                 if info_val['ERRORCODE'] != '0' :
@@ -312,11 +311,10 @@ class proto_ssl_price(proto_ssl):
                 return self.get_wget_req(host_name, self.make_price_req(price, image))
 
         def parse_price_ack(self, buff):
-                #string   = buff.decode('gb18030')
-                string   = buff.decode()                        # XXX XXX XXX
+                string   = buff.decode('gb18030')
                 info_val = self.parse_ssl_ack(string)
                 key_val  = {}
-                if info_val['ERRORCODE'] != '0' :
+                if 'ERRORCODE' in info_val :
                         key_val['errcode']  = info_val['ERRORCODE']
                         key_val['errstring']= info_val['ERRORSTRING']
                 else:
