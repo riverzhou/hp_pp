@@ -11,7 +11,6 @@ from pp_sslproto        import proto_ssl_image
 
 def get_image():
         buff = open('image.ack','rb').read()
-        buff = buff.decode().encode('gb18030')
         image = proto_ssl_image({}).parse_image_ack(buff)['image']
         image = b64decode(image)
         return image

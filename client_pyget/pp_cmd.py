@@ -130,6 +130,7 @@ def proc_price(argv):
         proto    = proto_ssl_price(key_val)
         info_val = pyget(price_server, proto.make_price_req(price, image), proto.make_ssl_head(image_sid))
         print(sorted(info_val.items()), '\n\n')
+        print(proto.make_ssl_head(image_sid))
 
         if info_val['status'] != 200 :
                 print('ack status error!!!')
