@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-from setuptools import setup, Extension
+#from setuptools import setup, Extension
+from distutils.core  import setup, Extension
 
 source_files = ['hello_world.c', 'myhello.c']
 
