@@ -297,7 +297,9 @@ def make_log(name = None, log = None,  level = 'debug' , console = True, fmt = T
 
 #=========================================================================================
 
-logger     = make_log(name = 'log.log',     log = 'logger',     level = 'debug', console = True, fmt = True,  color = True)
+logger     = make_log(name = None,          log = 'logger',     level = 'debug', console = True, fmt = True,  color = True)
+
+#logger    = make_log(name = 'log.log',     log = 'logger',     level = 'debug', console = True, fmt = True,  color = True)
 #printer   = make_log(name = 'pri.log',     log = 'printer',    level = 'debug', console = True, fmt = False, color = False)
 
 #-----------------------------------------------------------------------------------------
