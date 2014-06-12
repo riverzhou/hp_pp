@@ -2,8 +2,10 @@
 
 import logging
 import platform
-from datetime  import datetime
-from pp_redis  import red
+from   threading        import Thread, Event, Lock, Semaphore
+from   queue            import Queue, LifoQueue
+from   datetime         import datetime
+from   pp_redis         import connect_redis
 
 #=========================================================================================
 
@@ -20,29 +22,107 @@ class foobar_logger():
 
 #-----------------------------------------------------------------------------------------
 
-class redis_logger():
-        def __init__(self, redis):
+class pp_thread(Thread):
+        def __init__(self, info = ''):
+                Thread.__init__(self)
+                self.flag_stop     = False
+                self.event_stop    = Event()
+                self.event_started = Event()
+                self.thread_info   = info
+                self.setDaemon(True)
+
+        def wait_for_start(self):
+                self.event_started.wait()
+
+        def stop(self):
+                self.flag_stop = True
+                self.event_stop.set()
+
+        def run(self):
+                print('Thread %s : Id %s : %s : started' % (self.__class__.__name__, self.ident, self.thread_info))
+                self.event_started.set()
+                try:
+                        self.main()
+                except KeyboardInterrupt:
+                        pass
+                print('Thread %s : Id %s : %s : stoped' % (self.__class__.__name__, self.ident, self.thread_info))
+
+        def main(self): pass
+
+class pp_sender(pp_thread):
+        def __init__(self, info = '', lifo = False):
+                pp_thread.__init__(self, info)
+                self.queue = Queue() if not lifo else LifoQueue()
+
+        def put(self, buff):
+                self.queue.put(buff)
+
+        def stop(self):
+                pp_thread.stop(self)
+                self.put(None)
+
+        def get(self):
+                try:
+                        return self.queue.get()
+                except KeyboardInterrupt:
+                        raise KeyboardInterrupt
+
+        def main(self):
+                while True:
+                        buff = self.get()
+                        if self.flag_stop  == True or not buff  : break
+                        if self.proc(buff) == True              : self.queue.task_done()
+                        if self.flag_stop  == True              : break
+
+        def proc(self, buff): pass
+
+class redis_sender(pp_sender):
+        def __init__(self, redis, info):
+                pp_sender.__init__(self, info)
                 self.redis = redis
+
+        def send(self, buff):
+                self.put(buff)
+
+        def proc(self, buff):
+                try:
+                        self.redis.rpush(buff[0], buff[1])
+                        return True
+                except KeyboardInterrupt:
+                        raise KeyboardInterrupt
+                except:
+                        print_exc()
+                        return False
+
+class redis_logger():
+        def __init__(self):
+                self.redis = connect_redis()
+                self.redis_sender = redis_sender(self.redis, 'redis_sender')
+                self.redis_sender.start()
+                self.redis_sender.wait_for_start()
 
         def debug(self, log):
                 time = datetime.strftime(datetime.now(), '%y-%m-%d %H:%M:%S.%f')
-                self.redis.rpush('debug',(time, log))
+                self.redis_sender.send(('debug',(time, log)))
 
         def info(self, log):
                 time = datetime.strftime(datetime.now(), '%y-%m-%d %H:%M:%S.%f')
-                self.redis.rpush('info',(time, log))
+                self.redis_sender.send(('info',(time, log)))
 
         def warning(self, log):
                 time = datetime.strftime(datetime.now(), '%y-%m-%d %H:%M:%S.%f')
-                self.redis.rpush('warning',(time, log))
+                self.redis_sender.send(('warning',(time, log)))
 
         def error(self, log):
                 time = datetime.strftime(datetime.now(), '%y-%m-%d %H:%M:%S.%f')
-                self.redis.rpush('error',(time, log))
+                self.redis_sender.send(('error',(time, log)))
 
         def critical(self, log):
                 time = datetime.strftime(datetime.now(), '%y-%m-%d %H:%M:%S.%f')
-                self.redis.rpush('critical',(time, log))
+                self.redis_sender.send(('critical',(time, log)))
+
+        def wait_for_flush(self):
+                self.redis_sender.queue.join()
 
 #-----------------------------------------------------------------------------------------
 
@@ -217,12 +297,12 @@ def make_log(name = None, log = None,  level = 'debug' , console = True, fmt = T
 
 #=========================================================================================
 
-logger    = make_log(name = 'log.log',     log = 'logger',     level = 'debug', console = True, fmt = True,  color = True)
-printer   = make_log(name = 'pri.log',     log = 'printer',    level = 'debug', console = True, fmt = False, color = False)
+logger     = make_log(name = 'log.log',     log = 'logger',     level = 'debug', console = True, fmt = True,  color = True)
+#printer   = make_log(name = 'pri.log',     log = 'printer',    level = 'debug', console = True, fmt = False, color = False)
 
 #-----------------------------------------------------------------------------------------
 
-#printer    = redis_logger(red)
+printer    = redis_logger()
 
 '''
 logger     = foobar_logger()
@@ -242,5 +322,5 @@ if __name__ == "__main__":
         printer.warning('test printer warning')
         printer.error('test printer error')
         printer.critical('test printer critical')
-
+        printer.wait_for_flush()
 

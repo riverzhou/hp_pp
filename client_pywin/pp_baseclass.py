@@ -10,8 +10,8 @@ from pp_log             import logger
 #============================================================================================
 
 class pp_thread(Thread):
-        def __init__(self):
-                Thread.__init__(self, info = '')
+        def __init__(self, info = ''):
+                Thread.__init__(self)
                 self.flag_stop     = False
                 self.event_stop    = Event()
                 self.event_started = Event()
@@ -26,13 +26,13 @@ class pp_thread(Thread):
                 self.event_stop.set()
 
         def run(self):
-                logger.debug('Thread %s : Id %s : %s : started' % (self.__class__.__name__, self.ident, self.info))
+                logger.debug('Thread %s : Id %s : %s : started' % (self.__class__.__name__, self.ident, self.thread_info))
                 self.event_started.set()
                 try:
                         self.main()
-                except KeyboardInterrupt
+                except KeyboardInterrupt:
                         pass
-                logger.debug('Thread %s : Id %s : %s : stoped' % (self.__class__.__name__, self.ident, self.info))
+                logger.debug('Thread %s : Id %s : %s : stoped' % (self.__class__.__name__, self.ident, self.thread_info))
 
         def main(self): pass
 
