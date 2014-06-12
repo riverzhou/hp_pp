@@ -145,8 +145,8 @@ class windows_logger():
                 'DEBUG'   : GREEN,
                 'INFO'    : GRAY,
                 'WARNING' : BLACKGREEN,
-                'ERROR'   : RED,
-                'CRITICAL': YELLOW,
+                'ERROR'   : LIGHTRED,
+                'CRITICAL': LIGHTYELLOW,
                 }
         STD_HANDLE = -11
 
