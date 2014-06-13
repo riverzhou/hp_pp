@@ -59,7 +59,6 @@ class Console():
 
                 self.input_passwd = Entry (self.Frame6)
                 self.input_passwd.place(relx=0.32,rely=0.53,relheight=0.28,relwidth=0.3)
-
                 self.input_passwd.configure(background="white")
                 self.input_passwd.configure(disabledforeground="#a3a3a3")
                 self.input_passwd.configure(font="TkFixedFont")

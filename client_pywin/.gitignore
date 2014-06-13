@@ -2,5 +2,6 @@
 *.pyo
 *.pyc
 *.log
+*.dump
 __pycache__
 core
