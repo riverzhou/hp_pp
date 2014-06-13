@@ -74,11 +74,9 @@ class pp_client():
                 if info_val == None             : return
                 if 'errcode' in info_val        : return
                 if info_val['image'] == None    : return
-                price = key_val['price']
-                self.last_price = price
-                self.console.update_last_price(price)
-                self.sid = info_val['sid']
-                self.console.update_image_decode(info_val['image'])
+                self.sid        = info_val['sid']
+                self.last_price = key_val['price']
+                self.console.update_image_decode(info_val['image'], self.last_price)
 
         def price(self, key_val):
                 logger.debug(key_val.items())
@@ -267,11 +265,13 @@ class Console(Console):
                 self.output_third_price['text'] = info
                 self.output_third_price.update_idletasks()
 
+        '''
         def update_last_price(self, info):
                 self.output_last_price['text'] = info
                 self.output_last_price.update_idletasks()
+        '''
 
-        def update_image_decode(self, image):
+        def update_image_decode(self, image, price):
                 try:
                         image = b64decode(image)
                         photo = ImageTk.PhotoImage(Image.open(BytesIO(image)))
@@ -285,6 +285,8 @@ class Console(Console):
                         self.output_image.image    = photo
                         self.output_image['image'] = photo
                         self.output_image.update_idletasks()
+                        self.output_last_price['text'] = price
+                        self.output_last_price.update_idletasks()
 
 #===========================================================
 
