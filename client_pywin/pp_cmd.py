@@ -41,7 +41,7 @@ def proc_login(arg_val):
 
         proto    = proto_ssl_login(key_val)
         info_val = pyget(login_server, proto.make_login_req(), proto.make_ssl_head())
-        logger.debug(sorted(info_val.items()))
+        #logger.debug(sorted(info_val.items()))
 
         if info_val['status'] != 200 :
                 logger.error('ack status error!!!')
@@ -72,7 +72,7 @@ def proc_image(arg_val):
 
         proto    = proto_ssl_image(key_val)
         info_val = pyget(image_server, proto.make_image_req(price), proto.make_ssl_head())
-        logger.debug(sorted(info_val.items()))
+        #logger.debug(sorted(info_val.items()))
 
         if info_val['status'] != 200 :
                 logger.error('ack status error!!!')
@@ -82,7 +82,8 @@ def proc_image(arg_val):
         ack_sid  = proto.get_sid_from_head(info_val['head'])
         ack_val  = proto.parse_image_ack(info_val['body'])
         ack_val['sid'] = ack_sid
-        logger.debug(sorted(ack_val.items()))
+        #logger.debug(sorted(ack_val.items()))
+        logger.debug(ack_sid)
 
         return ack_val
 
@@ -111,7 +112,7 @@ def proc_price(arg_val):
 
         proto    = proto_ssl_price(key_val)
         info_val = pyget(price_server, proto.make_price_req(price, image), proto.make_ssl_head(image_sid))
-        logger.debug(sorted(info_val.items()))
+        #logger.debug(sorted(info_val.items()))
         logger.debug(proto.make_ssl_head(image_sid))
 
         if info_val['status'] != 200 :

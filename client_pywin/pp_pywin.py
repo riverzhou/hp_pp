@@ -42,7 +42,9 @@ class pp_client():
                 except:
                         print_exc()
                         return
-                self.last_price = key_val['price']
+                price = key_val['price']
+                self.last_price = price
+                self.console.update_last_price(price)
                 self.sid = info_val['sid']
                 self.console.update_image_decode(info_val['image'])
 
@@ -213,10 +215,14 @@ class Console(Console):
                 self.output_third_price['text'] = info
                 self.output_third_price.update_idletasks()
 
+        def update_last_price(self, info):
+                self.output_last_price['text'] = info
+                self.output_last_price.update_idletasks()
+
         def update_image_decode(self, image):
                 photo = ImageTk.PhotoImage(Image.open(BytesIO(b64decode(image)))) 
-                self.label_picture['image'] = photo
-                self.label_picture.update_idletasks()
+                self.output_image['image'] = photo
+                self.output_image.update_idletasks()
 
 #===========================================================
 
