@@ -64,6 +64,7 @@ class udp_worker(pp_thread):
                 price = info_val['price']
 
                 self.console.update_udp_info(ctime, stime, price)
+                printer.info(sorted(info_val.items()))
 
         def recv_udp(self):
                 while True:
