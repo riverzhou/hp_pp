@@ -58,6 +58,7 @@ class pp_client():
                 except:
                         print_exc()
                         return
+                if 'errcode' in info_val : return
                 self.login_ok(info_val)
 
         def image(self, key_val):
@@ -69,6 +70,7 @@ class pp_client():
                 except:
                         print_exc()
                         return
+                if 'errcode' in info_val : return
                 price = key_val['price']
                 self.last_price = price
                 self.console.update_last_price(price)
@@ -87,6 +89,7 @@ class pp_client():
                 except:
                         print_exc()
                         return
+                if 'errcode' in info_val : return
                 self.console.update_first_price(info_val['price'])
 
         def logout(self, key_val):
@@ -114,8 +117,11 @@ class cmd_proc(pp_sender):
                         func = self.func_dict[key_val['cmd']]
                 except KeyError:
                         logger.error('unknow cmd : %s ' % key_val['cmd'])
-                else:
+                        return
+                try:
                         func(key_val)
+                except:
+                        print_exc()
 
         def proc_adjust_channel(self, key_val):
                 logger.debug(key_val.items())
@@ -175,6 +181,7 @@ class Console(Console):
                 key_val['passwd'] = self.input_passwd.get()
                 key_val['group']  = self.var_use_group2.get()
                 #logger.debug(sorted(key_val.items()))
+                if key_val['bidno'] == '' or key_val['passwd'] == '' :  return
                 self.cmd_proc.put(key_val)
 
                 db ={}
@@ -187,6 +194,7 @@ class Console(Console):
                 key_val['cmd']    = 'adjust_channel'
                 key_val['size']   = self.input_ajust_channel.get()
                 #logger.debug(sorted(key_val.items()))
+                if key_val['size'] == '' :      return
                 self.cmd_proc.put(key_val)
 
         def proc_image_price(self,p1):
@@ -194,6 +202,7 @@ class Console(Console):
                 key_val['cmd']    = 'image_price'
                 key_val['price']  = self.input_image_price.get()
                 #logger.debug(sorted(key_val.items()))
+                if key_val['price'] == '' :     return
                 self.cmd_proc.put(key_val)
 
         def proc_image_decode(self,p1):
@@ -201,6 +210,7 @@ class Console(Console):
                 key_val['cmd']    = 'image_decode'
                 key_val['image']  = self.input_image_decode.get()
                 #logger.debug(sorted(key_val.items()))
+                if key_val['image'] == '' :     return
                 self.cmd_proc.put(key_val)
 
         #-------------------------------------
