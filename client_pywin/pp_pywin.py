@@ -15,15 +15,39 @@ from pp_baseclass       import pp_sender
 #===========================================================
 
 class cmd_proc(pp_sender):
+
         def __init__(self, console):
+                self.func_dict =     {
+                        'logout':               self.proc_logout,
+                        'login':                self.proc_login,
+                        'adjust_channel':       self.proc_adjust_channel,
+                        'image_price':          self.proc_image_price,
+                        'image_decode':         self.proc_image_decode,
+                        }
+
                 pp_sender.__init__(self)
                 self.console = console
 
         def proc(self, key_val):
-                logger.debug('cmd_proc : ' + key_val['cmd'])
-                logger.debug(sorted(key_val.items()))
-                self.console.update_login_status(key_val['cmd'])
+                try:
+                        self.func_dict[key_val['cmd']](key_val)
+                except KeyError:
+                        logger.error('unknow cmd')
 
+        def proc_logout(self, key_val):
+                logger.debug(key_val.items())
+
+        def proc_login(self, key_val):
+                logger.debug(key_val.items())
+
+        def proc_adjust_channel(self, key_val):
+                logger.debug(key_val.items())
+
+        def proc_image_price(self, key_val):
+                logger.debug(key_val.items())
+
+        def proc_image_decode(self, key_val):
+                logger.debug(key_val.items())
 
 class Console(Console):
         def __init__(self, master=None):
