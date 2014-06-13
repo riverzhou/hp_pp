@@ -22,6 +22,7 @@ class cmd_proc(pp_sender):
         def proc(self, key_val):
                 logger.debug('cmd_proc : ' + key_val['cmd'])
                 logger.debug(sorted(key_val.items()))
+                self.console.update_login_status(key_val['cmd'])
 
 
 class Console(Console):
@@ -93,23 +94,46 @@ class Console(Console):
         # 回调接口
         #-------------------------------------
 
-        def update_info(self, key_val):
-                print(sorted(key_val.items()))
+        def update_login_status(self, info):
+                self.output_login_status['text'] = info
+                self.output_login_status.update_idletasks()
 
-        def update_price_warmup(self, key_val):
-                pass
+        def update_change_time(self, info):
+                self.output_change_time['text'] = info
+                self.output_change_time.update_idletasks()
 
-        def update_image_warmup(self, key_val):
-                pass
+        def update_system_time(self, info):
+                self.output_system_time['text'] = info
+                self.output_system_time.update_idletasks()
 
-        def update_image_shoot(self, key_val):
-                pass
+        def update_current_price(self, info):
+                self.output_current_price['text'] = info
+                self.output_current_price.update_idletasks()
 
-        def update_image_decode(self, key_val):
-                image = key_val['image']
+        def update_goal_channel(self, info):
+                self.output_goal_channel['text'] = info
+                self.output_goal_channel.update_idletasks()
+
+        def update_current_channel(self, info):
+                self.output_current_channel['text'] = info
+                self.output_current_channel.update_idletasks()
+
+        def update_first_price(self, info):
+                self.output_first_price['text'] = info
+                self.output_first_price.update_idletasks()
+
+        def update_second_price(self, info):
+                self.output_second_price['text'] = info
+                self.output_second_price.update_idletasks()
+
+        def update_third_price(self, info):
+                self.output_third_price['text'] = info
+                self.output_third_price.update_idletasks()
+
+        def update_image_decode(self, image):
                 photo = ImageTk.PhotoImage(Image.open(BytesIO(b64decode(image)))) 
-                self.output_image['image'] = photo
-                self.output_image.update_idletasks()
+                self.label_picture['image'] = photo
+                self.label_picture.update_idletasks()
 
 #===========================================================
 
