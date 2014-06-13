@@ -44,6 +44,7 @@ def proc_login(arg_val):
         if info_val['status'] != 200 :
                 logger.error('ack status error!!!')
                 logger.error(sorted(info_val.items()))
+                logger.error(info_val['body'].decode())
                 return
 
         ack_sid  = proto.get_sid_from_head(info_val['head'])
@@ -79,6 +80,7 @@ def proc_image(arg_val):
         if info_val['status'] != 200 :
                 logger.error('ack status error!!!')
                 logger.error(sorted(info_val.items()))
+                logger.error(info_val['body'].decode())
                 return
 
         ack_sid  = proto.get_sid_from_head(info_val['head'])
@@ -124,6 +126,7 @@ def proc_price(arg_val):
         if info_val['status'] != 200 :
                 logger.error('ack status error!!!')
                 logger.error(sorted(info_val.items()))
+                logger.error(info_val['body'].decode())
                 return
 
         ack_sid  = proto.get_sid_from_head(info_val['head'])
