@@ -1,18 +1,25 @@
 #!/usr/bin/env python3
 
 from tkinter        import *
+import platform
 
 
 #==============================================================================
 
 #geometry('657x674+514+185')
-GEOMETRY = '657x674+514+185'
+#GEOMETRY = '657x674+514+185'
 
 #------------------------------------------------------------------------------
 
 class Console():
         def __init__(self, master=None):
                 self.var_use_group2 = IntVar()
+
+                master.title('Console')
+                master.geometry('657x674+514+185')
+                master.resizable(0,0)
+                if platform.system() == 'Windows' :
+                        master.attributes("-toolwindow", 1)
 
                 _bgcolor = '#d9d9d9'  # X11 color: 'gray85'
                 _fgcolor = '#000000'  # X11 color: 'black'
@@ -25,7 +32,7 @@ class Console():
 
 
                 self.Frame1 = Frame (master)
-                self.Frame1.place(relx=0.05,rely=0.04,relheight=0.2,relwidth=0.91)
+                self.Frame1.place(relx=0.05,rely=0.04,relheight=0.2,relwidth=0.9)
                 self.Frame1.configure(relief=GROOVE)
                 self.Frame1.configure(borderwidth="2")
                 self.Frame1.configure(relief=GROOVE)
@@ -150,7 +157,7 @@ class Console():
                 self.output_login_status.configure(width=67)
 
                 self.Frame3 = Frame (master)
-                self.Frame3.place(relx=0.05,rely=0.27,relheight=0.32,relwidth=0.91)
+                self.Frame3.place(relx=0.05,rely=0.27,relheight=0.32,relwidth=0.9)
                 self.Frame3.configure(relief=GROOVE)
                 self.Frame3.configure(borderwidth="2")
                 self.Frame3.configure(relief=GROOVE)
@@ -372,7 +379,7 @@ class Console():
                 self.output_current_price.configure(width=67)
 
                 self.Frame5 = Frame (master)
-                self.Frame5.place(relx=0.05,rely=0.61,relheight=0.35,relwidth=0.91)
+                self.Frame5.place(relx=0.05,rely=0.61,relheight=0.35,relwidth=0.9)
                 self.Frame5.configure(relief=GROOVE)
                 self.Frame5.configure(borderwidth="2")
                 self.Frame5.configure(relief=GROOVE)
@@ -468,11 +475,14 @@ class Console():
 
                 self.output_image = Label (self.Frame2)
                 self.output_image.place(relx=0.03,rely=0.56,height=53,width=127)
+                self.output_image.configure(activebackground="#f9f9f9")
+                self.output_image.configure(activeforeground="black")
                 self.output_image.configure(background=_bgcolor)
                 self.output_image.configure(disabledforeground="#a3a3a3")
                 self.output_image.configure(foreground="#000000")
+                self.output_image.configure(highlightbackground="#d9d9d9")
+                self.output_image.configure(highlightcolor="black")
                 self.output_image.configure(text='''图片''')
-                self.output_image.configure(width=127)
 
                 self.Frame9 = Frame (self.Frame5)
                 self.Frame9.place(relx=0.03,rely=0.09,relheight=0.83,relwidth=0.31)
@@ -576,7 +586,6 @@ class Console():
                 self.output_third_price.configure(highlightcolor="black")
                 self.output_third_price.configure(text='''0''')
                 self.output_third_price.configure(width=57)
-
 
 
         def proc_login(self,p1):

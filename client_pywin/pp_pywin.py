@@ -7,7 +7,7 @@ from PIL                import Image, ImageTk
 from io                 import BytesIO
 from base64             import b64decode
 
-from MainWin            import Console, GEOMETRY
+from MainWin            import Console
 
 from pp_log             import logger, printer
 from pp_baseclass       import pp_sender
@@ -264,9 +264,7 @@ def save_dump():
 
 def pp_init_tk():
         root = Tk()
-        root.title('Console')
-        root.geometry(GEOMETRY)
-        win  = Console (root)
+        Console (root)
         root.mainloop()
 
 def pp_main():
