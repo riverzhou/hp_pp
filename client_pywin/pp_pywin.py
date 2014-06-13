@@ -58,7 +58,8 @@ class pp_client():
                 except:
                         print_exc()
                         return
-                if 'errcode' in info_val : return
+                if info_val == None             : return
+                if 'errcode' in info_val        : return
                 self.login_ok(info_val)
 
         def image(self, key_val):
@@ -70,7 +71,9 @@ class pp_client():
                 except:
                         print_exc()
                         return
-                if 'errcode' in info_val : return
+                if info_val == None             : return
+                if 'errcode' in info_val        : return
+                if info_val['image'] == None    : return
                 price = key_val['price']
                 self.last_price = price
                 self.console.update_last_price(price)
@@ -89,7 +92,8 @@ class pp_client():
                 except:
                         print_exc()
                         return
-                if 'errcode' in info_val : return
+                if info_val == None             : return
+                if 'errcode' in info_val        : return
                 self.console.update_first_price(info_val['price'])
 
         def logout(self, key_val):
@@ -268,10 +272,19 @@ class Console(Console):
                 self.output_last_price.update_idletasks()
 
         def update_image_decode(self, image):
-                photo = ImageTk.PhotoImage(Image.open(BytesIO(b64decode(image))))
-                self.output_image.image = photo
-                self.output_image['image'] = photo
-                self.output_image.update_idletasks()
+                try:
+                        image = b64decode(image)
+                except:
+                        self.output_image.image    = None
+                        self.output_image['image'] = None
+                        self.output_image['text']  = '图片错误'
+                        self.output_image.update_idletasks()
+                else:
+                        photo = ImageTk.PhotoImage(Image.open(BytesIO(image)))
+                        self.output_image.image    = photo
+                        self.output_image['image'] = photo
+                        self.output_image['text']  = '图片'
+                        self.output_image.update_idletasks()
 
 #===========================================================
 
