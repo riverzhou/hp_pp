@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 
-from http.client    import HTTPSConnection, HTTPConnection
-from time           import sleep
-from socket         import timeout as sock_timeout
-from time           import strftime, localtime, time
+#from time           import strftime, localtime, time
 from traceback      import print_exc
+from socket         import socket, AF_INET, SOCK_DGRAM
+from socket         import timeout as sock_timeout
 
 from pp_baseclass   import pp_thread
 from pp_udpproto    import udp_proto
 from pp_server      import server_dict
 
+from pp_log         import logger, printer
 
 #=============================================================
 
@@ -26,7 +26,7 @@ class udp_worker(pp_thread):
                 self.pid         = key_val['pid']
                 self.group       = key_val['group']
 
-                self.server_addr = server_dict['group']['udp']['addr']
+                self.server_addr = server_dict[self.group]['udp']['ip'], server_dict[self.group]['udp']['port']
 
                 self.sock        = socket(AF_INET, SOCK_DGRAM)
                 self.sock.settimeout(self.udp_timeout)
@@ -68,8 +68,11 @@ class udp_worker(pp_thread):
         def recv_udp(self):
                 while True:
                         try:
-                                udp_result = self.udp_sock.recvfrom(1500)
-                        except:
+                                udp_result = self.sock.recvfrom(1500)
+                        except (sock_timeout, TimeoutError):
+                                return None
+                        except :
+                                print_exc()
                                 return None
 
                         if self.flag_stop == True:

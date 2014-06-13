@@ -14,6 +14,8 @@ from pp_baseclass       import pp_sender
 
 from pp_cmd             import proc_login, proc_image, proc_price
 
+from pp_udpworker       import udp_worker
+
 #===========================================================
 
 class pp_client():
@@ -29,9 +31,9 @@ class pp_client():
 
         def login_ok(self, key_val):
                 if key_val == None:
-                        return 
+                        return
 
-                self.pid = key_val['pid']                
+                self.pid = key_val['pid']
 
                 if self.udp != None :
                         self.udp.stop()
@@ -46,7 +48,7 @@ class pp_client():
                 self.udp.wait_for_start()
                 self.udp.format_udp()
 
-                self.console.update_login_status(info_val['name'])
+                self.console.update_login_status(key_val['name'])
 
         def login(self, key_val):
                 logger.debug(key_val.items())
@@ -56,7 +58,7 @@ class pp_client():
                 except:
                         print_exc()
                         return
-                self.console.update_login_status(info_val['name'])
+                self.login_ok(info_val)
 
         def image(self, key_val):
                 logger.debug(key_val.items())

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from struct                     import pack, unpack
+from struct                     import pack, unpack, pack_into, unpack_from
 from traceback                  import print_exc
 from hashlib                    import md5
 
@@ -37,8 +37,8 @@ class udp_proto():
                 return  key_val
 
         def parse_info(self, info):
-                if '<TYPE>INFO</TYPE><INFO>A' in info : return parse_info_a(info)
-                if '<TYPE>INFO</TYPE><INFO>B' in info : return parse_info_b(info)
+                if '<TYPE>INFO</TYPE><INFO>A' in info : return self.parse_info_a(info)
+                if '<TYPE>INFO</TYPE><INFO>B' in info : return self.parse_info_b(info)
                 return None
 
         def parse_ack(self, buff) :
