@@ -30,8 +30,8 @@ class pp_client():
                 self.group      = 0
 
         def login_ok(self, key_val):
-                if key_val == None:
-                        return
+                if key_val == None             : return
+                if 'errcode' in key_val        : return
 
                 self.pid = key_val['pid']
 
@@ -58,9 +58,16 @@ class pp_client():
                 except:
                         print_exc()
                         return
-                if info_val == None             : return
-                if 'errcode' in info_val        : return
                 self.login_ok(info_val)
+
+        def image_ok(self, key_val):
+                if key_val == None             : return
+                if 'errcode' in key_val        : return
+                if key_val['image'] == None    : return
+
+                self.sid        = key_val['sid']
+                self.last_price = key_val['price']
+                self.console.update_image_decode(key_val['image'], self.last_price)
 
         def image(self, key_val):
                 logger.debug(key_val.items())
@@ -71,12 +78,13 @@ class pp_client():
                 except:
                         print_exc()
                         return
-                if info_val == None             : return
-                if 'errcode' in info_val        : return
-                if info_val['image'] == None    : return
-                self.sid        = info_val['sid']
-                self.last_price = key_val['price']
-                self.console.update_image_decode(info_val['image'], self.last_price)
+                self.image_ok(info_val)
+
+        def price_ok(self, key_val):
+                if key_val == None             : return
+                if 'errcode' in key_val        : return
+
+                self.console.update_first_price(key_val['price'])
 
         def price(self, key_val):
                 logger.debug(key_val.items())
@@ -90,9 +98,7 @@ class pp_client():
                 except:
                         print_exc()
                         return
-                if info_val == None             : return
-                if 'errcode' in info_val        : return
-                self.console.update_first_price(info_val['price'])
+                self.price_ok(info_val)
 
         def logout(self, key_val):
                 logger.debug(key_val.items())
@@ -311,7 +317,6 @@ def load_dump():
                 logger.info('DataBase Created')
         except:
                 print_exc()
-
 
 def save_dump():
         global db_name, database

@@ -85,7 +85,8 @@ def proc_image(arg_val):
 
         ack_sid  = proto.get_sid_from_head(info_val['head'])
         ack_val  = proto.parse_image_ack(info_val['body'])
-        ack_val['sid'] = ack_sid
+        ack_val['sid']   = ack_sid
+        ack_val['price'] = price
         #logger.debug(sorted(ack_val.items()))
         logger.debug(ack_sid)
 
