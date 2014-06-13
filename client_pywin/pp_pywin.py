@@ -12,6 +12,56 @@ from MainWin            import Console, GEOMETRY
 from pp_log             import logger, printer
 from pp_baseclass       import pp_sender
 
+from pp_cmd             import proc_login, proc_image, proc_price, main_init_dns
+
+#===========================================================
+
+class pp_client():
+        def __init__(self, console, key_val):
+                self.console    = console
+                self.bidno      = key_val['bidno']
+                self.passwd     = key_val['passwd']
+                self.last_price = 0
+                self.sid        = None
+
+        def login(self, key_val):
+                logger.debug(key_val.items())
+                main_init_dns(key_val['group'])
+                try:
+                        info_val = proc_login(key_val)
+                except:
+                        print_exc()
+                        return
+                self.console.update_login_status(info_val['name'])
+
+        def image(self, key_val):
+                logger.debug(key_val.items())
+                key_val['bidno'] = self.bidno
+                try:
+                        info_val = proc_image(key_val)
+                except:
+                        print_exc()
+                        return
+                self.last_price = key_val['price']
+                self.sid = info_val['sid']
+                self.console.update_image_decode(info_val['image'])
+
+        def price(self, key_val):
+                logger.debug(key_val.items())
+                key_val['bidno'] = self.bidno
+                key_val['price'] = self.last_price
+                key_val['passwd']= self.passwd
+                key_val['sid']   = self.sid
+                try:
+                        info_val = proc_price(key_val)
+                except:
+                        print_exc()
+                        return
+                self.console.update_first_price(info_val['price'])
+
+        def logout(self, key_val):
+                logger.debug(key_val.items())
+
 #===========================================================
 
 class cmd_proc(pp_sender):
@@ -27,27 +77,36 @@ class cmd_proc(pp_sender):
 
                 pp_sender.__init__(self)
                 self.console = console
+                self.client  = None
 
         def proc(self, key_val):
                 try:
-                        self.func_dict[key_val['cmd']](key_val)
+                        func = self.func_dict[key_val['cmd']]
                 except KeyError:
-                        logger.error('unknow cmd')
-
-        def proc_logout(self, key_val):
-                logger.debug(key_val.items())
-
-        def proc_login(self, key_val):
-                logger.debug(key_val.items())
+                        logger.error('unknow cmd : %s ' % key_val['cmd'])
+                else:
+                        func(key_val)
 
         def proc_adjust_channel(self, key_val):
                 logger.debug(key_val.items())
 
+        def proc_logout(self, key_val):
+                if self.client != None :
+                        self.client.logout(key_val)
+
+        def proc_login(self, key_val):
+                if self.client == None :
+                        self.client = pp_client(self.console, key_val)
+                if self.client != None :
+                        self.client.login(key_val)
+
         def proc_image_price(self, key_val):
-                logger.debug(key_val.items())
+                if self.client != None :
+                        self.client.image(key_val)
 
         def proc_image_decode(self, key_val):
-                logger.debug(key_val.items())
+                if self.client != None :
+                        self.client.price(key_val)
 
 class Console(Console):
         def __init__(self, master=None):
@@ -103,14 +162,14 @@ class Console(Console):
         def proc_image_price(self,p1):
                 key_val = {}
                 key_val['cmd']    = 'image_price'
-                key_val['price'] = self.input_image_price.get()
+                key_val['price']  = self.input_image_price.get()
                 #logger.debug(sorted(key_val.items()))
                 self.cmd_proc.put(key_val)
 
         def proc_image_decode(self,p1):
                 key_val = {}
                 key_val['cmd']    = 'image_decode'
-                key_val['number'] = self.input_image_decode.get()
+                key_val['image']  = self.input_image_decode.get()
                 #logger.debug(sorted(key_val.items()))
                 self.cmd_proc.put(key_val)
 
