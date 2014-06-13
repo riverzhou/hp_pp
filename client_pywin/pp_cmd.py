@@ -29,6 +29,7 @@ def proc_login(arg_val):
         passwd = arg_val['passwd']
         
         machine = proto_machine(pyget_machinecode, pyget_loginimage)
+        pyget_machinecode       = machine.mcode
 
         key_val = {}
         key_val['bidno']        = bidno
