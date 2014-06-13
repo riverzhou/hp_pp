@@ -7,14 +7,12 @@ from PIL                import Image, ImageTk
 from io                 import BytesIO
 from base64             import b64decode
 
-from MainWin            import Console
-
 from pp_log             import logger, printer
 from pp_baseclass       import pp_sender
+from pp_udpworker       import udp_worker
+from MainWin            import Console
 
 from pp_cmd             import proc_login, proc_image, proc_price
-
-from pp_udpworker       import udp_worker
 
 #===========================================================
 
@@ -188,20 +186,18 @@ class Console(Console):
                 key_val['bidno']  = self.input_bidno.get()
                 key_val['passwd'] = self.input_passwd.get()
                 key_val['group']  = self.var_use_group2.get()
-                #logger.debug(sorted(key_val.items()))
                 if key_val['bidno'] == '' or key_val['passwd'] == '' :  return
                 self.cmd_proc.put(key_val)
 
                 db ={}
-                db['bidno']    = key_val['bidno']
-                db['passwd']   = key_val['passwd']
+                db['bidno']       = key_val['bidno']
+                db['passwd']      = key_val['passwd']
                 self.save_database(db)
 
         def proc_channel(self,p1):
                 key_val = {}
                 key_val['cmd']    = 'adjust_channel'
                 key_val['size']   = self.input_ajust_channel.get()
-                #logger.debug(sorted(key_val.items()))
                 if key_val['size'] == '' :      return
                 self.cmd_proc.put(key_val)
 
@@ -209,7 +205,6 @@ class Console(Console):
                 key_val = {}
                 key_val['cmd']    = 'image_price'
                 key_val['price']  = self.input_image_price.get()
-                #logger.debug(sorted(key_val.items()))
                 if key_val['price'] == '' :     return
                 self.cmd_proc.put(key_val)
 
@@ -217,7 +212,6 @@ class Console(Console):
                 key_val = {}
                 key_val['cmd']    = 'image_decode'
                 key_val['image']  = self.input_image_decode.get()
-                #logger.debug(sorted(key_val.items()))
                 if key_val['image'] == '' :     return
                 self.cmd_proc.put(key_val)
 
@@ -228,20 +222,6 @@ class Console(Console):
         def update_login_status(self, info):
                 self.output_login_status['text'] = info
                 self.output_login_status.update_idletasks()
-
-        '''
-        def update_change_time(self, info):
-                self.output_change_time['text']   = info
-                self.output_change_time.update_idletasks()
-
-        def update_system_time(self, info):
-                self.output_system_time['text']   = info
-                self.output_system_time.update_idletasks()
-
-        def update_current_price(self, info):
-                self.output_current_price['text'] = info
-                self.output_current_price.update_idletasks()
-        '''
 
         def update_udp_info(self, ctime, stime, price):
                 self.output_current_price['text'] = price
@@ -270,12 +250,6 @@ class Console(Console):
         def update_third_price(self, info):
                 self.output_third_price['text'] = info
                 self.output_third_price.update_idletasks()
-
-        '''
-        def update_last_price(self, info):
-                self.output_last_price['text'] = info
-                self.output_last_price.update_idletasks()
-        '''
 
         def update_image_decode(self, image, price):
                 try:
