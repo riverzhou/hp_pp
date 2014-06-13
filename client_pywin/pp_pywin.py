@@ -220,7 +220,8 @@ class Console(Console):
                 self.output_last_price.update_idletasks()
 
         def update_image_decode(self, image):
-                photo = ImageTk.PhotoImage(Image.open(BytesIO(b64decode(image)))) 
+                photo = ImageTk.PhotoImage(Image.open(BytesIO(b64decode(image))))
+                self.output_image.image = photo
                 self.output_image['image'] = photo
                 self.output_image.update_idletasks()
 
