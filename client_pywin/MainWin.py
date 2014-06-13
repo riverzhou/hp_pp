@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 from tkinter        import *
-import platform
 
 
 #==============================================================================
@@ -13,13 +12,14 @@ import platform
 
 class Console():
         def __init__(self, master=None):
-                self.var_use_group2 = IntVar()
-
                 master.title('Console')
                 master.geometry('657x674+514+185')
                 master.resizable(0,0)
-                if platform.system() == 'Windows' :
-                        master.attributes("-toolwindow", 1)
+                #if platform.system() == 'Windows' :  master.attributes("-toolwindow", 1)
+
+                self.var_use_group2 = IntVar()
+
+                #--------------------------------------------------------------
 
                 _bgcolor = '#d9d9d9'  # X11 color: 'gray85'
                 _fgcolor = '#000000'  # X11 color: 'black'
