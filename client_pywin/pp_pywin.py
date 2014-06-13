@@ -12,7 +12,7 @@ from MainWin            import Console
 from pp_log             import logger, printer
 from pp_baseclass       import pp_sender
 
-from pp_cmd             import proc_login, proc_image, proc_price, main_init_dns
+from pp_cmd             import proc_login, proc_image, proc_price
 
 #===========================================================
 
@@ -21,12 +21,36 @@ class pp_client():
                 self.console    = console
                 self.bidno      = key_val['bidno']
                 self.passwd     = key_val['passwd']
-                self.last_price = 0
+                self.last_price = None
                 self.sid        = None
+                self.pid        = None
+                self.udp        = None
+                self.group      = 0
+
+        def login_ok(self, key_val):
+                if key_val == None:
+                        return 
+
+                self.pid = key_val['pid']                
+
+                if self.udp != None :
+                        self.udp.stop()
+
+                arg_val = {}
+                arg_val['bidno'] = self.bidno
+                arg_val['pid']   = self.pid
+                arg_val['group'] = self.group
+
+                self.udp = udp_worker(self.console, arg_val)
+                self.udp.start()
+                self.udp.wait_for_start()
+                self.udp.format_udp()
+
+                self.console.update_login_status(info_val['name'])
 
         def login(self, key_val):
                 logger.debug(key_val.items())
-                main_init_dns(key_val['group'])
+                self.group = key_val['group']
                 try:
                         info_val = proc_login(key_val)
                 except:
@@ -37,6 +61,7 @@ class pp_client():
         def image(self, key_val):
                 logger.debug(key_val.items())
                 key_val['bidno'] = self.bidno
+                key_val['group'] = self.group
                 try:
                         info_val = proc_image(key_val)
                 except:
@@ -54,6 +79,7 @@ class pp_client():
                 key_val['price'] = self.last_price
                 key_val['passwd']= self.passwd
                 key_val['sid']   = self.sid
+                key_val['group'] = self.group
                 try:
                         info_val = proc_price(key_val)
                 except:
@@ -183,17 +209,27 @@ class Console(Console):
                 self.output_login_status['text'] = info
                 self.output_login_status.update_idletasks()
 
+        '''
         def update_change_time(self, info):
-                self.output_change_time['text'] = info
+                self.output_change_time['text']   = info
                 self.output_change_time.update_idletasks()
 
         def update_system_time(self, info):
-                self.output_system_time['text'] = info
+                self.output_system_time['text']   = info
                 self.output_system_time.update_idletasks()
 
         def update_current_price(self, info):
                 self.output_current_price['text'] = info
                 self.output_current_price.update_idletasks()
+        '''
+
+        def update_udp_info(self, ctime, stime, price):
+                self.output_current_price['text'] = price
+                self.output_system_time['text']   = stime
+                self.output_change_time['text']   = ctime
+                self.output_current_price.update_idletasks()
+                self.output_system_time.update_idletasks()
+                self.output_change_time.update_idletasks()
 
         def update_goal_channel(self, info):
                 self.output_goal_channel['text'] = info

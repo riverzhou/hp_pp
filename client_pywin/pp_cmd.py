@@ -7,6 +7,7 @@ from socket             import gethostbyname
 from pp_log             import logger, printer
 from pp_sslworker       import pyget
 from pp_sslproto        import *
+from pp_server          import server_dict
 
 #==========================================================
 
@@ -15,18 +16,12 @@ pyget_loginimage   = ''
 
 #==========================================================
 
-def main_init_dns(group):
-        global login_server, price_server, image_server, pyget_server_group, pp_server_dict, pp_server_dict_2
-        server_dict = pp_server_dict if group == 0 else pp_server_dict_2
-        login_server = server_dict['login'][0]
-        image_server = server_dict['toubiao'][0]
-        price_server = server_dict['toubiao'][0]
-
 def proc_login(arg_val):
-        global pyget_machinecode, pyget_loginimage
+        global pyget_machinecode, pyget_loginimage, server_dict
 
-        bidno  = arg_val['bidno']
-        passwd = arg_val['passwd']
+        bidno   = arg_val['bidno']
+        passwd  = arg_val['passwd']
+        group   = arg_val['group']
         
         machine = proto_machine(pyget_machinecode, pyget_loginimage)
         pyget_machinecode       = machine.mcode
@@ -36,8 +31,11 @@ def proc_login(arg_val):
         key_val['passwd']       = passwd
         key_val['mcode']        = machine.mcode
         key_val['login_image']  = machine.image
-        key_val['host_name']    = login_server
-        key_val['host_ip']      = gethostbyname(login_server)
+        key_val['host_name']    = server_dict[group]['login']['name']
+        key_val['host_ip']      = server_dict[group]['login']['ip']
+        key_val['host_port']    = server_dict[group]['login']['port']
+
+        login_server = key_val['host_name']
 
         proto    = proto_ssl_login(key_val)
         info_val = pyget(login_server, proto.make_login_req(), proto.make_ssl_head())
@@ -58,8 +56,9 @@ def proc_login(arg_val):
 def proc_image(arg_val):
         global pyget_machinecode, pyget_loginimage
 
-        bidno   = arg_val['bidno']
-        price   = arg_val['price']
+        bidno    = arg_val['bidno']
+        price    = arg_val['price']
+        group    = arg_val['group']
 
         machine = proto_machine(pyget_machinecode, pyget_loginimage)
 
@@ -67,8 +66,11 @@ def proc_image(arg_val):
         key_val['bidno']        = bidno
         key_val['mcode']        = machine.mcode
         key_val['login_image']  = machine.image
-        key_val['host_name']    = image_server
-        key_val['host_ip']      = gethostbyname(image_server)
+        key_val['host_name']    = server_dict[group]['toubiao']['name']
+        key_val['host_ip']      = server_dict[group]['toubiao']['ip']
+        key_val['host_port']    = server_dict[group]['toubiao']['port']
+
+        image_server = key_val['host_name']
 
         proto    = proto_ssl_image(key_val)
         info_val = pyget(image_server, proto.make_image_req(price), proto.make_ssl_head())
@@ -95,6 +97,7 @@ def proc_price(arg_val):
         image     = arg_val['image']
         passwd    = arg_val['passwd']
         image_sid = arg_val['sid']
+        group     = arg_val['group']
 
         machine = proto_machine(pyget_machinecode, pyget_loginimage)
 
@@ -103,8 +106,11 @@ def proc_price(arg_val):
         key_val['mcode']        = machine.mcode
         key_val['passwd']       = passwd
         key_val['login_image']  = machine.image
-        key_val['host_name']    = image_server
-        key_val['host_ip']      = gethostbyname(image_server)
+        key_val['host_name']    = server_dict[group]['toubiao']['name']
+        key_val['host_ip']      = server_dict[group]['toubiao']['ip']
+        key_val['host_port']    = server_dict[group]['toubiao']['port']
+
+        price_server = key_val['host_name']
 
         if image_sid == None :
                 debug.error('no image_sid')

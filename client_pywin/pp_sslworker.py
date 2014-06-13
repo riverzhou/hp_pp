@@ -44,6 +44,12 @@ def pyget(host, req, headers = {}, timeout = None):
 
         return key_val
 
+class pp_login_worker():
+        pass
+
+class pp_toubiao_worker():
+        pass
+
 if __name__ == '__main__' :
         login_req  = '/car/gui/login.aspx?BIDNUMBER=12345678&BIDPASSWORD=1234&MACHINECODE=ABCDEFGHI&CHECKCODE=d457df935057803ab4a610710bd3d4c6&VERSION=177&IMAGENUMBER=157326'
         image_req  = '/car/gui/imagecode.aspx?BIDNUMBER=12345678&BIDPASSWORD=1234&BIDAMOUNT=74000&VERSION=177&CHECKCODE=e83fa61d212330f8e95f0e3af0542ef8'

@@ -11,24 +11,6 @@ from pp_log                     import logger, printer
 
 #==================================================================================================================
 
-pp_server_dict = {
-        'login'    : ('tblogin.alltobid.com',   443),
-        'toubiao'  : ('toubiao.alltobid.com',   443),
-        'result'   : ('tbresult.alltobid.com',  443),
-        'query'    : ('tbquery.alltobid.com',   443),
-        'udp'      : ('tbudp.alltobid.com',     999),
-}
-
-pp_server_dict_2 = {
-        'login'    : ('tblogin2.alltobid.com',  443),
-        'toubiao'  : ('toubiao2.alltobid.com',  443),
-        'result'   : ('tbresult2.alltobid.com', 443),
-        'query'    : ('tbquery2.alltobid.com',  443),
-        'udp'      : ('tbudp2.alltobid.com',    999),
-}
-
-#==================================================================================================================
-
 base64_kv =    {
         '0':  ord('A'),
         '1':  ord('B'),
