@@ -183,14 +183,14 @@ class proto_udp():
                 <TYPE>INFO</TYPE><INFO>B2014年5月24日上海市个人非营业性客车额度投标拍卖会^7400^114121^10:30^11:30^10:30^11:00^11:00^11:30^11:00:14^72600^10:30:12^72300^72900</INFO>
                 '''
                 info = ( (
-                        '<TYPE>INFO</TYPE><INFO>B2014年5月24日上海市个人非营业性客车额度投标拍卖会^7400^%s^10:30^11:30^10:30^11:00^11:00^11:30^%s^%s^%s^%s^</INFO>'
+                        '<TYPE>INFO</TYPE><INFO>B2014年5月24日上海市个人非营业性客车额度投标拍卖会^7400^%s^10:30^11:30^10:30^11:00^11:00^11:30^%s^%s^%s^%s^%s</INFO>'
                         ) % (
                         key_val['number'],
                         key_val['systime'],
                         key_val['price'],
                         key_val['lowtime'],
                         str(int(key_val['price']) - 300),
-                        str(int(key_val['price']) + 300)
+                        str(int(key_val['price']) + 300),
                         ) )
                 print(info)
                 return info.encode('gb18030')
@@ -311,11 +311,13 @@ class udp_handle(BaseRequestHandler):
                 key_val = proto_udp.parse_ack(string)
                 key_val['addr'] = self.client_address
                 try:
-                        proto_dict[key_val['TYPE']](key_val)
+                        proc = proto_dict[key_val['TYPE']]
                 except KeyError:
                         pass
                 except:
                         print_exc()
+                else:
+                        proc(key_val)
 
         def get(self):
                 return proto_udp.decode(self.request[0]).decode('gb18030')
