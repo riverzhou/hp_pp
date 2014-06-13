@@ -274,16 +274,16 @@ class Console(Console):
         def update_image_decode(self, image):
                 try:
                         image = b64decode(image)
-                except:
-                        self.output_image.image    = None
-                        self.output_image['image'] = None
-                        self.output_image['text']  = '图片错误'
-                        self.output_image.update_idletasks()
-                else:
                         photo = ImageTk.PhotoImage(Image.open(BytesIO(image)))
+                except:
+                        global err_jpg
+                        self.output_image.image    = err_jpg
+                        self.output_image['image'] = err_jpg
+                        self.output_image.update_idletasks()
+                        logger.error('图片错误，重新请求')
+                else:
                         self.output_image.image    = photo
                         self.output_image['image'] = photo
-                        self.output_image['text']  = '图片'
                         self.output_image.update_idletasks()
 
 #===========================================================
@@ -324,8 +324,15 @@ def save_dump():
 
 #===========================================================
 
+def tk_init_err():
+        global err_jpg
+        f = open('err.jpg', 'rb')
+        err_jpg = ImageTk.PhotoImage(Image.open(f))
+        f.close()
+
 def pp_init_tk():
         root = Tk()
+        tk_init_err()
         Console (root)
         root.mainloop()
 
