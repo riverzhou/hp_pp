@@ -164,9 +164,12 @@ class proto_ssl():
                 global  base64_kv
                 key_val = base64_kv
                 size    = len(string)
-                output  = bytearray(size)
+                slen    = ((size+3) >> 2) << 2
+                output  = bytearray(slen)
                 for i in range(size):
                         output[i] = key_val[string[i]]
+                for i in range(size, slen):
+                        output[i] = ord('=')
                 return output.decode()
 
         #----------------------------------------------
