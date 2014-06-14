@@ -290,10 +290,10 @@ class ssl_image_pool_maker(pp_thread):
                         self.qsize_1   = self.manager.queue_workers[1].qsize()
                         if count > self.pool_size or self.pool_size != ssl_image_sender.pool_size:
                                 for i in range(self.pool_size - self.qsize_0):
-                                        worker  = ssl_image_worker(self.manager.key_val[0], self.manager, None)
+                                        worker  = ssl_image_worker(self.manager.key_val[0], self.manager, None, i)
                                         worker.start()
                                 for i in range(self.pool_size - self.qsize_1):
-                                        worker  = ssl_image_worker(self.manager.key_val[1], self.manager, None)
+                                        worker  = ssl_image_worker(self.manager.key_val[1], self.manager, None, i)
                                         worker.start()
                         if self.manager.console != None:
                                 current = '%.2d : %.2d' % (self.qsize_0, self.qsize_1)
@@ -303,6 +303,7 @@ class ssl_image_pool_maker(pp_thread):
 
 class ssl_image_sender(ssl_sender):
         pool_size = 10
+        timeout   = None
 
         def __init__(self, info = '', lifo = False):
                 ssl_sender.__init__(self, info, lifo)
@@ -311,11 +312,11 @@ class ssl_image_sender(ssl_sender):
                 self.key_val[0]['host_ip']      = server_dict[0]['toubiao']['ip']
                 self.key_val[0]['host_name']    = server_dict[0]['toubiao']['name']
                 self.key_val[0]['group']        = 0
-                self.key_val[0]['timeout']      = None
+                self.key_val[0]['timeout']      = self.timeout
                 self.key_val[1]['host_ip']      = server_dict[1]['toubiao']['ip']
                 self.key_val[1]['host_name']    = server_dict[1]['toubiao']['name']
                 self.key_val[1]['group']        = 1
-                self.key_val[1]['timeout']      = None
+                self.key_val[1]['timeout']      = self.timeout
                 for i in range(self.pool_size):
                         worker  = ssl_image_worker(self.key_val[0], self, None, i)
                         worker.start()
@@ -374,10 +375,10 @@ class ssl_price_pool_maker(pp_thread):
                         self.qsize_1   = self.manager.queue_workers[1].qsize()
                         if count > self.pool_size or self.pool_size != ssl_price_sender.pool_size:
                                 for i in range(self.pool_size - self.qsize_0):
-                                        worker  = ssl_price_worker(self.manager.key_val[0], self.manager, None)
+                                        worker  = ssl_price_worker(self.manager.key_val[0], self.manager, None, i)
                                         worker.start()
                                 for i in range(self.pool_size - self.qsize_1):
-                                        worker  = ssl_price_worker(self.manager.key_val[1], self.manager, None)
+                                        worker  = ssl_price_worker(self.manager.key_val[1], self.manager, None, i)
                                         worker.start()
                         if self.manager.console != None:
                                 current = '%.2d : %.2d' % (self.qsize_0, self.qsize_1)
@@ -387,6 +388,7 @@ class ssl_price_pool_maker(pp_thread):
 
 class ssl_price_sender(ssl_sender):
         pool_size = 10
+        timeout   = None
 
         def __init__(self, info = '', lifo = False):
                 ssl_sender.__init__(self, info, lifo)
@@ -395,11 +397,11 @@ class ssl_price_sender(ssl_sender):
                 self.key_val[0]['host_ip']      = server_dict[0]['toubiao']['ip']
                 self.key_val[0]['host_name']    = server_dict[0]['toubiao']['name']
                 self.key_val[0]['group']        = 0
-                self.key_val[0]['timeout']      = None
+                self.key_val[0]['timeout']      = self.timeout
                 self.key_val[1]['host_ip']      = server_dict[1]['toubiao']['ip']
                 self.key_val[1]['host_name']    = server_dict[1]['toubiao']['name']
                 self.key_val[1]['group']        = 1
-                self.key_val[1]['timeout']      = None
+                self.key_val[1]['timeout']      = self.timeout
                 for i in range(self.pool_size):
                         worker  = ssl_price_worker(self.key_val[0], self, None, i)
                         worker.start()
