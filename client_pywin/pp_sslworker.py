@@ -329,7 +329,6 @@ class ssl_image_sender(ssl_sender):
                 self.maker.wait_for_start()
 
         def feedback(self, status, group, worker):
-                logger.debug(worker.info + ' : ' + str(group) + ' : ' + status)
                 if status == 'timeout' :
                         self.queue_workers[group].get()
                         return
@@ -414,7 +413,6 @@ class ssl_price_sender(ssl_sender):
                 self.maker.wait_for_start()
 
         def feedback(self, status, group, worker):
-                logger.debug(worker.info + ' : ' + str(group) + ' : ' + status)
                 if status == 'timeout' :
                         self.queue_workers[group].get()
                         return
