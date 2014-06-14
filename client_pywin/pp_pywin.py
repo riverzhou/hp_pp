@@ -37,7 +37,9 @@ class pp_client():
 
         def login_ok(self, key_val):
                 if key_val == None :            return
-                if 'errcode' in key_val :       return
+                if 'errcode' in key_val :
+                        logger.error('login error! errcode %s , errstring %s' % (key_val['errcode', key_val['errstring']))
+                        return
 
                 self.info_val['pid']            = key_val['pid']
 
@@ -59,8 +61,12 @@ class pp_client():
 
         def image_ok(self, key_val):
                 if key_val == None :            return
-                if 'errcode' in key_val :       return
-                if key_val['image'] == None :   return
+                if 'errcode' in key_val :
+                        logger.error('image error! errcode %s , errstring %s' % (key_val['errcode', key_val['errstring']))
+                        return
+                if key_val['image'] == None :
+                        logger.error('image error! image decode failed')
+                        return
 
                 self.info_val['sid']            = key_val['sid']
                 self.info_val['last_price']     = key_val['price']
@@ -77,7 +83,9 @@ class pp_client():
 
         def price_ok(self, key_val):
                 if key_val == None :            return
-                if 'errcode' in key_val :       return
+                if 'errcode' in key_val :
+                        logger.error('price error! errcode %s , errstring %s' % (key_val['errcode', key_val['errstring']))
+                        return
 
                 count = key_val['count']
                 if count == '1' : return self.console.update_first_price(key_val['price'])
