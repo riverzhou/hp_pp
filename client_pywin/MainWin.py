@@ -5,15 +5,12 @@ from tkinter        import *
 
 #==============================================================================
 
-#geometry('657x674+514+185')
-#GEOMETRY = '657x674+514+185'
-
 #------------------------------------------------------------------------------
 
 class Console():
         def __init__(self, master=None):
                 master.title('Console')
-                master.geometry('657x674+514+185')
+                master.geometry('659x729+656+107')
                 master.resizable(0,0)
                 #if platform.system() == 'Windows' :  master.attributes("-toolwindow", 1)
 
@@ -42,7 +39,7 @@ class Console():
                 self.Frame1.configure(width=595)
 
                 self.Frame6 = Frame (self.Frame1)
-                self.Frame6.place(relx=0.39,rely=0.15,relheight=0.7,relwidth=0.58)
+                self.Frame6.place(relx=0.39,rely=0.14,relheight=0.72,relwidth=0.58)
                 self.Frame6.configure(relief=GROOVE)
                 self.Frame6.configure(borderwidth="2")
                 self.Frame6.configure(relief=GROOVE)
@@ -52,7 +49,7 @@ class Console():
                 self.Frame6.configure(width=345)
 
                 self.input_bidno = Entry (self.Frame6)
-                self.input_bidno.place(relx=0.32,rely=0.11,relheight=0.28,relwidth=0.3)
+                self.input_bidno.place(relx=0.32,rely=0.19,relheight=0.26,relwidth=0.3)
                 self.input_bidno.configure(background="white")
                 self.input_bidno.configure(disabledforeground="#a3a3a3")
                 self.input_bidno.configure(font="TkFixedFont")
@@ -65,7 +62,7 @@ class Console():
                 self.input_bidno.configure(selectforeground="black")
 
                 self.input_passwd = Entry (self.Frame6)
-                self.input_passwd.place(relx=0.32,rely=0.53,relheight=0.28,relwidth=0.3)
+                self.input_passwd.place(relx=0.32,rely=0.57,relheight=0.26,relwidth=0.3)
 
                 self.input_passwd.configure(background="white")
                 self.input_passwd.configure(disabledforeground="#a3a3a3")
@@ -79,7 +76,7 @@ class Console():
                 self.input_passwd.configure(selectforeground="black")
 
                 self.button_login = Button (self.Frame6)
-                self.button_login.place(relx=0.72,rely=0.53,height=28,width=75)
+                self.button_login.place(relx=0.72,rely=0.57,height=28,width=81)
                 self.button_login.configure(activebackground="#d9d9d9")
                 self.button_login.configure(activeforeground="#000000")
                 self.button_login.configure(background=_bgcolor)
@@ -92,7 +89,7 @@ class Console():
                 self.button_login.bind('<Button-1>',self.proc_login)
 
                 self.Label7 = Label (self.Frame6)
-                self.Label7.place(relx=0.12,rely=0.11,height=23,width=30)
+                self.Label7.place(relx=0.12,rely=0.19,height=23,width=30)
                 self.Label7.configure(activebackground="#f9f9f9")
                 self.Label7.configure(activeforeground="black")
                 self.Label7.configure(background=_bgcolor)
@@ -103,7 +100,7 @@ class Console():
                 self.Label7.configure(text='''账号''')
 
                 self.Label8 = Label (self.Frame6)
-                self.Label8.place(relx=0.12,rely=0.53,height=23,width=30)
+                self.Label8.place(relx=0.12,rely=0.57,height=23,width=30)
                 self.Label8.configure(activebackground="#f9f9f9")
                 self.Label8.configure(activeforeground="black")
                 self.Label8.configure(background=_bgcolor)
@@ -114,7 +111,7 @@ class Console():
                 self.Label8.configure(text='''密码''')
 
                 self.check_use_group2 = Checkbutton (self.Frame6)
-                self.check_use_group2.place(relx=0.72,rely=0.11,relheight=0.28
+                self.check_use_group2.place(relx=0.72,rely=0.19,relheight=0.26
                         ,relwidth=0.21)
                 self.check_use_group2.configure(activebackground="#d9d9d9")
                 self.check_use_group2.configure(activeforeground="#000000")
@@ -127,7 +124,7 @@ class Console():
                 self.check_use_group2.configure(variable=self.var_use_group2)
 
                 self.Frame7 = Frame (self.Frame1)
-                self.Frame7.place(relx=0.03,rely=0.15,relheight=0.7,relwidth=0.31)
+                self.Frame7.place(relx=0.03,rely=0.14,relheight=0.72,relwidth=0.31)
                 self.Frame7.configure(relief=GROOVE)
                 self.Frame7.configure(borderwidth="2")
                 self.Frame7.configure(relief=GROOVE)
@@ -137,27 +134,28 @@ class Console():
                 self.Frame7.configure(width=185)
 
                 self.Frame10 = Frame (self.Frame7)
-                self.Frame10.place(relx=0.27,rely=0.21,relheight=0.58,relwidth=0.46)
+                self.Frame10.place(relx=0.22,rely=0.29,relheight=0.52,relwidth=0.51)
                 self.Frame10.configure(relief=GROOVE)
                 self.Frame10.configure(borderwidth="2")
                 self.Frame10.configure(relief=GROOVE)
                 self.Frame10.configure(background=_bgcolor)
                 self.Frame10.configure(highlightbackground="#d9d9d9")
                 self.Frame10.configure(highlightcolor="black")
-                self.Frame10.configure(width=85)
+                self.Frame10.configure(width=95)
 
                 self.output_login_status = Message (self.Frame10)
-                self.output_login_status.place(relx=0.12,rely=0.18,relheight=0.64
-                        ,relwidth=0.79)
+                self.output_login_status.place(relx=0.11,rely=0.18,relheight=0.64
+                        ,relwidth=0.81)
                 self.output_login_status.configure(background=_bgcolor)
                 self.output_login_status.configure(foreground="#000000")
                 self.output_login_status.configure(highlightbackground="#d9d9d9")
                 self.output_login_status.configure(highlightcolor="black")
+                self.output_login_status.configure(justify=CENTER)
                 self.output_login_status.configure(text='''未登录''')
-                self.output_login_status.configure(width=67)
+                self.output_login_status.configure(width=77)
 
                 self.Frame3 = Frame (master)
-                self.Frame3.place(relx=0.05,rely=0.27,relheight=0.32,relwidth=0.9)
+                self.Frame3.place(relx=0.05,rely=0.26,relheight=0.36,relwidth=0.9)
                 self.Frame3.configure(relief=GROOVE)
                 self.Frame3.configure(borderwidth="2")
                 self.Frame3.configure(relief=GROOVE)
@@ -166,127 +164,18 @@ class Console():
                 self.Frame3.configure(highlightcolor="black")
                 self.Frame3.configure(width=595)
 
-                self.Frame4 = Frame (self.Frame3)
-                self.Frame4.place(relx=0.57,rely=0.09,relheight=0.81,relwidth=0.39)
-                self.Frame4.configure(relief=GROOVE)
-                self.Frame4.configure(borderwidth="2")
-                self.Frame4.configure(relief=GROOVE)
-                self.Frame4.configure(background=_bgcolor)
-                self.Frame4.configure(highlightbackground="#d9d9d9")
-                self.Frame4.configure(highlightcolor="black")
-                self.Frame4.configure(width=235)
-
-                self.input_ajust_channel = Entry (self.Frame4)
-                self.input_ajust_channel.place(relx=0.13,rely=0.69,relheight=0.15
-                        ,relwidth=0.4)
-                self.input_ajust_channel.configure(background="white")
-                self.input_ajust_channel.configure(disabledforeground="#a3a3a3")
-                self.input_ajust_channel.configure(font="TkFixedFont")
-                self.input_ajust_channel.configure(foreground="#000000")
-                self.input_ajust_channel.configure(highlightbackground="#d9d9d9")
-                self.input_ajust_channel.configure(highlightcolor="black")
-                self.input_ajust_channel.configure(insertbackground="black")
-                self.input_ajust_channel.configure(justify=CENTER)
-                self.input_ajust_channel.configure(selectbackground="#c4c4c4")
-                self.input_ajust_channel.configure(selectforeground="black")
-
-                self.button_channel = Button (self.Frame4)
-                self.button_channel.place(relx=0.6,rely=0.69,height=28,width=79)
-                self.button_channel.configure(activebackground="#d9d9d9")
-                self.button_channel.configure(activeforeground="#000000")
-                self.button_channel.configure(background=_bgcolor)
-                self.button_channel.configure(disabledforeground="#a3a3a3")
-                self.button_channel.configure(foreground="#000000")
-                self.button_channel.configure(highlightbackground="#d9d9d9")
-                self.button_channel.configure(highlightcolor="black")
-                self.button_channel.configure(pady="0")
-                self.button_channel.configure(text='''调整通道数''')
-                self.button_channel.bind('<Button-1>',self.proc_channel)
-
-                self.Label5 = Label (self.Frame4)
-                self.Label5.place(relx=0.64,rely=0.17,height=23,width=66)
-                self.Label5.configure(activebackground="#f9f9f9")
-                self.Label5.configure(activeforeground="black")
-                self.Label5.configure(background=_bgcolor)
-                self.Label5.configure(disabledforeground="#a3a3a3")
-                self.Label5.configure(foreground="#000000")
-                self.Label5.configure(highlightbackground="#d9d9d9")
-                self.Label5.configure(highlightcolor="black")
-                self.Label5.configure(text='''计划通道数''')
-
-                self.Label6 = Label (self.Frame4)
-                self.Label6.place(relx=0.13,rely=0.34,height=23,width=6)
-                self.Label6.configure(activebackground="#f9f9f9")
-                self.Label6.configure(activeforeground="black")
-                self.Label6.configure(background=_bgcolor)
-                self.Label6.configure(disabledforeground="#a3a3a3")
-                self.Label6.configure(foreground="#000000")
-                self.Label6.configure(highlightbackground="#d9d9d9")
-                self.Label6.configure(highlightcolor="black")
-
-                self.Frame14 = Frame (self.Frame4)
-                self.Frame14.place(relx=0.13,rely=0.11,relheight=0.2,relwidth=0.4)
-                self.Frame14.configure(relief=GROOVE)
-                self.Frame14.configure(borderwidth="2")
-                self.Frame14.configure(relief=GROOVE)
-                self.Frame14.configure(background=_bgcolor)
-                self.Frame14.configure(highlightbackground="#d9d9d9")
-                self.Frame14.configure(highlightcolor="black")
-                self.Frame14.configure(width=95)
-
-                self.output_goal_channel = Message (self.Frame14)
-                self.output_goal_channel.place(relx=0.21,rely=0.29,relheight=0.43
-                        ,relwidth=0.6)
-                self.output_goal_channel.configure(background=_bgcolor)
-                self.output_goal_channel.configure(foreground="#000000")
-                self.output_goal_channel.configure(highlightbackground="#d9d9d9")
-                self.output_goal_channel.configure(highlightcolor="black")
-                self.output_goal_channel.configure(text='''0''')
-                self.output_goal_channel.configure(width=57)
-
-                self.Frame18 = Frame (self.Frame4)
-                self.Frame18.place(relx=0.13,rely=0.4,relheight=0.2,relwidth=0.4)
-                self.Frame18.configure(relief=GROOVE)
-                self.Frame18.configure(borderwidth="2")
-                self.Frame18.configure(relief=GROOVE)
-                self.Frame18.configure(background=_bgcolor)
-                self.Frame18.configure(highlightbackground="#d9d9d9")
-                self.Frame18.configure(highlightcolor="black")
-                self.Frame18.configure(width=95)
-
-                self.output_current_channel = Message (self.Frame18)
-                self.output_current_channel.place(relx=0.21,rely=0.29,relheight=0.43
-                        ,relwidth=0.6)
-                self.output_current_channel.configure(background=_bgcolor)
-                self.output_current_channel.configure(foreground="#000000")
-                self.output_current_channel.configure(highlightbackground="#d9d9d9")
-                self.output_current_channel.configure(highlightcolor="black")
-                self.output_current_channel.configure(text='''0''')
-                self.output_current_channel.configure(width=57)
-
-                self.Label14 = Label (self.Frame4)
-                self.Label14.place(relx=0.64,rely=0.46,height=23,width=66)
-                self.Label14.configure(activebackground="#f9f9f9")
-                self.Label14.configure(activeforeground="black")
-                self.Label14.configure(background=_bgcolor)
-                self.Label14.configure(disabledforeground="#a3a3a3")
-                self.Label14.configure(foreground="#000000")
-                self.Label14.configure(highlightbackground="#d9d9d9")
-                self.Label14.configure(highlightcolor="black")
-                self.Label14.configure(text='''可用通道数''')
-
                 self.Frame8 = Frame (self.Frame3)
-                self.Frame8.place(relx=0.03,rely=0.09,relheight=0.81,relwidth=0.5)
+                self.Frame8.place(relx=0.03,rely=0.08,relheight=0.85,relwidth=0.41)
                 self.Frame8.configure(relief=GROOVE)
                 self.Frame8.configure(borderwidth="2")
                 self.Frame8.configure(relief=GROOVE)
                 self.Frame8.configure(background=_bgcolor)
                 self.Frame8.configure(highlightbackground="#d9d9d9")
                 self.Frame8.configure(highlightcolor="black")
-                self.Frame8.configure(width=295)
+                self.Frame8.configure(width=245)
 
                 self.Label2 = Label (self.Frame8)
-                self.Label2.place(relx=0.14,rely=0.17,height=23,width=54)
+                self.Label2.place(relx=0.08,rely=0.18,height=23,width=54)
                 self.Label2.configure(activebackground="#f9f9f9")
                 self.Label2.configure(activeforeground="black")
                 self.Label2.configure(background=_bgcolor)
@@ -297,7 +186,7 @@ class Console():
                 self.Label2.configure(text='''变价时间''')
 
                 self.Label3 = Label (self.Frame8)
-                self.Label3.place(relx=0.14,rely=0.46,height=23,width=54)
+                self.Label3.place(relx=0.08,rely=0.49,height=23,width=54)
                 self.Label3.configure(activebackground="#f9f9f9")
                 self.Label3.configure(activeforeground="black")
                 self.Label3.configure(background=_bgcolor)
@@ -308,7 +197,7 @@ class Console():
                 self.Label3.configure(text='''系统时间''')
 
                 self.Label4 = Label (self.Frame8)
-                self.Label4.place(relx=0.14,rely=0.74,height=23,width=54)
+                self.Label4.place(relx=0.08,rely=0.8,height=23,width=54)
                 self.Label4.configure(activebackground="#f9f9f9")
                 self.Label4.configure(activeforeground="black")
                 self.Label4.configure(background=_bgcolor)
@@ -319,18 +208,18 @@ class Console():
                 self.Label4.configure(text='''当前价格''')
 
                 self.Frame11 = Frame (self.Frame8)
-                self.Frame11.place(relx=0.44,rely=0.11,relheight=0.2,relwidth=0.42)
+                self.Frame11.place(relx=0.49,rely=0.13,relheight=0.16,relwidth=0.35)
                 self.Frame11.configure(relief=GROOVE)
                 self.Frame11.configure(borderwidth="2")
                 self.Frame11.configure(relief=GROOVE)
                 self.Frame11.configure(background=_bgcolor)
                 self.Frame11.configure(highlightbackground="#d9d9d9")
                 self.Frame11.configure(highlightcolor="black")
-                self.Frame11.configure(width=125)
+                self.Frame11.configure(width=85)
 
                 self.output_change_time = Message (self.Frame11)
-                self.output_change_time.place(relx=0.24,rely=0.29,relheight=0.43
-                        ,relwidth=0.54)
+                self.output_change_time.place(relx=0.12,rely=0.29,relheight=0.43
+                        ,relwidth=0.79)
                 self.output_change_time.configure(background=_bgcolor)
                 self.output_change_time.configure(foreground="#000000")
                 self.output_change_time.configure(highlightbackground="#d9d9d9")
@@ -339,18 +228,18 @@ class Console():
                 self.output_change_time.configure(width=67)
 
                 self.Frame12 = Frame (self.Frame8)
-                self.Frame12.place(relx=0.44,rely=0.4,relheight=0.2,relwidth=0.42)
+                self.Frame12.place(relx=0.49,rely=0.44,relheight=0.16,relwidth=0.35)
                 self.Frame12.configure(relief=GROOVE)
                 self.Frame12.configure(borderwidth="2")
                 self.Frame12.configure(relief=GROOVE)
                 self.Frame12.configure(background=_bgcolor)
                 self.Frame12.configure(highlightbackground="#d9d9d9")
                 self.Frame12.configure(highlightcolor="black")
-                self.Frame12.configure(width=125)
+                self.Frame12.configure(width=85)
 
                 self.output_system_time = Message (self.Frame12)
-                self.output_system_time.place(relx=0.24,rely=0.29,relheight=0.43
-                        ,relwidth=0.54)
+                self.output_system_time.place(relx=0.12,rely=0.29,relheight=0.43
+                        ,relwidth=0.79)
                 self.output_system_time.configure(background=_bgcolor)
                 self.output_system_time.configure(foreground="#000000")
                 self.output_system_time.configure(highlightbackground="#d9d9d9")
@@ -359,18 +248,18 @@ class Console():
                 self.output_system_time.configure(width=67)
 
                 self.Frame13 = Frame (self.Frame8)
-                self.Frame13.place(relx=0.44,rely=0.69,relheight=0.2,relwidth=0.42)
+                self.Frame13.place(relx=0.49,rely=0.76,relheight=0.16,relwidth=0.35)
                 self.Frame13.configure(relief=GROOVE)
                 self.Frame13.configure(borderwidth="2")
                 self.Frame13.configure(relief=GROOVE)
                 self.Frame13.configure(background=_bgcolor)
                 self.Frame13.configure(highlightbackground="#d9d9d9")
                 self.Frame13.configure(highlightcolor="black")
-                self.Frame13.configure(width=125)
+                self.Frame13.configure(width=85)
 
                 self.output_current_price = Message (self.Frame13)
-                self.output_current_price.place(relx=0.24,rely=0.29,relheight=0.43
-                        ,relwidth=0.54)
+                self.output_current_price.place(relx=0.12,rely=0.29,relheight=0.43
+                        ,relwidth=0.79)
                 self.output_current_price.configure(background=_bgcolor)
                 self.output_current_price.configure(foreground="#000000")
                 self.output_current_price.configure(highlightbackground="#d9d9d9")
@@ -378,8 +267,168 @@ class Console():
                 self.output_current_price.configure(text='''0''')
                 self.output_current_price.configure(width=67)
 
+                self.Frame4 = Frame (self.Frame3)
+                self.Frame4.place(relx=0.49,rely=0.08,relheight=0.4,relwidth=0.48)
+                self.Frame4.configure(relief=GROOVE)
+                self.Frame4.configure(borderwidth="2")
+                self.Frame4.configure(relief=GROOVE)
+                self.Frame4.configure(background=_bgcolor)
+                self.Frame4.configure(highlightbackground="#d9d9d9")
+                self.Frame4.configure(highlightcolor="black")
+                self.Frame4.configure(width=285)
+
+                self.Frame18 = Frame (self.Frame4)
+                self.Frame18.place(relx=0.07,rely=0.1,relheight=0.33,relwidth=0.3)
+                self.Frame18.configure(relief=GROOVE)
+                self.Frame18.configure(borderwidth="2")
+                self.Frame18.configure(relief=GROOVE)
+                self.Frame18.configure(background=_bgcolor)
+                self.Frame18.configure(highlightbackground="#d9d9d9")
+                self.Frame18.configure(highlightcolor="black")
+                self.Frame18.configure(width=85)
+
+                self.output_image_current_channel = Message (self.Frame18)
+                self.output_image_current_channel.place(relx=0.12,rely=0.29
+                        ,relheight=0.43,relwidth=0.79)
+                self.output_image_current_channel.configure(background=_bgcolor)
+                self.output_image_current_channel.configure(foreground="#000000")
+                self.output_image_current_channel.configure(highlightbackground="#d9d9d9")
+                self.output_image_current_channel.configure(highlightcolor="black")
+                self.output_image_current_channel.configure(justify=CENTER)
+                self.output_image_current_channel.configure(text='''00 : 00''')
+                self.output_image_current_channel.configure(width=70)
+
+                self.Frame20 = Frame (self.Frame4)
+                self.Frame20.place(relx=0.07,rely=0.57,relheight=0.33,relwidth=0.3)
+                self.Frame20.configure(relief=GROOVE)
+                self.Frame20.configure(borderwidth="2")
+                self.Frame20.configure(relief=GROOVE)
+                self.Frame20.configure(background=_bgcolor)
+                self.Frame20.configure(highlightbackground="#d9d9d9")
+                self.Frame20.configure(highlightcolor="black")
+                self.Frame20.configure(width=85)
+
+                self.output_image_goal_channel = Message (self.Frame20)
+                self.output_image_goal_channel.place(relx=0.12,rely=0.29,relheight=0.43
+                        ,relwidth=0.79)
+                self.output_image_goal_channel.configure(background=_bgcolor)
+                self.output_image_goal_channel.configure(foreground="#000000")
+                self.output_image_goal_channel.configure(highlightbackground="#d9d9d9")
+                self.output_image_goal_channel.configure(highlightcolor="black")
+                self.output_image_goal_channel.configure(justify=CENTER)
+                self.output_image_goal_channel.configure(text='''0''')
+                self.output_image_goal_channel.configure(width=70)
+
+                self.input_image_channel = Entry (self.Frame4)
+                self.input_image_channel.place(relx=0.42,rely=0.38,relheight=0.26
+                        ,relwidth=0.19)
+                self.input_image_channel.configure(background="white")
+                self.input_image_channel.configure(disabledforeground="#a3a3a3")
+                self.input_image_channel.configure(font="TkFixedFont")
+                self.input_image_channel.configure(foreground="#000000")
+                self.input_image_channel.configure(highlightbackground="#d9d9d9")
+                self.input_image_channel.configure(highlightcolor="black")
+                self.input_image_channel.configure(insertbackground="black")
+                self.input_image_channel.configure(justify=CENTER)
+                self.input_image_channel.configure(selectbackground="#c4c4c4")
+                self.input_image_channel.configure(selectforeground="black")
+                self.input_image_channel.configure(width=54)
+
+                self.button_image_channel = Button (self.Frame4)
+                self.button_image_channel.place(relx=0.67,rely=0.38,height=28,width=81)
+                self.button_image_channel.configure(activebackground="#d9d9d9")
+                self.button_image_channel.configure(activeforeground="#000000")
+                self.button_image_channel.configure(background=_bgcolor)
+                self.button_image_channel.configure(disabledforeground="#a3a3a3")
+                self.button_image_channel.configure(foreground="#000000")
+                self.button_image_channel.configure(highlightbackground="#d9d9d9")
+                self.button_image_channel.configure(highlightcolor="black")
+                self.button_image_channel.configure(pady="0")
+                self.button_image_channel.configure(text='''图片通道数''')
+                self.button_image_channel.bind('<Button-1>',self.proc_image_channel)
+
+                self.Frame14 = Frame (self.Frame3)
+                self.Frame14.place(relx=0.49,rely=0.53,relheight=0.4,relwidth=0.48)
+                self.Frame14.configure(relief=GROOVE)
+                self.Frame14.configure(borderwidth="2")
+                self.Frame14.configure(relief=GROOVE)
+                self.Frame14.configure(background=_bgcolor)
+                self.Frame14.configure(highlightbackground="#d9d9d9")
+                self.Frame14.configure(highlightcolor="black")
+                self.Frame14.configure(width=285)
+
+                self.Frame21 = Frame (self.Frame14)
+                self.Frame21.place(relx=0.07,rely=0.1,relheight=0.33,relwidth=0.3)
+                self.Frame21.configure(relief=GROOVE)
+                self.Frame21.configure(borderwidth="2")
+                self.Frame21.configure(relief=GROOVE)
+                self.Frame21.configure(background=_bgcolor)
+                self.Frame21.configure(highlightbackground="#d9d9d9")
+                self.Frame21.configure(highlightcolor="black")
+                self.Frame21.configure(width=85)
+
+                self.output_price_current_channel = Message (self.Frame21)
+                self.output_price_current_channel.place(relx=0.12,rely=0.29
+                        ,relheight=0.43,relwidth=0.79)
+                self.output_price_current_channel.configure(background=_bgcolor)
+                self.output_price_current_channel.configure(foreground="#000000")
+                self.output_price_current_channel.configure(highlightbackground="#d9d9d9")
+                self.output_price_current_channel.configure(highlightcolor="black")
+                self.output_price_current_channel.configure(justify=CENTER)
+                self.output_price_current_channel.configure(text='''00 : 00''')
+                self.output_price_current_channel.configure(width=70)
+
+                self.Frame22 = Frame (self.Frame14)
+                self.Frame22.place(relx=0.07,rely=0.57,relheight=0.33,relwidth=0.3)
+                self.Frame22.configure(relief=GROOVE)
+                self.Frame22.configure(borderwidth="2")
+                self.Frame22.configure(relief=GROOVE)
+                self.Frame22.configure(background=_bgcolor)
+                self.Frame22.configure(highlightbackground="#d9d9d9")
+                self.Frame22.configure(highlightcolor="black")
+                self.Frame22.configure(width=85)
+
+                self.output_price_goal_channel = Message (self.Frame22)
+                self.output_price_goal_channel.place(relx=0.12,rely=0.29,relheight=0.43
+                        ,relwidth=0.79)
+                self.output_price_goal_channel.configure(background=_bgcolor)
+                self.output_price_goal_channel.configure(foreground="#000000")
+                self.output_price_goal_channel.configure(highlightbackground="#d9d9d9")
+                self.output_price_goal_channel.configure(highlightcolor="black")
+                self.output_price_goal_channel.configure(justify=CENTER)
+                self.output_price_goal_channel.configure(text='''0''')
+                self.output_price_goal_channel.configure(width=70)
+
+                self.input_price_channel = Entry (self.Frame14)
+                self.input_price_channel.place(relx=0.42,rely=0.38,relheight=0.26
+                        ,relwidth=0.19)
+                self.input_price_channel.configure(background="white")
+                self.input_price_channel.configure(disabledforeground="#a3a3a3")
+                self.input_price_channel.configure(font="TkFixedFont")
+                self.input_price_channel.configure(foreground="#000000")
+                self.input_price_channel.configure(highlightbackground="#d9d9d9")
+                self.input_price_channel.configure(highlightcolor="black")
+                self.input_price_channel.configure(insertbackground="black")
+                self.input_price_channel.configure(justify=CENTER)
+                self.input_price_channel.configure(selectbackground="#c4c4c4")
+                self.input_price_channel.configure(selectforeground="black")
+                self.input_price_channel.configure(width=54)
+
+                self.button_price_channel = Button (self.Frame14)
+                self.button_price_channel.place(relx=0.67,rely=0.38,height=28,width=81)
+                self.button_price_channel.configure(activebackground="#d9d9d9")
+                self.button_price_channel.configure(activeforeground="#000000")
+                self.button_price_channel.configure(background=_bgcolor)
+                self.button_price_channel.configure(disabledforeground="#a3a3a3")
+                self.button_price_channel.configure(foreground="#000000")
+                self.button_price_channel.configure(highlightbackground="#d9d9d9")
+                self.button_price_channel.configure(highlightcolor="black")
+                self.button_price_channel.configure(pady="0")
+                self.button_price_channel.configure(text='''价格通道数''')
+                self.button_price_channel.bind('<Button-1>',self.proc_price_channel)
+
                 self.Frame5 = Frame (master)
-                self.Frame5.place(relx=0.05,rely=0.61,relheight=0.35,relwidth=0.9)
+                self.Frame5.place(relx=0.05,rely=0.64,relheight=0.32,relwidth=0.9)
                 self.Frame5.configure(relief=GROOVE)
                 self.Frame5.configure(borderwidth="2")
                 self.Frame5.configure(relief=GROOVE)
@@ -453,28 +502,28 @@ class Console():
                 self.button_image_decode.bind('<Button-1>',self.proc_image_decode)
 
                 self.Frame19 = Frame (self.Frame2)
-                self.Frame19.place(relx=0.06,rely=0.21,relheight=0.23,relwidth=0.3)
+                self.Frame19.place(relx=0.06,rely=0.26,relheight=0.18,relwidth=0.33)
                 self.Frame19.configure(relief=GROOVE)
                 self.Frame19.configure(borderwidth="2")
                 self.Frame19.configure(relief=GROOVE)
                 self.Frame19.configure(background=_bgcolor)
                 self.Frame19.configure(highlightbackground="#d9d9d9")
                 self.Frame19.configure(highlightcolor="black")
-                self.Frame19.configure(width=105)
+                self.Frame19.configure(width=115)
 
                 self.output_last_price = Message (self.Frame19)
-                self.output_last_price.place(relx=0.19,rely=0.22,relheight=0.56
-                        ,relwidth=0.59)
+                self.output_last_price.place(relx=0.17,rely=0.29,relheight=0.43
+                        ,relwidth=0.67)
                 self.output_last_price.configure(background=_bgcolor)
                 self.output_last_price.configure(foreground="#000000")
                 self.output_last_price.configure(highlightbackground="#d9d9d9")
                 self.output_last_price.configure(highlightcolor="black")
                 self.output_last_price.configure(justify=CENTER)
                 self.output_last_price.configure(text='''请求价格''')
-                self.output_last_price.configure(width=70)
+                self.output_last_price.configure(width=77)
 
                 self.output_image = Label (self.Frame2)
-                self.output_image.place(relx=0.03,rely=0.56,height=53,width=127)
+                self.output_image.place(relx=0.03,rely=0.56,height=53,width=137)
                 self.output_image.configure(activebackground="#f9f9f9")
                 self.output_image.configure(activeforeground="black")
                 self.output_image.configure(background=_bgcolor)
@@ -588,20 +637,25 @@ class Console():
                 self.output_third_price.configure(width=57)
 
 
+
         def proc_login(self,p1):
-                print ('self.proc_login')
+                print ('proc_login')
                 sys.stdout.flush()
 
-        def proc_channel(self,p1):
-                print ('self.proc_channel')
+        def proc_image_channel(self,p1):
+                print ('proc_image_channel')
+                sys.stdout.flush()
+
+        def proc_price_channel(self,p1):
+                print ('proc_price_channel')
                 sys.stdout.flush()
 
         def proc_image_price(self,p1):
-                print ('self.proc_image_price')
+                print ('proc_image_price')
                 sys.stdout.flush()
 
         def proc_image_decode(self,p1):
-                print ('self.proc_image_decode')
+                print ('proc_image_decode')
                 sys.stdout.flush()
 
 
@@ -611,7 +665,6 @@ class Console():
 if __name__ == '__main__':
         root = Tk()
         root.title('Console')
-        root.geometry(GEOMETRY)
         Console (root)
         root.mainloop()
 
