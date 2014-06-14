@@ -332,7 +332,6 @@ class Console():
                 self.input_image_channel.configure(justify=CENTER)
                 self.input_image_channel.configure(selectbackground="#c4c4c4")
                 self.input_image_channel.configure(selectforeground="black")
-                self.input_image_channel.configure(width=54)
 
                 self.button_image_channel = Button (self.Frame4)
                 self.button_image_channel.place(relx=0.67,rely=0.38,height=28,width=81)
@@ -412,7 +411,6 @@ class Console():
                 self.input_price_channel.configure(justify=CENTER)
                 self.input_price_channel.configure(selectbackground="#c4c4c4")
                 self.input_price_channel.configure(selectforeground="black")
-                self.input_price_channel.configure(width=54)
 
                 self.button_price_channel = Button (self.Frame14)
                 self.button_price_channel.place(relx=0.67,rely=0.38,height=28,width=81)
@@ -502,18 +500,18 @@ class Console():
                 self.button_image_decode.bind('<Button-1>',self.proc_image_decode)
 
                 self.Frame19 = Frame (self.Frame2)
-                self.Frame19.place(relx=0.06,rely=0.26,relheight=0.18,relwidth=0.33)
+                self.Frame19.place(relx=0.09,rely=0.23,relheight=0.18,relwidth=0.28)
                 self.Frame19.configure(relief=GROOVE)
                 self.Frame19.configure(borderwidth="2")
                 self.Frame19.configure(relief=GROOVE)
                 self.Frame19.configure(background=_bgcolor)
                 self.Frame19.configure(highlightbackground="#d9d9d9")
                 self.Frame19.configure(highlightcolor="black")
-                self.Frame19.configure(width=115)
+                self.Frame19.configure(width=95)
 
                 self.output_last_price = Message (self.Frame19)
-                self.output_last_price.place(relx=0.17,rely=0.29,relheight=0.43
-                        ,relwidth=0.67)
+                self.output_last_price.place(relx=0.11,rely=0.29,relheight=0.43
+                        ,relwidth=0.81)
                 self.output_last_price.configure(background=_bgcolor)
                 self.output_last_price.configure(foreground="#000000")
                 self.output_last_price.configure(highlightbackground="#d9d9d9")
