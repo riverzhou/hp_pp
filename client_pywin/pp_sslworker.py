@@ -17,7 +17,6 @@ from pp_sslproto        import *
 
 #==========================================================
 
-
 class ssl_worker(pp_thread):
         def __init__(self, info = ''):
                 pp_thread.__init__(self, info)
@@ -72,16 +71,11 @@ class ssl_worker(pp_thread):
 
                 return key_val
 
-
 class ssl_login_worker(ssl_worker):
         def do_proc(self, arg):
-                cmd, key_val, callback = arg
-                if cmd == 'login' :
-                        return self.do_login(key_val, callback )
-                logger.error('ssl_login_worker cmd : %s unknow' % cmd)
-
-        def do_login(self, key_val, callback):
                 global    server_dict
+                key_val, callback = arg
+
                 group     = key_val['group']
                 host_ip   = server_dict[group]['login']['ip']
                 host_name = server_dict[group]['login']['name']
@@ -107,18 +101,11 @@ class ssl_login_worker(ssl_worker):
                 if callback != None : callback(ack_val)
                 return ack_val
 
-
-class ssl_toubiao_worker(ssl_login_worker):
+class ssl_image_worker(ssl_worker):
         def do_proc(self, arg):
-                cmd, key_val, callback = arg
-                if cmd == 'price' :
-                        return self.do_price(key_val, callback )
-                if cmd == 'image' :
-                        return self.do_image(key_val, callback )
-                logger.error('ssl_toubiao_worker cmd : %s unknow' % cmd)
-
-        def do_image(self, key_val, callback):
                 global    server_dict
+                key_val, callback = arg
+
                 price     = key_val['image_price']
                 group     = key_val['group']
                 host_ip   = server_dict[group]['toubiao']['ip']
@@ -147,8 +134,11 @@ class ssl_toubiao_worker(ssl_login_worker):
                 if callback != None : callback(ack_val)
                 return ack_val
 
-        def do_price(self, key_val, callback):
+class ssl_price_worker(ssl_worker):
+        def do_proc(self, arg):
                 global    server_dict
+                key_val, callback = arg
+
                 price     = key_val['shot_price']
                 image     = key_val['image_decode']
                 sid       = key_val['sid']
@@ -177,14 +167,11 @@ class ssl_toubiao_worker(ssl_login_worker):
                 if callback != None : callback(ack_val)
                 return ack_val
 
-
 #==========================================================
 
-
 class ssl_sender(pp_sender):
-        def send(self, cmd, key_val, callback):
-                self.put((cmd, key_val, callback))
-
+        def send(self, key_val, callback):
+                self.put((key_val, callback))
 
 class ssl_login_sender(ssl_sender):
         def proc(self, arg):
@@ -193,22 +180,31 @@ class ssl_login_sender(ssl_sender):
                 worker.wait_for_start()
                 worker.proc(arg)
 
-
-class ssl_toubiao_sender(ssl_sender):
+class ssl_image_sender(ssl_sender):
         def proc(self, arg):
-                worker = ssl_toubiao_worker('ssl_toubiao_worker')
+                worker = ssl_image_worker('ssl_image_worker')
                 worker.start()
                 worker.wait_for_start()
                 worker.proc(arg)
 
+class ssl_price_sender(ssl_sender):
+        def proc(self, arg):
+                worker = ssl_price_worker('ssl_price_worker')
+                worker.start()
+                worker.wait_for_start()
+                worker.proc(arg)
 
 #==========================================================
 
-proc_ssl_login   = ssl_login_sender()
+proc_ssl_login = ssl_login_sender()
 proc_ssl_login.start()
 proc_ssl_login.wait_for_start()
 
-proc_ssl_toubiao = ssl_toubiao_sender()
-proc_ssl_toubiao.start()
-proc_ssl_toubiao.wait_for_start()
+proc_ssl_image = ssl_image_sender()
+proc_ssl_image.start()
+proc_ssl_image.wait_for_start()
+
+proc_ssl_price = ssl_price_sender()
+proc_ssl_price.start()
+proc_ssl_price.wait_for_start()
 

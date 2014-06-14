@@ -11,7 +11,7 @@ from pp_log             import logger, printer
 from pp_baseclass       import pp_sender
 from pp_udpworker       import udp_worker
 from pp_sslproto        import proto_machine
-from pp_sslworker       import proc_ssl_login, proc_ssl_toubiao
+from pp_sslworker       import proc_ssl_login, proc_ssl_image, proc_ssl_price
 from MainWin            import Console
 
 #===========================================================
@@ -52,7 +52,7 @@ class pp_client():
         def login(self, key_val):
                 self.info_val['group']          = key_val['group']
                 try:
-                        return proc_ssl_login.send('login', self.info_val, self.login_ok)
+                        return proc_ssl_login.send(self.info_val, self.login_ok)
                 except:
                         print_exc()
 
@@ -69,7 +69,7 @@ class pp_client():
         def image(self, key_val):
                 self.info_val['image_price']    = key_val['price']
                 try:
-                        return proc_ssl_toubiao.send('image', self.info_val, self.image_ok)
+                        return proc_ssl_image.send(self.info_val, self.image_ok)
                 except:
                         print_exc()
 
@@ -87,7 +87,7 @@ class pp_client():
                 self.info_val['shot_price']     = self.info_val['last_price']
                 self.info_val['image_decode']   = key_val['image']
                 try:
-                        return proc_ssl_toubiao.send('price', self.info_val, self.price_ok)
+                        return proc_ssl_price.send(self.info_val, self.price_ok)
                 except:
                         print_exc()
 
