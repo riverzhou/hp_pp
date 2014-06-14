@@ -265,20 +265,20 @@ class Console(Console):
                 self.output_system_time['text']     = stime
                 self.output_change_time['text']     = ctime
                 self.output_current_price.update_idletasks()
-                self.output_system_time.update_idletasks()
-                self.output_change_time.update_idletasks()
+                #self.output_system_time.update_idletasks()
+                #self.output_change_time.update_idletasks()
 
         def update_image_channel(self, current, goal):
                 self.output_image_current_channel['text'] = current
                 self.output_image_goal_channel['text']    = goal
                 self.output_image_current_channel.update_idletasks()
-                self.output_image_goal_channel.update_idletasks()
+                #self.output_image_goal_channel.update_idletasks()
 
         def update_price_channel(self, current, goal):
                 self.output_price_current_channel['text'] = current
                 self.output_price_goal_channel['text']    = goal
                 self.output_price_current_channel.update_idletasks()
-                self.output_price_goal_channel.update_idletasks()
+                #self.output_price_goal_channel.update_idletasks()
 
         def update_first_price(self, info):
                 self.output_first_price['text']     = info
@@ -308,7 +308,7 @@ class Console(Console):
                         self.output_image['image']      = photo
                         self.output_last_price['text']  = price
                         self.output_image.update_idletasks()
-                        self.output_last_price.update_idletasks()
+                        #self.output_last_price.update_idletasks()
 
         def save_jpg(self,jpg):
                 f = open('bad.jpg','wb')
