@@ -19,8 +19,12 @@ from pp_sslproto        import *
 #==========================================================
 
 class ssl_worker(pp_thread):
+        connect_timeout = 90
+
         def __init__(self, key_val, manager, info = '', delay = 0):
                 pp_thread.__init__(self, info)
+                self.lock_close = Lock()
+                self.flag_closed= False
                 self.info       = info
                 self.delay      = delay
                 self.manager    = manager
@@ -33,11 +37,13 @@ class ssl_worker(pp_thread):
                 self.timeout    = key_val['timeout'] if 'timeout' in key_val else None
 
         def close(self):
-                if self.handler != None :
+                if self.handler != None:
                         try:
                                 self.handler.close()
                         except:
                                 print_exc()
+                        finally:
+                                self.handler = None
 
         def main(self):
                 if self.delay != 0 : sleep(self.delay)
@@ -48,19 +54,37 @@ class ssl_worker(pp_thread):
                         try:
                                 self.handler.connect()
                         except (sock_timeout, TimeoutError):
-                                self.handler.close()
+                                self.close()
                                 continue
                         except:
                                 print_exc()
                                 continue
                         break
                 self.manager.feedback('connected', self.group, self)
-                self.event_proc.wait()
+                ev = self.event_proc.wait(self.connect_timeout)
+                self.lock_close.acquire()
+                self.flag_closed = True
+                self.lock_close.release()
+                if self.flag_stop == True:
+                        self.close()
+                        return
+                if ev != True :
+                        self.manager.feedback('timeout', self.group, self)
+                if self.arg == None:
+                        self.close()
+                        return
                 self.do_proc(self.arg)
 
         def put(self, arg):
-                self.arg = arg
+                self.lock_close.acquire()
+                if self.flag_closed != True:
+                        self.arg = arg
+                        self.lock_close.release()
+                else:
+                        self.lock_close.release()
+                        return False
                 self.event_proc.set()
+                return True
 
         def do_proc(self, arg): pass
 
@@ -101,7 +125,7 @@ class ssl_login_worker(ssl_worker):
                 info_val  = self.pyget(req, head)
                 #logger.debug(sorted(info_val.items()))
 
-                if info_val == None :
+                if info_val == None:
                         return
 
                 if info_val['status'] != 200 :
@@ -143,7 +167,7 @@ class ssl_image_worker(ssl_worker):
                 info_val  = self.pyget(req, head)
                 #logger.debug(sorted(info_val.items()))
 
-                if info_val == None :
+                if info_val == None:
                         return
 
                 if info_val['status'] != 200 :
@@ -189,7 +213,7 @@ class ssl_price_worker(ssl_worker):
                 info_val  = self.pyget(req, head)
                 #logger.debug(sorted(info_val.items()))
 
-                if info_val == None :
+                if info_val == None:
                         return
 
                 if info_val['status'] != 200 :
@@ -228,6 +252,9 @@ class ssl_sender(pp_sender):
         def feedback(self, status, group, worker):
                 logger.debug(worker.info + ' : ' + str(group) + ' : ' + status)
 
+        def set_pool_size(self, size):
+                self.pool_size = size
+
 class ssl_login_sender(ssl_sender):
         def proc(self, arg):
                 global server_dict
@@ -242,34 +269,67 @@ class ssl_login_sender(ssl_sender):
                 worker.wait_for_start()
                 worker.put(arg)
 
+class ssl_image_pool_maker(pp_thread):
+        def __init__(self, manager, info = '', delay = 0):
+                pp_thread.__init__(self, info)
+                self.manager = manager
+                self.delay   = delay
+
+        def main(self):
+                if self.delay != 0 : sleep(self.delay)
+                while True:
+                        self.pool_size = self.manager.pool_size
+                        self.qsize_0   = self.manager.queue_workers[0].qsize()
+                        self.qsize_1   = self.manager.queue_workers[1].qsize()
+                        for i in range(self.pool_size - self.qsize_0):
+                                worker  = ssl_image_worker(self.manager.key_val[0], self.manager, 'ssl_image_worker_0_%d' % i)
+                                worker.start()
+                                #worker.wait_for_start()
+                        for i in range(self.pool_size - self.qsize_1):
+                                worker  = ssl_image_worker(self.manager.key_val[1], self.manager, 'ssl_image_worker_1_%d' % i)
+                                worker.start()
+                                #worker.wait_for_start()
+                        #logger.debug('image pool_size %d' % self.pool_size)
+                        #logger.debug('image qsize_0 %d' % self.qsize_0)
+                        #logger.debug('image qsize_1 %d' % self.qsize_1)
+                        sleep(1)
+
 class ssl_image_sender(ssl_sender):
         pool_size = 10
 
         def __init__(self, info = '', lifo = False):
                 ssl_sender.__init__(self, info, lifo)
                 self.queue_workers = (Queue(), Queue())
-                key_val = ({},{})
-                key_val[0]['host_ip']      = server_dict[0]['toubiao']['ip']
-                key_val[0]['host_name']    = server_dict[0]['toubiao']['name']
-                key_val[0]['group']        = 0
-                key_val[0]['timeout']      = None
-                key_val[1]['host_ip']      = server_dict[1]['toubiao']['ip']
-                key_val[1]['host_name']    = server_dict[1]['toubiao']['name']
-                key_val[1]['group']        = 1
-                key_val[1]['timeout']      = None
+                self.key_val = ({},{})
+                self.key_val[0]['host_ip']      = server_dict[0]['toubiao']['ip']
+                self.key_val[0]['host_name']    = server_dict[0]['toubiao']['name']
+                self.key_val[0]['group']        = 0
+                self.key_val[0]['timeout']      = None
+                self.key_val[1]['host_ip']      = server_dict[1]['toubiao']['ip']
+                self.key_val[1]['host_name']    = server_dict[1]['toubiao']['name']
+                self.key_val[1]['group']        = 1
+                self.key_val[1]['timeout']      = None
                 for i in range(self.pool_size):
-                        worker = ssl_image_worker(key_val[0], self, 'ssl_image_worker_0_%d' % i, i)
+                        worker  = ssl_image_worker(self.key_val[0], self, 'ssl_image_worker_0_%d' % i, i)
                         worker.start()
                         worker.wait_for_start()
                 for i in range(self.pool_size):
-                        worker = ssl_image_worker(key_val[1], self, 'ssl_image_worker_1_%d' % i, i)
+                        worker  = ssl_image_worker(self.key_val[1], self, 'ssl_image_worker_1_%d' % i, i)
                         worker.start()
                         worker.wait_for_start()
+                self.maker  = ssl_image_pool_maker(self, 'ssl_image_pool_maker', self.pool_size)
+                self.maker.start()
+                self.maker.wait_for_start()
 
         def feedback(self, status, group, worker):
                 logger.debug(worker.info + ' : ' + str(group) + ' : ' + status)
+                if status == 'timeout' :
+                        self.queue_workers[group].get()
+                        return
+
                 if status == 'connected' :
                         self.queue_workers[group].put(worker)
+                        return
 
         def proc(self, arg):
                 global server_dict
@@ -278,12 +338,14 @@ class ssl_image_sender(ssl_sender):
                 key_val['host_ip']      = server_dict[group]['toubiao']['ip']
                 key_val['host_name']    = server_dict[group]['toubiao']['name']
                 key_val['timeout']      = None
-                try:
-                        worker = self.queue_workers[group].get_nowait()
-                except Empty:
-                        logger.error('ssl_image_sender Queue is empty')
-                else:
-                        worker.put(arg)
+                while True:
+                        try:
+                                worker = self.queue_workers[group].get_nowait()
+                        except Empty:
+                                logger.error('ssl_image_sender Queue is empty')
+                                return
+                        if worker.put(arg) == True :
+                                return
 
 class ssl_price_sender(ssl_sender):
         def proc(self, arg):
@@ -292,6 +354,7 @@ class ssl_price_sender(ssl_sender):
                 key_val = {}
                 key_val['host_ip']      = server_dict[group]['toubiao']['ip']
                 key_val['host_name']    = server_dict[group]['toubiao']['name']
+                key_val['group']        = group
                 key_val['timeout']      = None
                 worker = ssl_price_worker(key_val, self, 'ssl_price_worker')
                 worker.start()
