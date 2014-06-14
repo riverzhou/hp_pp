@@ -27,7 +27,7 @@ class pp_client():
                 self.info_val['passwd']         = key_val['passwd']
                 self.info_val['mcode']          = self.machine.mcode
                 self.info_val['login_image']    = self.machine.image
-                self.info_val['last_price']     = None
+                self.info_val['last_price']     = 0
                 self.info_val['sid']            = None
                 self.info_val['pid']            = None
                 self.info_val['group']          = 0
@@ -81,7 +81,7 @@ class pp_client():
 
         def price(self, key_val):
                 self.info_val['shot_price']     = self.info_val['last_price']
-                self.info_val['image_number']   = key_val['image']
+                self.info_val['image_decode']   = key_val['image']
                 try:
                         return proc_ssl_toubiao.send('price', self.info_val, self.price_ok)
                 except:

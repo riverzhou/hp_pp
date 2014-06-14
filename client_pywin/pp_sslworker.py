@@ -78,20 +78,18 @@ class ssl_login_worker(ssl_worker):
                 cmd, key_val, callback = arg
                 if cmd == 'login' :
                         return self.do_login(key_val, callback )
-                logger.debug('ssl_login_worker cmd : %s unknow' % cmd)
+                logger.error('ssl_login_worker cmd : %s unknow' % cmd)
 
         def do_login(self, key_val, callback):
-                global server_dict
-                print(sorted(key_val.items()))
+                global    server_dict
+                group     = key_val['group']
+                host_ip   = server_dict[group]['login']['ip']
+                host_name = server_dict[group]['login']['name']
 
-                group    = key_val['group']
-                host_ip  = server_dict[group]['login']['ip']
-                host_name= server_dict[group]['login']['name']
-
-                proto    = proto_ssl_login(key_val)
-                req      = proto.make_login_req()
-                head     = proto.make_ssl_head(host_name)
-                info_val = self.pyget(host_ip, req, head)
+                proto     = proto_ssl_login(key_val)
+                req       = proto.make_login_req()
+                head      = proto.make_ssl_head(host_name)
+                info_val  = self.pyget(host_ip, req, head)
                 #logger.debug(sorted(info_val.items()))
 
                 if info_val['status'] != 200 :
@@ -100,11 +98,11 @@ class ssl_login_worker(ssl_worker):
                         #logger.error(info_val['body'].decode())
                         return
 
-                ack_sid  = proto.get_sid_from_head(info_val['head'])
-                ack_val  = proto.parse_login_ack(info_val['body'])
-                ack_val['sid'] = ack_sid
+                ack_sid   = proto.get_sid_from_head(info_val['head'])
+                ack_val   = proto.parse_login_ack(info_val['body'])
+                #ack_val['sid'] = ack_sid
                 printer.debug(sorted(ack_val.items()))
-                logger.debug(sorted(ack_val.items()))
+                #logger.debug(sorted(ack_val.items()))
 
                 if callback != None : callback(ack_val)
                 return ack_val
@@ -117,13 +115,67 @@ class ssl_toubiao_worker(ssl_login_worker):
                         return self.do_price(key_val, callback )
                 if cmd == 'image' :
                         return self.do_image(key_val, callback )
-                logger.debug('ssl_toubiao_worker cmd : %s unknow' % cmd)
+                logger.error('ssl_toubiao_worker cmd : %s unknow' % cmd)
 
         def do_image(self, key_val, callback):
-                print(sorted(key_val.items()))
+                global    server_dict
+                price     = key_val['image_price']
+                group     = key_val['group']
+                host_ip   = server_dict[group]['toubiao']['ip']
+                host_name = server_dict[group]['toubiao']['name']
+
+                proto     = proto_ssl_image(key_val)
+                req       = proto.make_image_req(price)
+                head      = proto.make_ssl_head(host_name)
+                info_val  = self.pyget(host_ip, req, head)
+                #logger.debug(sorted(info_val.items()))
+
+                if info_val['status'] != 200 :
+                        logger.error('ack status error!!!')
+                        logger.error(sorted(info_val.items()))
+                        #logger.error(info_val['body'].decode())
+                        return
+
+                ack_sid   = proto.get_sid_from_head(info_val['head'])
+                ack_val   = proto.parse_image_ack(info_val['body'])
+                ack_val['sid']   = ack_sid
+                ack_val['price'] = price
+                printer.debug(sorted(ack_val.items()))
+                #logger.debug(sorted(ack_val.items()))
+                logger.debug(ack_sid)
+
+                if callback != None : callback(ack_val)
+                return ack_val
 
         def do_price(self, key_val, callback):
-                print(sorted(key_val.items()))
+                global    server_dict
+                price     = key_val['shot_price']
+                image     = key_val['image_decode']
+                sid       = key_val['sid']
+                group     = key_val['group']
+                host_ip   = server_dict[group]['toubiao']['ip']
+                host_name = server_dict[group]['toubiao']['name']
+
+                proto     = proto_ssl_price(key_val)
+                req       = proto.make_price_req(price, image)
+                head      = proto.make_ssl_head(host_name, sid)
+                info_val  = self.pyget(host_ip, req, head)
+                #logger.debug(sorted(info_val.items()))
+
+                if info_val['status'] != 200 :
+                        logger.error('ack status error!!!')
+                        logger.error(sorted(info_val.items()))
+                        #logger.error(info_val['body'].decode())
+                        return
+
+                ack_sid   = proto.get_sid_from_head(info_val['head'])
+                ack_val   = proto.parse_price_ack(info_val['body'])
+                #ack_val['sid'] = ack_sid
+                printer.debug(sorted(ack_val.items()))
+                #logger.debug(sorted(ack_val.items()))
+
+                if callback != None : callback(ack_val)
+                return ack_val
 
 
 #==========================================================
