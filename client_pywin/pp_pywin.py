@@ -77,7 +77,11 @@ class pp_client():
                 if key_val == None :            return
                 if 'errcode' in key_val :       return
 
-                self.console.update_first_price(key_val['price'])
+                count = key_val['count']
+                if count == '1' : return self.console.update_first_price(key_val['price'])
+                if count == '2' : return self.console.update_second_price(key_val['price'])
+                if count == '3' : return self.console.update_third_price(key_val['price'])
+                logger.error('price count error %s' % count)
 
         def price(self, key_val):
                 self.info_val['shot_price']     = self.info_val['last_price']
