@@ -10,7 +10,6 @@ from traceback          import print_exc
 from http.client        import HTTPSConnection, HTTPConnection
 from socket             import timeout as sock_timeout
 from time               import sleep
-#from time              import strftime, localtime, time
 
 from pp_baseclass       import pp_thread, pp_sender
 from pp_server          import server_dict
@@ -246,6 +245,8 @@ class ssl_price_worker(ssl_worker):
 #==========================================================
 
 class ssl_sender(pp_sender):
+        console = None
+
         def send(self, key_val, callback):
                 self.put((key_val, callback))
 
@@ -254,6 +255,9 @@ class ssl_sender(pp_sender):
 
         def set_pool_size(self, size):
                 self.pool_size = size
+
+        def reg(self, console):
+                self.console = console
 
 class ssl_login_sender(ssl_sender):
         def proc(self, arg):
@@ -269,6 +273,8 @@ class ssl_login_sender(ssl_sender):
                 worker.wait_for_start()
                 worker.put(arg)
 
+#----------------------------------------------------------
+
 class ssl_image_pool_maker(pp_thread):
         def __init__(self, manager, info = '', delay = 0):
                 pp_thread.__init__(self, info)
@@ -276,22 +282,25 @@ class ssl_image_pool_maker(pp_thread):
                 self.delay   = delay
 
         def main(self):
-                if self.delay != 0 : sleep(self.delay)
+                count = 0
                 while True:
+                        count += 1
                         self.pool_size = self.manager.pool_size
                         self.qsize_0   = self.manager.queue_workers[0].qsize()
                         self.qsize_1   = self.manager.queue_workers[1].qsize()
-                        for i in range(self.pool_size - self.qsize_0):
-                                worker  = ssl_image_worker(self.manager.key_val[0], self.manager, 'ssl_image_worker_0_%d' % i)
-                                worker.start()
-                                #worker.wait_for_start()
-                        for i in range(self.pool_size - self.qsize_1):
-                                worker  = ssl_image_worker(self.manager.key_val[1], self.manager, 'ssl_image_worker_1_%d' % i)
-                                worker.start()
-                                #worker.wait_for_start()
-                        #logger.debug('image pool_size %d' % self.pool_size)
-                        #logger.debug('image qsize_0 %d' % self.qsize_0)
-                        #logger.debug('image qsize_1 %d' % self.qsize_1)
+                        if count > self.pool_size or self.pool_size != ssl_image_sender.pool_size:
+                                for i in range(self.pool_size - self.qsize_0):
+                                        worker  = ssl_image_worker(self.manager.key_val[0], self.manager, 'ssl_image_worker_0_%d' % i)
+                                        worker.start()
+                                        #worker.wait_for_start()
+                                for i in range(self.pool_size - self.qsize_1):
+                                        worker  = ssl_image_worker(self.manager.key_val[1], self.manager, 'ssl_image_worker_1_%d' % i)
+                                        worker.start()
+                                        #worker.wait_for_start()
+                        if self.manager.console != None:
+                                current = '%.2d : %.2d' % (self.qsize_0, self.qsize_1)
+                                goal    = self.pool_size
+                                self.manager.console.update_image_channel(current, goal)
                         sleep(1)
 
 class ssl_image_sender(ssl_sender):
@@ -317,7 +326,7 @@ class ssl_image_sender(ssl_sender):
                         worker  = ssl_image_worker(self.key_val[1], self, 'ssl_image_worker_1_%d' % i, i)
                         worker.start()
                         worker.wait_for_start()
-                self.maker  = ssl_image_pool_maker(self, 'ssl_image_pool_maker', self.pool_size)
+                self.maker  = ssl_image_pool_maker(self, 'ssl_image_pool_maker')
                 self.maker.start()
                 self.maker.wait_for_start()
 
@@ -342,24 +351,120 @@ class ssl_image_sender(ssl_sender):
                         try:
                                 worker = self.queue_workers[group].get_nowait()
                         except Empty:
-                                logger.error('ssl_image_sender Queue is empty')
+                                logger.error('ssl_image_sender Queue %d is empty' % group)
                                 return
-                        if worker.put(arg) == True :
+                        except:
+                                print_exc()
                                 return
+                        else:
+                                if worker.put(arg) == True :
+                                        return
+
+#----------------------------------------------------------
+
+class ssl_price_pool_maker(pp_thread):
+        def __init__(self, manager, info = '', delay = 0):
+                pp_thread.__init__(self, info)
+                self.manager = manager
+                self.delay   = delay
+
+        def main(self):
+                count = 0
+                while True:
+                        count += 1
+                        self.pool_size = self.manager.pool_size
+                        self.qsize_0   = self.manager.queue_workers[0].qsize()
+                        self.qsize_1   = self.manager.queue_workers[1].qsize()
+                        if count > self.pool_size or self.pool_size != ssl_price_sender.pool_size:
+                                for i in range(self.pool_size - self.qsize_0):
+                                        worker  = ssl_price_worker(self.manager.key_val[0], self.manager, 'ssl_price_worker_0_%d' % i)
+                                        worker.start()
+                                        #worker.wait_for_start()
+                                for i in range(self.pool_size - self.qsize_1):
+                                        worker  = ssl_price_worker(self.manager.key_val[1], self.manager, 'ssl_price_worker_1_%d' % i)
+                                        worker.start()
+                                        #worker.wait_for_start()
+                        if self.manager.console != None:
+                                current = '%.2d : %.2d' % (self.qsize_0, self.qsize_1)
+                                goal    = self.pool_size
+                                self.manager.console.update_price_channel(current, goal)
+                        sleep(1)
 
 class ssl_price_sender(ssl_sender):
+        pool_size = 10
+
+        def __init__(self, info = '', lifo = False):
+                ssl_sender.__init__(self, info, lifo)
+                self.queue_workers = (Queue(), Queue())
+                self.key_val = ({},{})
+                self.key_val[0]['host_ip']      = server_dict[0]['toubiao']['ip']
+                self.key_val[0]['host_name']    = server_dict[0]['toubiao']['name']
+                self.key_val[0]['group']        = 0
+                self.key_val[0]['timeout']      = None
+                self.key_val[1]['host_ip']      = server_dict[1]['toubiao']['ip']
+                self.key_val[1]['host_name']    = server_dict[1]['toubiao']['name']
+                self.key_val[1]['group']        = 1
+                self.key_val[1]['timeout']      = None
+                for i in range(self.pool_size):
+                        worker  = ssl_price_worker(self.key_val[0], self, 'ssl_price_worker_0_%d' % i, i)
+                        worker.start()
+                        worker.wait_for_start()
+                for i in range(self.pool_size):
+                        worker  = ssl_price_worker(self.key_val[1], self, 'ssl_price_worker_1_%d' % i, i)
+                        worker.start()
+                        worker.wait_for_start()
+                self.maker  = ssl_price_pool_maker(self, 'ssl_price_pool_maker')
+                self.maker.start()
+                self.maker.wait_for_start()
+
+        def feedback(self, status, group, worker):
+                logger.debug(worker.info + ' : ' + str(group) + ' : ' + status)
+                if status == 'timeout' :
+                        self.queue_workers[group].get()
+                        return
+
+                if status == 'connected' :
+                        self.queue_workers[group].put(worker)
+                        return
+
         def proc(self, arg):
                 global server_dict
-                group   = arg[0]['group']
-                key_val = {}
-                key_val['host_ip']      = server_dict[group]['toubiao']['ip']
-                key_val['host_name']    = server_dict[group]['toubiao']['name']
-                key_val['group']        = group
-                key_val['timeout']      = None
-                worker = ssl_price_worker(key_val, self, 'ssl_price_worker')
-                worker.start()
-                worker.wait_for_start()
-                worker.put(arg)
+                flag    = [True,True]
+                worker  = [None,None]
+                key_val = ({},{})
+                key_val[0]['host_ip']      = server_dict[0]['toubiao']['ip']
+                key_val[0]['host_name']    = server_dict[0]['toubiao']['name']
+                key_val[0]['timeout']      = None
+                key_val[1]['host_ip']      = server_dict[1]['toubiao']['ip']
+                key_val[1]['host_name']    = server_dict[1]['toubiao']['name']
+                key_val[1]['timeout']      = None
+                while True:
+                        if flag[0] == True:
+                                try:
+                                        worker[0] = self.queue_workers[0].get_nowait()
+                                except Empty:
+                                        flag[0]   = False
+                                        logger.error('ssl_price_sender Queue 0 is empty')
+                                except:
+                                        flag[0]   = False
+                                        print_exc()
+                                else:
+                                        if worker[0].put(arg) == True :
+                                                flag[0] = False
+                        if flag[1] == True:
+                                try:
+                                        worker[1] = self.queue_workers[1].get_nowait()
+                                except Empty:
+                                        flag[1]   = False
+                                        logger.error('ssl_price_sender Queue 1 is empty')
+                                except:
+                                        flag[1]   = False
+                                        print_exc()
+                                else:
+                                        if worker[1].put(arg) == True :
+                                                flag[1]   = False
+                        if flag[0] != True and flag[1] != True:
+                                return
 
 #==========================================================
 

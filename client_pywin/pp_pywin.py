@@ -50,6 +50,7 @@ class pp_client():
                 self.console.update_login_status(key_val['name'])
 
         def login(self, key_val):
+                global proc_ssl_login
                 self.info_val['group']          = key_val['group']
                 try:
                         return proc_ssl_login.send(self.info_val, self.login_ok)
@@ -67,6 +68,7 @@ class pp_client():
                 self.console.update_image_decode(key_val['image'], self.info_val['last_price'])
 
         def image(self, key_val):
+                global proc_ssl_image
                 self.info_val['image_price']    = key_val['price']
                 try:
                         return proc_ssl_image.send(self.info_val, self.image_ok)
@@ -84,6 +86,7 @@ class pp_client():
                 logger.error('price count error %s' % count)
 
         def price(self, key_val):
+                global proc_ssl_price
                 self.info_val['shot_price']     = self.info_val['last_price']
                 self.info_val['image_decode']   = key_val['image']
                 try:
@@ -97,16 +100,15 @@ class pp_client():
 #===========================================================
 
 class cmd_proc(pp_sender):
-
         def __init__(self, console):
                 self.func_dict =     {
                         'logout':               self.proc_logout,
                         'login':                self.proc_login,
-                        'adjust_channel':       self.proc_adjust_channel,
+                        'image_channel':        self.proc_image_channel,
+                        'price_channel':        self.proc_price_channel,
                         'image_price':          self.proc_image_price,
                         'image_decode':         self.proc_image_decode,
                         }
-
                 pp_sender.__init__(self)
                 self.console = console
                 self.client  = None
@@ -122,8 +124,13 @@ class cmd_proc(pp_sender):
                 except:
                         print_exc()
 
-        def proc_adjust_channel(self, key_val):
-                logger.debug(key_val.items())
+        def proc_image_channel(self, key_val):
+                global proc_ssl_image
+                proc_ssl_image.set_pool_size(int(key_val['size']))
+
+        def proc_price_channel(self, key_val):
+                global proc_ssl_price
+                proc_ssl_price.set_pool_size(int(key_val['size']))
 
         def proc_logout(self, key_val):
                 if self.client != None :
@@ -153,6 +160,9 @@ class Console(Console):
                 self.cmd_proc = cmd_proc(self)
                 self.cmd_proc.start()
                 self.cmd_proc.wait_for_start()
+                global proc_ssl_image, proc_ssl_price
+                proc_ssl_image.reg(self)
+                proc_ssl_price.reg(self)
 
         def load_database(self):
                 global database
@@ -182,7 +192,11 @@ class Console(Console):
                 key_val['bidno']  = self.input_bidno.get()
                 key_val['passwd'] = self.input_passwd.get()
                 key_val['group']  = self.var_use_group2.get()
-                if key_val['bidno'] == '' or key_val['passwd'] == '' :  return
+                try:
+                        int(key_val['bidno'])
+                        int(key_val['passwd'])
+                except:
+                        return
                 self.cmd_proc.put(key_val)
 
                 db ={}
@@ -190,25 +204,44 @@ class Console(Console):
                 db['passwd']      = key_val['passwd']
                 self.save_database(db)
 
-        def proc_channel(self,p1):
+        def proc_image_channel(self,p1):
                 key_val = {}
-                key_val['cmd']    = 'adjust_channel'
-                key_val['size']   = self.input_ajust_channel.get()
-                if key_val['size'] == '' :      return
+                key_val['cmd']    = 'image_channel'
+                key_val['size']   = self.input_image_channel.get()
+                try:
+                        int(key_val['size'])
+                except:
+                        return
+                self.cmd_proc.put(key_val)
+
+        def proc_price_channel(self,p1):
+                key_val = {}
+                key_val['cmd']    = 'price_channel'
+                key_val['size']   = self.input_price_channel.get()
+                try:
+                        int(key_val['size'])
+                except:
+                        return
                 self.cmd_proc.put(key_val)
 
         def proc_image_price(self,p1):
                 key_val = {}
                 key_val['cmd']    = 'image_price'
                 key_val['price']  = self.input_image_price.get()
-                if key_val['price'] == '' :     return
+                try:
+                        int(key_val['price'])
+                except:
+                        return
                 self.cmd_proc.put(key_val)
 
         def proc_image_decode(self,p1):
                 key_val = {}
                 key_val['cmd']    = 'image_decode'
                 key_val['image']  = self.input_image_decode.get()
-                if key_val['image'] == '' :     return
+                try:
+                        int(key_val['image'])
+                except:
+                        return
                 self.cmd_proc.put(key_val)
 
         #-------------------------------------
@@ -227,13 +260,17 @@ class Console(Console):
                 self.output_system_time.update_idletasks()
                 self.output_change_time.update_idletasks()
 
-        def update_goal_channel(self, info):
-                self.output_goal_channel['text']    = info
-                self.output_goal_channel.update_idletasks()
+        def update_image_channel(self, current, goal):
+                self.output_image_current_channel['text'] = current
+                self.output_image_goal_channel['text']    = goal
+                self.output_image_current_channel.update_idletasks()
+                self.output_image_goal_channel.update_idletasks()
 
-        def update_current_channel(self, info):
-                self.output_current_channel['text'] = info
-                self.output_current_channel.update_idletasks()
+        def update_price_channel(self, current, goal):
+                self.output_price_current_channel['text'] = current
+                self.output_price_goal_channel['text']    = goal
+                self.output_price_current_channel.update_idletasks()
+                self.output_price_goal_channel.update_idletasks()
 
         def update_first_price(self, info):
                 self.output_first_price['text']     = info
@@ -259,10 +296,10 @@ class Console(Console):
                         self.save_jpg(image)
                         logger.error('图片错误，重新请求')
                 else:
-                        self.output_image.image     = photo
-                        self.output_image['image']  = photo
-                        self.output_image.update_idletasks()
+                        self.output_image.image         = photo
+                        self.output_image['image']      = photo
                         self.output_last_price['text']  = price
+                        self.output_image.update_idletasks()
                         self.output_last_price.update_idletasks()
 
         def save_jpg(self,jpg):
