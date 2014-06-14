@@ -2,12 +2,13 @@
 
 import  logging
 import  platform
-from    threading        import Thread, Event, Lock, Semaphore
-from    queue            import Queue, LifoQueue
-from    datetime         import datetime
-from    redis            import StrictRedis
+from    threading       import Thread, Event, Lock, Semaphore
+from    queue           import Queue, LifoQueue
+from    datetime        import datetime
+from    redis           import StrictRedis
+from    traceback       import print_exc
 
-from    readini          import pywin_config
+from    readini         import pywin_config
 
 #=========================================================================================
 
@@ -99,6 +100,7 @@ class redis_sender(pp_sender):
 class redis_logger():
         def __init__(self):
                 self.redis = self.connect_redis()
+                if self.redis == None : return None
                 self.redis_sender = redis_sender(self.redis, 'redis_sender')
                 self.redis_sender.start()
                 self.redis_sender.wait_for_start()
@@ -132,7 +134,13 @@ class redis_logger():
                 redis_port    = pywin_config['redis_port']
                 redis_ip      = pywin_config['redis_ip']
                 redis_db      = pywin_config['redis_db']
-                return StrictRedis(host = redis_ip, port = redis_port, password = redis_passwd, db = redis_db)
+                try:
+                        red = StrictRedis(host = redis_ip, port = redis_port, password = redis_passwd, db = redis_db)
+                except:
+                        print_exc()
+                        return None
+                else:
+                        return red
 
 #-----------------------------------------------------------------------------------------
 
@@ -315,6 +323,7 @@ logger     = make_log(name = None,          log = 'logger',     level = 'debug',
 #-----------------------------------------------------------------------------------------
 
 printer    = redis_logger()
+if printer.redis == None : printer = foobar_logger()
 
 '''
 logger     = foobar_logger()
