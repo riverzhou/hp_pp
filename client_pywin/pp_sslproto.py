@@ -224,9 +224,11 @@ class proto_ssl_login(proto_ssl):
                 if 'ERRORCODE' in info_val :
                         key_val['errcode']  = info_val['ERRORCODE']
                         key_val['errstring']= info_val['ERRORSTRING']
+                        printer.error(string)
                 else:
                         key_val['name'] = info_val['CLIENTNAME']
                         key_val['pid']  = info_val['PID']
+                        printer.info(string)
                 printer.info(string)
                 printer.info(sorted(key_val.items()))
                 printer.info('')
@@ -261,8 +263,10 @@ class proto_ssl_image(proto_ssl):
                 if info_val['ERRORCODE'] != '0' :
                         key_val['errcode']  = info_val['ERRORCODE']
                         key_val['errstring']= info_val['ERRORSTRING']
+                        printer.error(string)
                 else:
                         key_val['image']    = self.image_decode(info_val['IMAGE_CONTENT'])
+                        printer.info(string)
                 printer.info(string)
                 printer.info(sorted(key_val.items()))
                 printer.info('')
@@ -301,12 +305,14 @@ class proto_ssl_price(proto_ssl):
                 if 'ERRORCODE' in info_val :
                         key_val['errcode']  = info_val['ERRORCODE']
                         key_val['errstring']= info_val['ERRORSTRING']
+                        printer.error(string)
                 else:
                         key_val['time']  = info_val['BIDTIME']
                         key_val['count'] = info_val['BIDCOUNT']
                         key_val['price'] = info_val['BIDAMOUNT']
                         key_val['name']  = info_val['CLIENTNAME']
                         key_val['bidno'] = info_val['BIDNUMBER']
+                        printer.info(string)
                 printer.info(string)
                 printer.info(sorted(key_val.items()))
                 printer.info('')
