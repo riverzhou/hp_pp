@@ -256,6 +256,7 @@ class Console(Console):
                         self.output_image.image     = err_jpg
                         self.output_image['image']  = err_jpg
                         self.output_image.update_idletasks()
+                        self.save_jpg(image)
                         logger.error('图片错误，重新请求')
                 else:
                         self.output_image.image     = photo
@@ -263,6 +264,11 @@ class Console(Console):
                         self.output_image.update_idletasks()
                         self.output_last_price['text']  = price
                         self.output_last_price.update_idletasks()
+
+        def save_jpg(self,jpg):
+                f = open('bad.jpg','wb')
+                f.write(jpg)
+                f.close()
 
 #===========================================================
 
