@@ -4,11 +4,12 @@
 
 from pp_log             import logger, printer
 from threading          import Thread, Event, Lock, Semaphore
-from queue              import Queue, LifoQueue
+from queue              import Queue, LifoQueue, Empty
 from traceback          import print_exc
 
 from http.client        import HTTPSConnection, HTTPConnection
 from socket             import timeout as sock_timeout
+from time               import sleep
 #from time              import strftime, localtime, time
 
 from pp_baseclass       import pp_thread, pp_sender
@@ -18,15 +19,17 @@ from pp_sslproto        import *
 #==========================================================
 
 class ssl_worker(pp_thread):
-        def __init__(self, key_val, manager, info = ''):
+        def __init__(self, key_val, manager, info = '', delay = 0):
                 pp_thread.__init__(self, info)
                 self.info       = info
+                self.delay      = delay
                 self.manager    = manager
                 self.event_proc = Event()
                 self.arg        = None
                 self.handler    = None
                 self.host_ip    = key_val['host_ip']
                 self.host_name  = key_val['host_name']
+                self.group      = key_val['group']
                 self.timeout    = key_val['timeout'] if 'timeout' in key_val else None
 
         def close(self):
@@ -37,6 +40,7 @@ class ssl_worker(pp_thread):
                                 print_exc()
 
         def main(self):
+                if self.delay != 0 : sleep(self.delay)
                 while True:
                         self.handler = HTTPSConnection(self.host_ip, timeout = self.timeout)
                         self.handler._http_vsn = 10
@@ -50,7 +54,7 @@ class ssl_worker(pp_thread):
                                 print_exc()
                                 continue
                         break
-                self.manager.feedback('connected', self)
+                self.manager.feedback('connected', self.group, self)
                 self.event_proc.wait()
                 self.do_proc(self.arg)
 
@@ -65,7 +69,7 @@ class ssl_worker(pp_thread):
                         self.handler.request('GET', req, headers = headers)
                 except:
                         self.close()
-                        self.manager.feedback('err_write', self)
+                        self.manager.feedback('err_write', self.group, self)
                         print_exc()
                         return None
                 try:
@@ -73,12 +77,12 @@ class ssl_worker(pp_thread):
                         body = ack.read()
                 except:
                         self.close()
-                        self.manager.feedback('err_read', self)
+                        self.manager.feedback('err_read', self.group, self)
                         print_exc()
                         return None
                 #--------------------------------------------------------
                 self.close()
-                self.manager.feedback('done', self)
+                self.manager.feedback('done', self.group, self)
 
                 key_val = {}
                 key_val['body']    = body
@@ -101,9 +105,22 @@ class ssl_login_worker(ssl_worker):
                         return
 
                 if info_val['status'] != 200 :
-                        logger.error('ack status error!!!')
-                        logger.error(sorted(info_val.items()))
-                        #logger.error(info_val['body'].decode())
+                        logger.error('ack status error : %s' % info_val['status'])
+                        printer.error('ack status error : %s' % info_val['status'])
+                        try:
+                                logger.error(info_val['body'].decode('gb18030'))
+                                printer.error(info_val['body'].decode('gb18030'))
+                        except: pass
+                        else:
+                                return
+                        try:
+                                logger.error(info_val['body'].decode())
+                                printer.error(info_val['body'].decode())
+                        except: pass
+                        else:
+                                return
+                        logger.error('unknow body coding')
+                        printer.error(info_val['body'])
                         return
 
                 ack_sid   = proto.get_sid_from_head(info_val['head'])
@@ -130,9 +147,22 @@ class ssl_image_worker(ssl_worker):
                         return
 
                 if info_val['status'] != 200 :
-                        logger.error('ack status error!!!')
-                        logger.error(sorted(info_val.items()))
-                        #logger.error(info_val['body'].decode())
+                        logger.error('ack status error : %s' % info_val['status'])
+                        printer.error('ack status error : %s' % info_val['status'])
+                        try:
+                                logger.error(info_val['body'].decode('gb18030'))
+                                printer.error(info_val['body'].decode('gb18030'))
+                        except: pass
+                        else:
+                                return
+                        try:
+                                logger.error(info_val['body'].decode())
+                                printer.error(info_val['body'].decode())
+                        except: pass
+                        else:
+                                return
+                        logger.error('unknow body coding')
+                        printer.error(info_val['body'])
                         return
 
                 ack_sid   = proto.get_sid_from_head(info_val['head'])
@@ -163,9 +193,22 @@ class ssl_price_worker(ssl_worker):
                         return
 
                 if info_val['status'] != 200 :
-                        logger.error('ack status error!!!')
-                        logger.error(sorted(info_val.items()))
-                        #logger.error(info_val['body'].decode())
+                        logger.error('ack status error : %s' % info_val['status'])
+                        printer.error('ack status error : %s' % info_val['status'])
+                        try:
+                                logger.error(info_val['body'].decode('gb18030'))
+                                printer.error(info_val['body'].decode('gb18030'))
+                        except: pass
+                        else:
+                                return
+                        try:
+                                logger.error(info_val['body'].decode())
+                                printer.error(info_val['body'].decode())
+                        except: pass
+                        else:
+                                return
+                        logger.error('unknow body coding')
+                        printer.error(info_val['body'])
                         return
 
                 ack_sid   = proto.get_sid_from_head(info_val['head'])
@@ -182,8 +225,8 @@ class ssl_sender(pp_sender):
         def send(self, key_val, callback):
                 self.put((key_val, callback))
 
-        def feedback(self, status, worker):
-                logger.debug(worker.info + ' : ' + status)
+        def feedback(self, status, group, worker):
+                logger.debug(worker.info + ' : ' + str(group) + ' : ' + status)
 
 class ssl_login_sender(ssl_sender):
         def proc(self, arg):
@@ -192,6 +235,7 @@ class ssl_login_sender(ssl_sender):
                 key_val = {}
                 key_val['host_ip']      = server_dict[group]['login']['ip']
                 key_val['host_name']    = server_dict[group]['login']['name']
+                key_val['group']        = group
                 key_val['timeout']      = None
                 worker = ssl_login_worker(key_val, self, 'ssl_login_worker')
                 worker.start()
@@ -199,6 +243,34 @@ class ssl_login_sender(ssl_sender):
                 worker.put(arg)
 
 class ssl_image_sender(ssl_sender):
+        pool_size = 10
+
+        def __init__(self, info = '', lifo = False):
+                ssl_sender.__init__(self, info, lifo)
+                self.queue_workers = (Queue(), Queue())
+                key_val = ({},{})
+                key_val[0]['host_ip']      = server_dict[0]['toubiao']['ip']
+                key_val[0]['host_name']    = server_dict[0]['toubiao']['name']
+                key_val[0]['group']        = 0
+                key_val[0]['timeout']      = None
+                key_val[1]['host_ip']      = server_dict[1]['toubiao']['ip']
+                key_val[1]['host_name']    = server_dict[1]['toubiao']['name']
+                key_val[1]['group']        = 1
+                key_val[1]['timeout']      = None
+                for i in range(self.pool_size):
+                        worker = ssl_image_worker(key_val[0], self, 'ssl_image_worker_0_%d' % i, i)
+                        worker.start()
+                        worker.wait_for_start()
+                for i in range(self.pool_size):
+                        worker = ssl_image_worker(key_val[1], self, 'ssl_image_worker_1_%d' % i, i)
+                        worker.start()
+                        worker.wait_for_start()
+
+        def feedback(self, status, group, worker):
+                logger.debug(worker.info + ' : ' + str(group) + ' : ' + status)
+                if status == 'connected' :
+                        self.queue_workers[group].put(worker)
+
         def proc(self, arg):
                 global server_dict
                 group   = arg[0]['group']
@@ -206,10 +278,12 @@ class ssl_image_sender(ssl_sender):
                 key_val['host_ip']      = server_dict[group]['toubiao']['ip']
                 key_val['host_name']    = server_dict[group]['toubiao']['name']
                 key_val['timeout']      = None
-                worker = ssl_image_worker(key_val, self, 'ssl_image_worker')
-                worker.start()
-                worker.wait_for_start()
-                worker.put(arg)
+                try:
+                        worker = self.queue_workers[group].get_nowait()
+                except Empty:
+                        logger.error('ssl_image_sender Queue is empty')
+                else:
+                        worker.put(arg)
 
 class ssl_price_sender(ssl_sender):
         def proc(self, arg):
@@ -226,15 +300,15 @@ class ssl_price_sender(ssl_sender):
 
 #==========================================================
 
-proc_ssl_login = ssl_login_sender()
+proc_ssl_login = ssl_login_sender('proc_ssl_login')
 proc_ssl_login.start()
 proc_ssl_login.wait_for_start()
 
-proc_ssl_image = ssl_image_sender()
+proc_ssl_image = ssl_image_sender('proc_ssl_image')
 proc_ssl_image.start()
 proc_ssl_image.wait_for_start()
 
-proc_ssl_price = ssl_price_sender()
+proc_ssl_price = ssl_price_sender('proc_ssl_price')
 proc_ssl_price.start()
 proc_ssl_price.wait_for_start()
 
