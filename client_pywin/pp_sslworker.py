@@ -7,7 +7,12 @@ from threading          import Thread, Event, Lock, Semaphore
 from queue              import Queue, LifoQueue
 from traceback          import print_exc
 
+from http.client        import HTTPSConnection, HTTPConnection
+from socket             import timeout as sock_timeout
+#from time              import strftime, localtime, time
+
 from pp_baseclass       import pp_thread, pp_sender
+from pp_server          import server_dict
 from pp_sslproto        import *
 
 #==========================================================
@@ -76,8 +81,33 @@ class ssl_login_worker(ssl_worker):
                 logger.debug('ssl_login_worker cmd : %s unknow' % cmd)
 
         def do_login(self, key_val, callback):
+                global server_dict
                 print(sorted(key_val.items()))
 
+                group    = key_val['group']
+                host_ip  = server_dict[group]['login']['ip']
+                host_name= server_dict[group]['login']['name']
+
+                proto    = proto_ssl_login(key_val)
+                req      = proto.make_login_req()
+                head     = proto.make_ssl_head(host_name)
+                info_val = self.pyget(host_ip, req, head)
+                #logger.debug(sorted(info_val.items()))
+
+                if info_val['status'] != 200 :
+                        logger.error('ack status error!!!')
+                        logger.error(sorted(info_val.items()))
+                        #logger.error(info_val['body'].decode())
+                        return
+
+                ack_sid  = proto.get_sid_from_head(info_val['head'])
+                ack_val  = proto.parse_login_ack(info_val['body'])
+                ack_val['sid'] = ack_sid
+                printer.debug(sorted(ack_val.items()))
+                logger.debug(sorted(ack_val.items()))
+
+                if callback != None : callback(ack_val)
+                return ack_val
 
 
 class ssl_toubiao_worker(ssl_login_worker):

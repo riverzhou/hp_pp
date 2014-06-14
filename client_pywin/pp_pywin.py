@@ -26,7 +26,7 @@ class pp_client():
                 self.info_val['bidno']          = key_val['bidno']
                 self.info_val['passwd']         = key_val['passwd']
                 self.info_val['mcode']          = self.machine.mcode
-                self.info_val['login']          = self.machine.image
+                self.info_val['login_image']    = self.machine.image
                 self.info_val['last_price']     = None
                 self.info_val['sid']            = None
                 self.info_val['pid']            = None
