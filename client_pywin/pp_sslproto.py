@@ -97,15 +97,13 @@ class proto_ssl():
                 self.login_pid   = key_val['login_pid']     if 'login_pid'   in key_val  else None
                 self.login_sid   = key_val['login_sid']     if 'login_sid'   in key_val  else None
                 self.image_sid   = key_val['image_sid']     if 'image_sid'   in key_val  else None
-                self.host_name   = key_val['host_name']     if 'host_name'   in key_val  else None
-                self.host_ip     = key_val['host_ip']       if 'host_ip'     in key_val  else None
 
         '''HTTP/1.0\r\nContent-Type: text/html\r\nHost: tblogin.alltobid.com:443\r\nAccept: text/html, */*\r\nUser-Agent: Mozilla/3.0 (compatible; IndyLibrary)\r\n\r\n'''
         '''HTTP/1.0\r\nContent-Type: text/html\r\nHost: toubiao2.alltobid.com:443\r\nAccept: text/html, */*\r\nUser-Agent: Mozilla/3.0 (compatible; Indy Library)\r\nCookie: JSESSIONID=%s\r\n\r\n'''
-        def make_ssl_head(self, sid = None):
+        def make_ssl_head(self, host_name, sid = None):
                 headers = OrderedDict()
                 headers['Content-Type'] = 'text/html'
-                headers['Host']         = '%s:443' % self.host_name
+                headers['Host']         = '%s:443' % host_name
                 headers['Accept']       = 'text/html, */*'
                 headers['User-Agent']   = '%s'     % self.agent
                 if sid != None : headers['Cookie'] = 'JSESSIONID=%s' % sid
@@ -216,8 +214,8 @@ class proto_ssl_login(proto_ssl):
                         self.login_image
                         ))
 
-        def make_wget_login_req(self):
-                return self.get_wget_req(self.host_name, self.make_login_req())
+        def make_wget_login_req(self, host_name):
+                return self.get_wget_req(host_name, self.make_login_req())
 
         def parse_login_ack(self, buff):
                 string   = buff.decode('gb18030')
@@ -253,8 +251,8 @@ class proto_ssl_image(proto_ssl):
                         self.get_image_checkcode(price)
                         ))
 
-        def make_wget_image_req(self, price):
-                return self.get_wget_req(self.host_name, self.make_image_req(price))
+        def make_wget_image_req(self, host_name, price):
+                return self.get_wget_req(host_name, self.make_image_req(price))
 
         def parse_image_ack(self, buff):
                 string   = buff.decode('gb18030')
@@ -293,8 +291,8 @@ class proto_ssl_price(proto_ssl):
                         image
                         ))
 
-        def make_wget_price_req(self, price, image):
-                return self.get_wget_req(self.host_name, self.make_price_req(price, image))
+        def make_wget_price_req(self, host_name, price, image):
+                return self.get_wget_req(host_name, self.make_price_req(price, image))
 
         def parse_price_ack(self, buff):
                 string   = buff.decode('gb18030')
