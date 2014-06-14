@@ -290,13 +290,11 @@ class ssl_image_pool_maker(pp_thread):
                         self.qsize_1   = self.manager.queue_workers[1].qsize()
                         if count > self.pool_size or self.pool_size != ssl_image_sender.pool_size:
                                 for i in range(self.pool_size - self.qsize_0):
-                                        worker  = ssl_image_worker(self.manager.key_val[0], self.manager, 'ssl_image_worker_0_%d' % i)
+                                        worker  = ssl_image_worker(self.manager.key_val[0], self.manager, None)
                                         worker.start()
-                                        #worker.wait_for_start()
                                 for i in range(self.pool_size - self.qsize_1):
-                                        worker  = ssl_image_worker(self.manager.key_val[1], self.manager, 'ssl_image_worker_1_%d' % i)
+                                        worker  = ssl_image_worker(self.manager.key_val[1], self.manager, None)
                                         worker.start()
-                                        #worker.wait_for_start()
                         if self.manager.console != None:
                                 current = '%.2d : %.2d' % (self.qsize_0, self.qsize_1)
                                 goal    = self.pool_size
@@ -319,11 +317,11 @@ class ssl_image_sender(ssl_sender):
                 self.key_val[1]['group']        = 1
                 self.key_val[1]['timeout']      = None
                 for i in range(self.pool_size):
-                        worker  = ssl_image_worker(self.key_val[0], self, 'ssl_image_worker_0_%d' % i, i)
+                        worker  = ssl_image_worker(self.key_val[0], self, None, i)
                         worker.start()
                         worker.wait_for_start()
                 for i in range(self.pool_size):
-                        worker  = ssl_image_worker(self.key_val[1], self, 'ssl_image_worker_1_%d' % i, i)
+                        worker  = ssl_image_worker(self.key_val[1], self, None, i)
                         worker.start()
                         worker.wait_for_start()
                 self.maker  = ssl_image_pool_maker(self, 'ssl_image_pool_maker')
@@ -377,13 +375,11 @@ class ssl_price_pool_maker(pp_thread):
                         self.qsize_1   = self.manager.queue_workers[1].qsize()
                         if count > self.pool_size or self.pool_size != ssl_price_sender.pool_size:
                                 for i in range(self.pool_size - self.qsize_0):
-                                        worker  = ssl_price_worker(self.manager.key_val[0], self.manager, 'ssl_price_worker_0_%d' % i)
+                                        worker  = ssl_price_worker(self.manager.key_val[0], self.manager, None)
                                         worker.start()
-                                        #worker.wait_for_start()
                                 for i in range(self.pool_size - self.qsize_1):
-                                        worker  = ssl_price_worker(self.manager.key_val[1], self.manager, 'ssl_price_worker_1_%d' % i)
+                                        worker  = ssl_price_worker(self.manager.key_val[1], self.manager, None)
                                         worker.start()
-                                        #worker.wait_for_start()
                         if self.manager.console != None:
                                 current = '%.2d : %.2d' % (self.qsize_0, self.qsize_1)
                                 goal    = self.pool_size
@@ -406,11 +402,11 @@ class ssl_price_sender(ssl_sender):
                 self.key_val[1]['group']        = 1
                 self.key_val[1]['timeout']      = None
                 for i in range(self.pool_size):
-                        worker  = ssl_price_worker(self.key_val[0], self, 'ssl_price_worker_0_%d' % i, i)
+                        worker  = ssl_price_worker(self.key_val[0], self, None, i)
                         worker.start()
                         worker.wait_for_start()
                 for i in range(self.pool_size):
-                        worker  = ssl_price_worker(self.key_val[1], self, 'ssl_price_worker_1_%d' % i, i)
+                        worker  = ssl_price_worker(self.key_val[1], self, None, i)
                         worker.start()
                         worker.wait_for_start()
                 self.maker  = ssl_price_pool_maker(self, 'ssl_price_pool_maker')
