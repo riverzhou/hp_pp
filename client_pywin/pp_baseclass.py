@@ -3,7 +3,6 @@
 from threading          import Thread, Event, Lock, Semaphore
 from queue              import Queue, LifoQueue
 from traceback          import print_exc
-from time               import sleep
 
 from pp_log             import logger
 

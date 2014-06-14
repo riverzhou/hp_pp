@@ -10,38 +10,39 @@ from base64             import b64decode
 from pp_log             import logger, printer
 from pp_baseclass       import pp_sender
 from pp_udpworker       import udp_worker
+from pp_sslproto        import proto_machine
+from pp_sslworker       import proc_ssl_login, proc_ssl_toubiao
 from MainWin            import Console
-
-from pp_cmd             import proc_login, proc_image, proc_price
 
 #===========================================================
 
 class pp_client():
         def __init__(self, console, key_val):
-                self.console    = console
-                self.bidno      = key_val['bidno']
-                self.passwd     = key_val['passwd']
-                self.last_price = None
-                self.sid        = None
-                self.pid        = None
-                self.udp        = None
-                self.group      = 0
+                self.console                    = console
+                self.machine                    = proto_machine()
+                self.udp                        = None
+
+                self.info_val                   = {}
+                self.info_val['bidno']          = key_val['bidno']
+                self.info_val['passwd']         = key_val['passwd']
+                self.info_val['mcode']          = self.machine.mcode
+                self.info_val['login']          = self.machine.image
+                self.info_val['last_price']     = None
+                self.info_val['sid']            = None
+                self.info_val['pid']            = None
+                self.info_val['group']          = 0
+
+        def stop_udp(self):
+                if self.udp != None :           return self.udp.stop()
 
         def login_ok(self, key_val):
-                if key_val == None             : return
-                if 'errcode' in key_val        : return
+                if key_val == None :            return
+                if 'errcode' in key_val :       return
 
-                self.pid = key_val['pid']
+                self.info_val['pid']            = key_val['pid']
 
-                if self.udp != None :
-                        self.udp.stop()
-
-                arg_val = {}
-                arg_val['bidno'] = self.bidno
-                arg_val['pid']   = self.pid
-                arg_val['group'] = self.group
-
-                self.udp = udp_worker(self.console, arg_val)
+                self.stop_udp()
+                self.udp = udp_worker(self.console, self.info_val)
                 self.udp.start()
                 self.udp.wait_for_start()
                 self.udp.format_udp()
@@ -49,54 +50,42 @@ class pp_client():
                 self.console.update_login_status(key_val['name'])
 
         def login(self, key_val):
-                logger.debug(key_val.items())
-                self.group = key_val['group']
+                self.info_val['group']          = key_val['group']
                 try:
-                        info_val = proc_login(key_val)
+                        return proc_ssl_login.send('login', self.info_val, self.login_ok)
                 except:
                         print_exc()
-                        return
-                self.login_ok(info_val)
 
         def image_ok(self, key_val):
-                if key_val == None             : return
-                if 'errcode' in key_val        : return
-                if key_val['image'] == None    : return
+                if key_val == None :            return
+                if 'errcode' in key_val :       return
+                if key_val['image'] == None :   return
 
-                self.sid        = key_val['sid']
-                self.last_price = key_val['price']
-                self.console.update_image_decode(key_val['image'], self.last_price)
+                self.info_val['sid']            = key_val['sid']
+                self.info_val['last_price']     = key_val['price']
+
+                self.console.update_image_decode(key_val['image'], self.info_val['last_price'])
 
         def image(self, key_val):
-                logger.debug(key_val.items())
-                key_val['bidno'] = self.bidno
-                key_val['group'] = self.group
+                self.info_val['image_price']    = key_val['price']
                 try:
-                        info_val = proc_image(key_val)
+                        return proc_ssl_toubiao.send('image', self.info_val, self.image_ok)
                 except:
                         print_exc()
-                        return
-                self.image_ok(info_val)
 
         def price_ok(self, key_val):
-                if key_val == None             : return
-                if 'errcode' in key_val        : return
+                if key_val == None :            return
+                if 'errcode' in key_val :       return
 
                 self.console.update_first_price(key_val['price'])
 
         def price(self, key_val):
-                logger.debug(key_val.items())
-                key_val['bidno'] = self.bidno
-                key_val['price'] = self.last_price
-                key_val['passwd']= self.passwd
-                key_val['sid']   = self.sid
-                key_val['group'] = self.group
+                self.info_val['shot_price']     = self.info_val['last_price']
+                self.info_val['image_number']   = key_val['image']
                 try:
-                        info_val = proc_price(key_val)
+                        return proc_ssl_toubiao.send('price', self.info_val, self.price_ok)
                 except:
                         print_exc()
-                        return
-                self.price_ok(info_val)
 
         def logout(self, key_val):
                 logger.debug(key_val.items())
@@ -137,7 +126,10 @@ class cmd_proc(pp_sender):
                         self.client.logout(key_val)
 
         def proc_login(self, key_val):
-                if self.client == None :
+                if   self.client == None :
+                        self.client = pp_client(self.console, key_val)
+                elif self.client.info_val['bidno'] != key_val['bidno'] or self.client.info_val['passwd'] != key_val['passwd']:
+                        self.client.stop_udp()
                         self.client = pp_client(self.console, key_val)
                 if self.client != None :
                         self.client.login(key_val)
@@ -220,19 +212,19 @@ class Console(Console):
         #-------------------------------------
 
         def update_login_status(self, info):
-                self.output_login_status['text'] = info
+                self.output_login_status['text']    = info
                 self.output_login_status.update_idletasks()
 
         def update_udp_info(self, ctime, stime, price):
-                self.output_current_price['text'] = price
-                self.output_system_time['text']   = stime
-                self.output_change_time['text']   = ctime
+                self.output_current_price['text']   = price
+                self.output_system_time['text']     = stime
+                self.output_change_time['text']     = ctime
                 self.output_current_price.update_idletasks()
                 self.output_system_time.update_idletasks()
                 self.output_change_time.update_idletasks()
 
         def update_goal_channel(self, info):
-                self.output_goal_channel['text'] = info
+                self.output_goal_channel['text']    = info
                 self.output_goal_channel.update_idletasks()
 
         def update_current_channel(self, info):
@@ -240,15 +232,15 @@ class Console(Console):
                 self.output_current_channel.update_idletasks()
 
         def update_first_price(self, info):
-                self.output_first_price['text'] = info
+                self.output_first_price['text']     = info
                 self.output_first_price.update_idletasks()
 
         def update_second_price(self, info):
-                self.output_second_price['text'] = info
+                self.output_second_price['text']    = info
                 self.output_second_price.update_idletasks()
 
         def update_third_price(self, info):
-                self.output_third_price['text'] = info
+                self.output_third_price['text']     = info
                 self.output_third_price.update_idletasks()
 
         def update_image_decode(self, image, price):
@@ -257,15 +249,15 @@ class Console(Console):
                         photo = ImageTk.PhotoImage(Image.open(BytesIO(image)))
                 except:
                         global err_jpg
-                        self.output_image.image    = err_jpg
-                        self.output_image['image'] = err_jpg
+                        self.output_image.image     = err_jpg
+                        self.output_image['image']  = err_jpg
                         self.output_image.update_idletasks()
                         logger.error('图片错误，重新请求')
                 else:
-                        self.output_image.image    = photo
-                        self.output_image['image'] = photo
+                        self.output_image.image     = photo
+                        self.output_image['image']  = photo
                         self.output_image.update_idletasks()
-                        self.output_last_price['text'] = price
+                        self.output_last_price['text']  = price
                         self.output_last_price.update_idletasks()
 
 #===========================================================
