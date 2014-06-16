@@ -277,6 +277,8 @@ class ssl_login_sender(ssl_sender):
 #----------------------------------------------------------
 
 class ssl_image_pool_maker(pp_thread):
+        max_worker = 150
+
         def __init__(self, manager, info = '', delay = 0):
                 pp_thread.__init__(self, info)
                 self.manager = manager
@@ -294,7 +296,7 @@ class ssl_image_pool_maker(pp_thread):
                                 dsize[0] = pool_size - qsize[0]
                                 dsize[1] = pool_size - qsize[1]
                                 for i in range(dsize[0]):
-                                        if self.manager.worker_on_way[0] > 3 * dsize[0]:
+                                        if self.manager.worker_on_way[0] > 3 * dsize[0] or qsize[0] + self.manager.worker_on_way[0] > self.max_worker:
                                                 break
                                         try:
                                                 worker  = ssl_image_worker(self.manager.key_val[0], self.manager, None, i)
@@ -306,7 +308,7 @@ class ssl_image_pool_maker(pp_thread):
                                                 self.manager.worker_on_way[0] += 1
                                                 self.manager.lock_worker_on_way[0].release()
                                 for i in range(dsize[1]):
-                                        if self.manager.worker_on_way[1] > 3 * dsize[1]:
+                                        if self.manager.worker_on_way[1] > 3 * dsize[1] or qsize[1] + self.manager.worker_on_way[1] > self.max_worker:
                                                 break
                                         try:
                                                 worker  = ssl_image_worker(self.manager.key_val[1], self.manager, None, i)
@@ -392,6 +394,8 @@ class ssl_image_sender(ssl_sender):
 #----------------------------------------------------------
 
 class ssl_price_pool_maker(pp_thread):
+        max_worker = 150
+
         def __init__(self, manager, info = '', delay = 0):
                 pp_thread.__init__(self, info)
                 self.manager = manager
@@ -409,7 +413,7 @@ class ssl_price_pool_maker(pp_thread):
                                 dsize[0] = pool_size - qsize[0]
                                 dsize[1] = pool_size - qsize[1]
                                 for i in range(dsize[0]):
-                                        if self.manager.worker_on_way[0] > 3 * dsize[0]:
+                                        if self.manager.worker_on_way[0] > 3 * dsize[0] or qsize[0] + self.manager.worker_on_way[0] > self.max_worker:
                                                 break
                                         try:
                                                 worker  = ssl_price_worker(self.manager.key_val[0], self.manager, None, i)
@@ -421,7 +425,7 @@ class ssl_price_pool_maker(pp_thread):
                                                 self.manager.worker_on_way[0] += 1
                                                 self.manager.lock_worker_on_way[0].release()
                                 for i in range(dsize[1]):
-                                        if self.manager.worker_on_way[1] > 3 * dsize[1]:
+                                        if self.manager.worker_on_way[1] > 3 * dsize[1] or qsize[1] + self.manager.worker_on_way[1] > self.max_worker:
                                                 break
                                         try:
                                                 worker  = ssl_price_worker(self.manager.key_val[1], self.manager, None, i)
