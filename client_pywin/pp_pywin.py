@@ -112,6 +112,8 @@ class cmd_proc(pp_sender):
                 self.func_dict =     {
                         'logout':               self.proc_logout,
                         'login':                self.proc_login,
+                        'image_connect':        self.proc_image_connect,
+                        'price_connect':        self.proc_price_connect,
                         'image_channel':        self.proc_image_channel,
                         'price_channel':        self.proc_price_channel,
                         'image_price':          self.proc_image_price,
@@ -131,6 +133,14 @@ class cmd_proc(pp_sender):
                         func(key_val)
                 except:
                         print_exc()
+
+        def proc_image_connect(self, key_val):
+                global proc_ssl_image
+                proc_ssl_image.set_pool_start()
+
+        def proc_price_connect(self, key_val):
+                global proc_ssl_price
+                proc_ssl_price.set_pool_start()
 
         def proc_image_channel(self, key_val):
                 global proc_ssl_image
@@ -212,6 +222,16 @@ class Console(Console):
                 db['passwd']      = key_val['passwd']
                 self.save_database(db)
 
+        def proc_image_connect(self,p1):
+                key_val = {}
+                key_val['cmd']    = 'image_connect'
+                self.cmd_proc.put(key_val)
+
+        def proc_price_connect(self,p1):
+                key_val = {}
+                key_val['cmd']    = 'price_connect'
+                self.cmd_proc.put(key_val)
+
         def proc_image_channel(self,p1):
                 key_val = {}
                 key_val['cmd']    = 'image_channel'
@@ -268,15 +288,17 @@ class Console(Console):
                 #self.output_system_time.update_idletasks()
                 #self.output_change_time.update_idletasks()
 
-        def update_image_channel(self, current, goal):
+        def update_image_channel(self, current, goal, onway):
                 self.output_image_current_channel['text'] = current
                 self.output_image_goal_channel['text']    = goal
+                self.output_image_onway_channel['text']   = onway
                 self.output_image_current_channel.update_idletasks()
                 #self.output_image_goal_channel.update_idletasks()
 
-        def update_price_channel(self, current, goal):
+        def update_price_channel(self, current, goal, onway):
                 self.output_price_current_channel['text'] = current
                 self.output_price_goal_channel['text']    = goal
+                self.output_price_onway_channel['text']   = onway
                 self.output_price_current_channel.update_idletasks()
                 #self.output_price_goal_channel.update_idletasks()
 
