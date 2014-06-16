@@ -343,6 +343,7 @@ class ssl_image_sender(ssl_sender):
                 self.lock_worker_on_way = (Lock(), Lock())
                 self.worker_on_way      = [0,0]
                 self.flag_start_pool    = False
+                self.last_worker        = None
                 self.key_val = ({},{})
                 self.key_val[0]['host_ip']      = server_dict[0]['toubiao']['ip']
                 self.key_val[0]['host_name']    = server_dict[0]['toubiao']['name']
@@ -388,6 +389,10 @@ class ssl_image_sender(ssl_sender):
                                 print_exc()
                                 return
                         else:
+                                if self.last_worker != None :
+                                        self.last_worker.stop()
+                                        self.last_worker.close()
+                                        self.last_worker = worker
                                 if worker.put(arg) == True :
                                         return
 
