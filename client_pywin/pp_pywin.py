@@ -76,6 +76,7 @@ class pp_client():
         def image(self, key_val):
                 global proc_ssl_image
                 self.info_val['image_price']    = key_val['price']
+                self.info_val['group']          = key_val['group']
                 try:
                         return proc_ssl_image.send(self.info_val, self.image_ok)
                 except:
@@ -260,6 +261,7 @@ class Console(Console):
                         int(key_val['price'])
                 except:
                         return
+                key_val['group']  = self.var_use_group2.get()
                 self.cmd_proc.put(key_val)
 
         def proc_image_decode(self,p1):
