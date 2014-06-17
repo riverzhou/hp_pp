@@ -35,6 +35,8 @@ class pp_client():
                 self.event_shot                 = Event()
                 self.onway_price_worker         = [0,0]
                 self.lock_price_worker          = Lock()
+                self.lock_login_cb              = Lock()
+                self.lock_image_cb              = Lock()
 
         def price_worker_in(self, group):
                 worker = [0,0]
@@ -76,6 +78,8 @@ class pp_client():
                         logger.error('login error! errcode %s , errstring %s' % (key_val['errcode'], key_val['errstring']))
                         return
 
+                self.lock_login_cb.acquire()
+
                 self.info_val['pid']            = key_val['pid']
 
                 self.stop_udp()
@@ -93,10 +97,12 @@ class pp_client():
                         }
 
                 self.udp  = udp_worker(self.console, arg_val)
-                self.udp.start()
                 self.udp2 = udp_worker(self.console, arg_val2)
-                self.udp2.start()
 
+                self.lock_login_cb.release()
+
+                self.udp.start()
+                self.udp2.start()
                 self.udp.wait_for_start(5)
                 self.udp2.wait_for_start(5)
 
@@ -131,8 +137,10 @@ class pp_client():
                         logger.error('image error! image decode failed')
                         return
 
+                self.lock_image_cb.acquire()
                 self.info_val['sid']            = key_val['sid']
                 self.info_val['last_price']     = key_val['price']
+                self.lock_image_cb.release()
 
                 self.console.update_image_decode(key_val['image'], self.info_val['last_price'])
 
