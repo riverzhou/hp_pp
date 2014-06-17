@@ -14,6 +14,7 @@ from time               import sleep
 from pp_baseclass       import pp_thread, pp_sender
 from pp_server          import server_dict
 from readini            import pywin_config
+from pp_udpworker       import current_price
 from pp_sslproto        import *
 
 #==========================================================
@@ -213,8 +214,14 @@ class ssl_price_worker(ssl_worker):
                 req       = proto.make_price_req(price, image)
                 head      = proto.make_ssl_head(self.host_name, sid)
 
+                int_price = int(price)
                 event.wait()
                 if delay != 0 : sleep(delay)
+                global current_price
+                cur_price = current_price.get()
+                logger.debug('shot_price %d , cur_price %d ' % (int_price, cur_price))
+                if int_price > cur_price + 300 or int_price < cur_price - 300:
+                        return
 
                 info_val  = self.pyget(req, head)
                 #logger.debug(sorted(info_val.items()))

@@ -4,6 +4,7 @@
 from traceback      import print_exc
 from socket         import socket, AF_INET, SOCK_DGRAM
 from socket         import timeout as sock_timeout
+from threading      import Lock
 
 from pp_baseclass   import pp_thread
 from pp_udpproto    import udp_proto
@@ -12,6 +13,24 @@ from pp_server      import server_dict
 from pp_log         import logger, printer
 
 #=============================================================
+
+class price():
+        def __init__(self):
+                self.cur_price  = 0
+                self.lock_price = Lock()
+
+        def set(self, price):
+                self.lock_price.acquire()
+                try:
+                        self.current_price = int(price)
+                except:
+                        print_exc()
+                self.lock_price.release()
+
+        def get(self):
+                return self.current_price
+
+#-------------------------------------------------------------
 
 class udp_format(pp_thread):
         interval = 20
@@ -124,6 +143,9 @@ class udp_worker(pp_thread):
                         print_exc()
                         return
 
+                global current_price
+                current_price.set(int_price)
+
                 if self.price_shot != 0 and self.event_shot != None and self.price_shot <= int_price  + 300 and self.price_shot >= int_price - 300:
                         try:
                                 self.event_shot.set()
@@ -147,5 +169,10 @@ class udp_worker(pp_thread):
 
                         if udp_result[1] == self.server_addr:
                                 return udp_result[0]
+
+#==========================================================
+
+current_price = price()
+
 
 
