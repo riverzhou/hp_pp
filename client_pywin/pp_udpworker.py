@@ -157,8 +157,8 @@ class udp_worker(pp_thread):
         def recv_udp(self):
                 while True:
                         try:
-                                udp_result = self.sock.recvfrom(1500)
-                        except (sock_timeout, TimeoutError):
+                                if self.sock != None : udp_result = self.sock.recvfrom(1500)
+                        except (sock_timeout, TimeoutError, OSError):
                                 return None
                         except :
                                 print_exc()

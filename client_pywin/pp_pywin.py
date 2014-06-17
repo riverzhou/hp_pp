@@ -6,7 +6,7 @@ from traceback          import print_exc
 from PIL                import Image, ImageTk
 from io                 import BytesIO
 from base64             import b64decode
-from threading          import Event
+from threading          import Event, Lock
 
 from pp_log             import logger, printer
 from pp_baseclass       import pp_sender
@@ -33,6 +33,22 @@ class pp_client():
                 self.info_val['pid']            = None
                 self.info_val['group']          = 0
                 self.event_shot                 = Event()
+                self.onway_price_worker         = 0
+                self.lock_price_worker          = Lock()
+
+        def price_worker_in(self):
+                self.lock_price_worker.acquire()
+                self.onway_price_worker += 1
+                worker = self.onway_price_worker
+                self.lock_price_worker.release()
+                logger.debug('price worker number is %d' % worker)
+
+        def price_worker_out(self):
+                self.lock_price_worker.acquire()
+                self.onway_price_worker -= 1
+                worker = self.onway_price_worker
+                self.lock_price_worker.release()
+                logger.debug('price worker number is %d' % worker)
 
         def stop_udp(self):
                 if self.udp != None :           return self.udp.stop()
@@ -143,6 +159,8 @@ class pp_client():
                                 arg_val[key]    = self.info_val[key]
                         arg_val['event']        = self.event_shot
                         arg_val['delay']        = 0
+                        arg_val['worker_in']    = self.price_worker_in
+                        arg_val['worker_out']   = self.price_worker_out
                         proc_ssl_price.send(arg_val, self.price_ok)
                 except:
                         print_exc()
@@ -152,6 +170,8 @@ class pp_client():
                                 arg_val[key]    = self.info_val[key]
                         arg_val['event']        = self.event_shot
                         arg_val['delay']        = 1
+                        arg_val['worker_in']    = self.price_worker_in
+                        arg_val['worker_out']   = self.price_worker_out
                         proc_ssl_price.send(arg_val, self.price_ok)
                 except:
                         print_exc()
