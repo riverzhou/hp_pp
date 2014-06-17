@@ -9,6 +9,8 @@ from pp_log             import logger
 #============================================================================================
 
 class pp_thread(Thread):
+        default_start_timeout = 5
+
         def __init__(self, info = ''):
                 Thread.__init__(self)
                 self.flag_stop     = False
@@ -17,8 +19,17 @@ class pp_thread(Thread):
                 self.thread_info   = info
                 self.setDaemon(True)
 
-        def wait_for_start(self):
-                self.event_started.wait()
+        def wait_for_start(self, timeout = None):
+                if timeout == None:
+                        self.event_started.wait()
+                else:
+                        try:
+                                int(timeout)
+                        except:
+                                print_exc()
+                                self.event_started.wait(self.default_start_timeout)
+                        else:
+                                self.event_started.wait(timeout)
 
         def stop(self):
                 self.flag_stop = True

@@ -6,6 +6,7 @@ from traceback          import print_exc
 from PIL                import Image, ImageTk
 from io                 import BytesIO
 from base64             import b64decode
+from threading          import Event
 
 from pp_log             import logger, printer
 from pp_baseclass       import pp_sender
@@ -21,7 +22,7 @@ class pp_client():
                 self.console                    = console
                 self.machine                    = proto_machine()
                 self.udp                        = None
-
+                self.udp2                       = None
                 self.info_val                   = {}
                 self.info_val['bidno']          = key_val['bidno']
                 self.info_val['passwd']         = key_val['passwd']
@@ -31,9 +32,13 @@ class pp_client():
                 self.info_val['sid']            = None
                 self.info_val['pid']            = None
                 self.info_val['group']          = 0
+                self.event_shot                 = Event()
 
         def stop_udp(self):
                 if self.udp != None :           return self.udp.stop()
+
+        def stop_udp2(self):
+                if self.udp2 != None :          return self.udp2.stop()
 
         def login_ok(self, key_val):
                 if key_val == None :            return
@@ -44,10 +49,35 @@ class pp_client():
                 self.info_val['pid']            = key_val['pid']
 
                 self.stop_udp()
-                self.udp = udp_worker(self.console, self.info_val)
+                self.stop_udp2()
+
+                arg_val = {
+                        'bidno' : self.info_val['bidno'] ,
+                        'pid'   : self.info_val['pid'] ,
+                        'group' : 0 ,
+                        }
+                arg_val2 = {
+                        'bidno' : self.info_val['bidno'] ,
+                        'pid'   : self.info_val['pid'] ,
+                        'group' : 1 ,
+                        }
+
+                self.udp  = udp_worker(self.console, arg_val)
                 self.udp.start()
-                self.udp.wait_for_start()
-                self.udp.format_udp()
+                self.udp2 = udp_worker(self.console, arg_val2)
+                self.udp2.start()
+
+                self.udp.wait_for_start(5)
+                self.udp2.wait_for_start(5)
+
+                try:
+                        self.udp.format_udp()
+                except:
+                        pass
+                try:
+                        self.udp2.format_udp()
+                except:
+                        pass
 
                 self.console.update_login_status(key_val['name'])
 
@@ -55,7 +85,10 @@ class pp_client():
                 global proc_ssl_login
                 self.info_val['group']          = key_val['group']
                 try:
-                        return proc_ssl_login.send(self.info_val, self.login_ok)
+                        arg_val = {}
+                        for key in self.info_val :
+                                arg_val[key]    = self.info_val[key]
+                        proc_ssl_login.send(arg_val, self.login_ok)
                 except:
                         print_exc()
 
@@ -78,7 +111,10 @@ class pp_client():
                 self.info_val['image_price']    = key_val['price']
                 self.info_val['group']          = key_val['group']
                 try:
-                        return proc_ssl_image.send(self.info_val, self.image_ok)
+                        arg_val = {}
+                        for key in self.info_val :
+                                arg_val[key]    = self.info_val[key]
+                        proc_ssl_image.send(arg_val, self.image_ok)
                 except:
                         print_exc()
 
@@ -98,8 +134,25 @@ class pp_client():
                 global proc_ssl_price
                 self.info_val['shot_price']     = self.info_val['last_price']
                 self.info_val['image_decode']   = key_val['image']
+                self.event_shot.clear()
+                self.udp.reg(self.info_val['shot_price'], self.event_shot)
+                self.udp2.reg(self.info_val['shot_price'], self.event_shot)
                 try:
-                        return proc_ssl_price.send(self.info_val, self.price_ok)
+                        arg_val = {}
+                        for key in self.info_val :
+                                arg_val[key]    = self.info_val[key]
+                        arg_val['event']        = self.event_shot
+                        arg_val['delay']        = 0
+                        proc_ssl_price.send(arg_val, self.price_ok)
+                except:
+                        print_exc()
+                try:
+                        arg_val = {}
+                        for key in self.info_val :
+                                arg_val[key]    = self.info_val[key]
+                        arg_val['event']        = self.event_shot
+                        arg_val['delay']        = 1
+                        proc_ssl_price.send(arg_val, self.price_ok)
                 except:
                         print_exc()
 

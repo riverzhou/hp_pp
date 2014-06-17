@@ -13,6 +13,23 @@ from pp_log         import logger, printer
 
 #=============================================================
 
+class udp_format(pp_thread):
+        interval = 20
+
+        def __init__(self, worker):
+                pp_thread.__init__(self, 'udp_format')
+                self.worker = worker
+
+        def main(self):
+                while True:
+                        if self.flag_stop == True: break
+                        if self.worker.sock != None:
+                                try:
+                                        self.worker.format_udp()
+                                except:
+                                        print_exc()
+                        if self.event_stop.wait(self.interval) == True: break
+
 class udp_worker(pp_thread):
         udp_timeout = 10
 
@@ -21,6 +38,10 @@ class udp_worker(pp_thread):
                 pp_thread.__init__(self, 'udp_worker')
 
                 self.console     = console
+                self.event_shot  = None
+                self.price_shot  = 0
+
+                self.udp_format  = None
 
                 self.bidno       = key_val['bidno']
                 self.pid         = key_val['pid']
@@ -36,19 +57,53 @@ class udp_worker(pp_thread):
                 self.proto       = udp_proto()
 
         def main(self):
-                self.format_udp()
+                self.udp_format = udp_format(self)
+                self.udp_format.start()
+                self.udp_format.wait_for_start()
                 while True:
                         if self.flag_stop == True: break
                         self.update_status()
 
+        def reg(self, price, event):
+                try:
+                        int_price = int(price)
+                except:
+                        print_exc()
+                        return
+                self.price_shot = int_price
+                self.event_shot = event
+
+        def stop(self):
+                if self.udp_format != None : self.udp_format.stop()
+                if self.sock != None:
+                        self.logoff_udp()
+                        try:
+                                self.sock.close()
+                        except:
+                                pass
+                self.sock       = None
+                self.event_shot = None
+                self.price_shot = 0
+                self.flag_stop  = True
+                self.event_stop.set()
+
         def logoff_udp(self):
-             self.sock.sendto(self.proto.make_logoff_req(self.bidno, self.pid), self.server_addr)
+                try:
+                        self.sock.sendto(self.proto.make_logoff_req(self.bidno, self.pid), self.server_addr)
+                except:
+                        print_exc()
 
         def client_udp(self):
-             self.sock.sendto(self.proto.make_client_req(self.bidno, self.pid), self.server_addr)
+                try:
+                        self.sock.sendto(self.proto.make_client_req(self.bidno, self.pid), self.server_addr)
+                except:
+                        print_exc()
 
         def format_udp(self):
-             self.sock.sendto(self.proto.make_format_req(self.bidno, self.pid), self.server_addr)
+                try:
+                        self.sock.sendto(self.proto.make_format_req(self.bidno, self.pid), self.server_addr)
+                except:
+                        print_exc()
 
         def update_status(self):
                 udp_recv = self.recv_udp()
@@ -63,6 +118,17 @@ class udp_worker(pp_thread):
                 stime = info_val['systime']
                 price = info_val['price']
 
+                try:
+                        int_price = int(price)
+                except:
+                        print_exc()
+                        return
+
+                if self.price_shot != 0 and self.event_shot != None and self.price_shot <= int_price  + 300 and self.price_shot >= int_price - 300:
+                        try:
+                                self.event_shot.set()
+                        except:
+                                print_exc()
                 self.console.update_udp_info(ctime, stime, price)
                 printer.info(sorted(info_val.items()))
 

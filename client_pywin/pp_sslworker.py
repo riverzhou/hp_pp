@@ -19,7 +19,7 @@ from pp_sslproto        import *
 #==========================================================
 
 class ssl_worker(pp_thread):
-        connect_timeout = 90
+        connect_timeout = 60
 
         def __init__(self, key_val, manager, info = '', delay = 0):
                 pp_thread.__init__(self, info)
@@ -206,10 +206,16 @@ class ssl_price_worker(ssl_worker):
                 price     = key_val['shot_price']
                 image     = key_val['image_decode']
                 sid       = key_val['sid']
+                event     = key_val['event']
+                delay     = key_val['delay']
 
                 proto     = proto_ssl_price(key_val)
                 req       = proto.make_price_req(price, image)
                 head      = proto.make_ssl_head(self.host_name, sid)
+
+                event.wait()
+                if delay != 0 : sleep(delay)
+
                 info_val  = self.pyget(req, head)
                 #logger.debug(sorted(info_val.items()))
 
