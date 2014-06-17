@@ -527,7 +527,7 @@ class Console():
                 self.input_image_price.configure(selectforeground="black")
 
                 self.input_image_decode = Entry (self.Frame2)
-                self.input_image_decode.place(relx=0.41,rely=0.62,relheight=0.14
+                self.input_image_decode.place(relx=0.41,rely=0.67,relheight=0.14
                         ,relwidth=0.24)
                 self.input_image_decode.configure(background="white")
                 self.input_image_decode.configure(disabledforeground="#a3a3a3")
@@ -554,7 +554,7 @@ class Console():
                 self.button_image_price.bind('<Button-1>',self.proc_image_price)
 
                 self.button_image_decode = Button (self.Frame2)
-                self.button_image_decode.place(relx=0.72,rely=0.72,height=28,width=81)
+                self.button_image_decode.place(relx=0.72,rely=0.67,height=28,width=81)
                 self.button_image_decode.configure(activebackground="#d9d9d9")
                 self.button_image_decode.configure(activeforeground="#000000")
                 self.button_image_decode.configure(background=_bgcolor)
@@ -588,10 +588,10 @@ class Console():
                 self.output_last_price.configure(width=77)
 
                 self.output_image = Label (self.Frame2)
-                self.output_image.place(relx=0.03,rely=0.56,height=53,width=120)
+                self.output_image.place(relx=0.03,rely=0.62,height=53,width=120)
                 self.output_image.configure(activebackground="#f9f9f9")
                 self.output_image.configure(activeforeground="black")
-                self.output_image.configure(background="#a3a3a3")
+                self.output_image.configure(background=_bgcolor)
                 self.output_image.configure(disabledforeground="#a3a3a3")
                 self.output_image.configure(foreground="#000000")
                 self.output_image.configure(highlightbackground="#d9d9d9")
@@ -599,7 +599,7 @@ class Console():
                 self.output_image.configure(text='''图片''')
 
                 self.Frame25 = Frame (self.Frame2)
-                self.Frame25.place(relx=0.71,rely=0.51,relheight=0.18,relwidth=0.25)
+                self.Frame25.place(relx=0.41,rely=0.44,relheight=0.18,relwidth=0.25)
                 self.Frame25.configure(relief=GROOVE)
                 self.Frame25.configure(borderwidth="2")
                 self.Frame25.configure(relief=GROOVE)
@@ -721,6 +721,7 @@ class Console():
                 self.output_third_price.configure(highlightcolor="black")
                 self.output_third_price.configure(text='''0''')
                 self.output_third_price.configure(width=67)
+
 
 #------------------------------------------------------------------------------
 
