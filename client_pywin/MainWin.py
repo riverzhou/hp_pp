@@ -378,7 +378,6 @@ class Console():
                 self.button_image_connect.configure(highlightcolor="black")
                 self.button_image_connect.configure(pady="0")
                 self.button_image_connect.configure(text='''连图片通道''')
-                self.button_image_connect.configure(width=79)
                 self.button_image_connect.bind('<Button-1>',self.proc_image_connect)
 
                 self.Frame14 = Frame (self.Frame3)
@@ -491,7 +490,6 @@ class Console():
                 self.button_price_connect.configure(highlightcolor="black")
                 self.button_price_connect.configure(pady="0")
                 self.button_price_connect.configure(text='''连价格通道''')
-                self.button_price_connect.configure(width=79)
                 self.button_price_connect.bind('<Button-1>',self.proc_price_connect)
 
                 self.Frame5 = Frame (master)
@@ -515,7 +513,7 @@ class Console():
                 self.Frame2.configure(width=345)
 
                 self.input_image_price = Entry (self.Frame2)
-                self.input_image_price.place(relx=0.41,rely=0.26,relheight=0.14
+                self.input_image_price.place(relx=0.41,rely=0.21,relheight=0.14
                         ,relwidth=0.24)
                 self.input_image_price.configure(background="white")
                 self.input_image_price.configure(disabledforeground="#a3a3a3")
@@ -543,7 +541,7 @@ class Console():
                 self.input_image_decode.configure(selectforeground="black")
 
                 self.button_image_price = Button (self.Frame2)
-                self.button_image_price.place(relx=0.72,rely=0.26,height=28,width=81)
+                self.button_image_price.place(relx=0.72,rely=0.21,height=28,width=81)
                 self.button_image_price.configure(activebackground="#d9d9d9")
                 self.button_image_price.configure(activeforeground="#000000")
                 self.button_image_price.configure(background=_bgcolor)
@@ -556,7 +554,7 @@ class Console():
                 self.button_image_price.bind('<Button-1>',self.proc_image_price)
 
                 self.button_image_decode = Button (self.Frame2)
-                self.button_image_decode.place(relx=0.72,rely=0.62,height=28,width=81)
+                self.button_image_decode.place(relx=0.72,rely=0.72,height=28,width=81)
                 self.button_image_decode.configure(activebackground="#d9d9d9")
                 self.button_image_decode.configure(activeforeground="#000000")
                 self.button_image_decode.configure(background=_bgcolor)
@@ -569,7 +567,7 @@ class Console():
                 self.button_image_decode.bind('<Button-1>',self.proc_image_decode)
 
                 self.Frame19 = Frame (self.Frame2)
-                self.Frame19.place(relx=0.09,rely=0.23,relheight=0.18,relwidth=0.25)
+                self.Frame19.place(relx=0.07,rely=0.21,relheight=0.18,relwidth=0.25)
                 self.Frame19.configure(relief=GROOVE)
                 self.Frame19.configure(borderwidth="2")
                 self.Frame19.configure(relief=GROOVE)
@@ -590,15 +588,36 @@ class Console():
                 self.output_last_price.configure(width=77)
 
                 self.output_image = Label (self.Frame2)
-                self.output_image.place(relx=0.03,rely=0.56,height=53,width=127)
+                self.output_image.place(relx=0.03,rely=0.56,height=53,width=120)
                 self.output_image.configure(activebackground="#f9f9f9")
                 self.output_image.configure(activeforeground="black")
-                self.output_image.configure(background=_bgcolor)
+                self.output_image.configure(background="#a3a3a3")
                 self.output_image.configure(disabledforeground="#a3a3a3")
                 self.output_image.configure(foreground="#000000")
                 self.output_image.configure(highlightbackground="#d9d9d9")
                 self.output_image.configure(highlightcolor="black")
                 self.output_image.configure(text='''图片''')
+
+                self.Frame25 = Frame (self.Frame2)
+                self.Frame25.place(relx=0.71,rely=0.51,relheight=0.18,relwidth=0.25)
+                self.Frame25.configure(relief=GROOVE)
+                self.Frame25.configure(borderwidth="2")
+                self.Frame25.configure(relief=GROOVE)
+                self.Frame25.configure(background=_bgcolor)
+                self.Frame25.configure(highlightbackground="#d9d9d9")
+                self.Frame25.configure(highlightcolor="black")
+                self.Frame25.configure(width=85)
+
+                self.output_price_onway_work = Message (self.Frame25)
+                self.output_price_onway_work.place(relx=0.12,rely=0.29,relheight=0.43
+                        ,relwidth=0.79)
+                self.output_price_onway_work.configure(background=_bgcolor)
+                self.output_price_onway_work.configure(foreground="#000000")
+                self.output_price_onway_work.configure(highlightbackground="#d9d9d9")
+                self.output_price_onway_work.configure(highlightcolor="black")
+                self.output_price_onway_work.configure(justify=CENTER)
+                self.output_price_onway_work.configure(text='''00 : 00''')
+                self.output_price_onway_work.configure(width=70)
 
                 self.Frame9 = Frame (self.Frame5)
                 self.Frame9.place(relx=0.03,rely=0.09,relheight=0.83,relwidth=0.31)
@@ -703,7 +722,7 @@ class Console():
                 self.output_third_price.configure(text='''0''')
                 self.output_third_price.configure(width=67)
 
-
+#------------------------------------------------------------------------------
 
         def proc_login(self,p1):
                 print ('proc_login')
@@ -732,7 +751,6 @@ class Console():
         def proc_image_decode(self,p1):
                 print ('proc_image_decode')
                 sys.stdout.flush()
-
 
 #=============================================================================
 
