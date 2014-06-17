@@ -211,8 +211,9 @@ class ssl_price_worker(ssl_worker):
                 delay     = key_val['delay']
                 worker_in = key_val['worker_in']
                 worker_out= key_val['worker_out']
+                group     = self.group
 
-                worker_in()
+                worker_in(group)
 
                 proto     = proto_ssl_price(key_val)
                 req       = proto.make_price_req(price, image)
@@ -225,14 +226,14 @@ class ssl_price_worker(ssl_worker):
                 cur_price = current_price.get()
                 logger.debug('shot_price %d , cur_price %d ' % (int_price, cur_price))
                 if int_price > cur_price + 300 or int_price < cur_price - 300:
-                        worker_out()
+                        worker_out(group)
                         return
 
                 info_val  = self.pyget(req, head)
                 #logger.debug(sorted(info_val.items()))
 
                 if info_val == None:
-                        worker_out()
+                        worker_out(group)
                         return
 
                 if info_val['status'] != 200 :
@@ -243,18 +244,18 @@ class ssl_price_worker(ssl_worker):
                                 printer.error(info_val['body'].decode('gb18030'))
                         except: pass
                         else:
-                                worker_out()
+                                worker_out(group)
                                 return
                         try:
                                 logger.error(info_val['body'].decode())
                                 printer.error(info_val['body'].decode())
                         except: pass
                         else:
-                                worker_out()
+                                worker_out(group)
                                 return
                         logger.error('unknow body coding')
                         printer.error(info_val['body'])
-                        worker_out()
+                        worker_out(group)
                         return
 
                 ack_sid   = proto.get_sid_from_head(info_val['head'])
@@ -263,7 +264,7 @@ class ssl_price_worker(ssl_worker):
                 printer.debug(sorted(ack_val.items()))
                 #logger.debug(sorted(ack_val.items()))
 
-                worker_out()
+                worker_out(group)
                 if callback != None : callback(ack_val)
 
 #==========================================================

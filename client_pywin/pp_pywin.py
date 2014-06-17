@@ -33,22 +33,36 @@ class pp_client():
                 self.info_val['pid']            = None
                 self.info_val['group']          = 0
                 self.event_shot                 = Event()
-                self.onway_price_worker         = 0
+                self.onway_price_worker         = [0,0]
                 self.lock_price_worker          = Lock()
 
-        def price_worker_in(self):
+        def price_worker_in(self, group):
+                worker = [0,0]
                 self.lock_price_worker.acquire()
-                self.onway_price_worker += 1
-                worker = self.onway_price_worker
+                if group == 0 :
+                        self.onway_price_worker[0] += 1
+                elif group == 1:
+                        self.onway_price_worker[1] += 1
+                else:
+                        pass
+                worker[0] = self.onway_price_worker[0]
+                worker[1] = self.onway_price_worker[1]
                 self.lock_price_worker.release()
-                logger.debug('price worker number is %d' % worker)
+                self.console.update_price_worker('%.2d : %.2d' % (worker[0], worker[1]))
 
-        def price_worker_out(self):
+        def price_worker_out(self, group):
+                worker = [0,0]
                 self.lock_price_worker.acquire()
-                self.onway_price_worker -= 1
-                worker = self.onway_price_worker
+                if group == 0 :
+                        self.onway_price_worker[0] -= 1
+                elif group == 1:
+                        self.onway_price_worker[1] -= 1
+                else:
+                        pass
+                worker[0] = self.onway_price_worker[0]
+                worker[1] = self.onway_price_worker[1]
                 self.lock_price_worker.release()
-                logger.debug('price worker number is %d' % worker)
+                self.console.update_price_worker('%.2d : %.2d' % (worker[0], worker[1]))
 
         def stop_udp(self):
                 if self.udp != None :           return self.udp.stop()
@@ -256,6 +270,14 @@ class Console(Console):
                 proc_ssl_image.reg(self)
                 proc_ssl_price.reg(self)
 
+                self.lock_login  = Lock()
+                self.lock_udp    = Lock()
+                self.lock_price1 = Lock()
+                self.lock_price2 = Lock()
+                self.lock_price3 = Lock()
+                self.lock_worker = Lock()
+                self.lock_image  = Lock()
+
         def load_database(self):
                 global database
                 if not hasattr(database, 'db') :
@@ -352,16 +374,20 @@ class Console(Console):
         #-------------------------------------
 
         def update_login_status(self, info):
+                self.lock_login.acquire()
                 self.output_login_status['text']    = info
                 self.output_login_status.update_idletasks()
+                self.lock_login.release()
 
         def update_udp_info(self, ctime, stime, price):
+                self.lock_udp.acquire()
                 self.output_current_price['text']   = price
                 self.output_system_time['text']     = stime
                 self.output_change_time['text']     = ctime
                 self.output_current_price.update_idletasks()
                 #self.output_system_time.update_idletasks()
                 #self.output_change_time.update_idletasks()
+                self.lock_udp.release()
 
         def update_image_channel(self, current, goal, onway):
                 self.output_image_current_channel['text'] = current
@@ -378,16 +404,28 @@ class Console(Console):
                 #self.output_price_goal_channel.update_idletasks()
 
         def update_first_price(self, info):
+                self.lock_price1.acquire()
                 self.output_first_price['text']     = info
                 self.output_first_price.update_idletasks()
+                self.lock_price1.release()
 
         def update_second_price(self, info):
+                self.lock_price2.acquire()
                 self.output_second_price['text']    = info
                 self.output_second_price.update_idletasks()
+                self.lock_price2.release()
 
         def update_third_price(self, info):
+                self.lock_price3.acquire()
                 self.output_third_price['text']     = info
                 self.output_third_price.update_idletasks()
+                self.lock_price3.release()
+
+        def update_price_worker(self, info):
+                self.lock_worker.acquire()
+                self.output_price_onway_work['text']= info
+                self.output_price_onway_work.update_idletasks()
+                self.lock_worker.release()
 
         def update_image_decode(self, image, price):
                 try:
@@ -395,16 +433,20 @@ class Console(Console):
                         photo = ImageTk.PhotoImage(Image.open(BytesIO(image)))
                 except:
                         global err_jpg
+                        self.lock_image.acquire()
                         self.output_image.image     = err_jpg
                         self.output_image['image']  = err_jpg
                         self.output_image.update_idletasks()
+                        self.lock_image.release()
                         self.save_jpg(image)
                         logger.error('图片错误，重新请求')
                 else:
+                        self.lock_image.acquire()
                         self.output_image.image         = photo
                         self.output_image['image']      = photo
                         self.output_last_price['text']  = price
                         self.output_image.update_idletasks()
+                        self.lock_image.release()
                         #self.output_last_price.update_idletasks()
 
         def save_jpg(self,jpg):
