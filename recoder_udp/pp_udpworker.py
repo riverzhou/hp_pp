@@ -1,0 +1,165 @@
+#!/usr/bin/env python3
+
+from traceback      import print_exc
+from socket         import socket, AF_INET, SOCK_DGRAM
+from socket         import timeout as sock_timeout
+from threading      import Lock
+from datetime       import datetime
+from os             import getcwd
+
+from pp_baseclass   import pp_thread
+from pp_udpproto    import udp_proto
+from pp_server      import server_dict
+
+from pp_log         import logger, printer
+
+#=============================================================
+
+#-------------------------------------------------------------
+
+class udp_format(pp_thread):
+        interval = 20
+
+        def __init__(self, worker):
+                pp_thread.__init__(self, 'udp_format')
+                self.worker = worker
+
+        def main(self):
+                while True:
+                        if self.flag_stop == True: break
+                        if self.worker.sock != None:
+                                try:
+                                        self.worker.format_udp()
+                                except:
+                                        print_exc()
+                        if self.event_stop.wait(self.interval) == True: break
+
+class udp_worker(pp_thread):
+        udp_timeout = 10
+
+        def __init__(self, console, key_val):
+                global server_dict
+                pp_thread.__init__(self, 'udp_worker')
+
+                self.console     = console
+                self.event_shot  = None
+                self.price_shot  = 0
+
+                self.udp_format  = None
+
+                self.bidno       = key_val['bidno']
+                self.pid         = key_val['pid']
+                self.group       = key_val['group']
+
+                self.server_addr = server_dict[self.group]['udp']['ip'], server_dict[self.group]['udp']['port']
+
+                self.sock        = socket(AF_INET, SOCK_DGRAM)
+                self.sock.settimeout(self.udp_timeout)
+                self.sock.bind(('',0))
+                logger.info('Client %s : login bind udp_sock @%s ' % (self.bidno, self.sock.getsockname()))
+
+                self.proto       = udp_proto()
+                self.fcount      = 0
+                self.path        = getcwd()
+
+        def main(self):
+                self.udp_format = udp_format(self)
+                self.udp_format.start()
+                self.udp_format.wait_for_start()
+                while True:
+                        if self.flag_stop == True: break
+                        self.update_status()
+
+        def reg(self, price, event):
+                try:
+                        int_price = int(price)
+                except:
+                        print_exc()
+                        return
+                self.price_shot = int_price
+                self.event_shot = event
+
+        def stop(self):
+                if self.udp_format != None : self.udp_format.stop()
+                if self.sock != None:
+                        self.logoff_udp()
+                        try:
+                                self.sock.close()
+                        except:
+                                pass
+                self.sock       = None
+                self.event_shot = None
+                self.price_shot = 0
+                self.flag_stop  = True
+                self.event_stop.set()
+
+        def logoff_udp(self):
+                try:
+                        self.sock.sendto(self.proto.make_logoff_req(self.bidno, self.pid), self.server_addr)
+                except:
+                        print_exc()
+
+        def client_udp(self):
+                try:
+                        self.sock.sendto(self.proto.make_client_req(self.bidno, self.pid), self.server_addr)
+                except:
+                        print_exc()
+
+        def format_udp(self):
+                try:
+                        self.sock.sendto(self.proto.make_format_req(self.bidno, self.pid), self.server_addr)
+                except:
+                        print_exc()
+
+        def update_status(self):
+                udp_recv = self.recv_udp()
+                if udp_recv == None:
+                        return
+
+                info = self.proto.decode(udp_recv)
+                self.write_to_file(info)
+
+        def write_to_file(self, info):
+                if len(info) == 0 : return
+                self.fcount += 1
+                name = self.path + '/record/' + str(self.fcount) + '_' + datetime.strftime(datetime.now(), '%Y%m%d%H%M%S.%f') + '.txt'
+                f = open(name, 'wb')
+                f.write(info)
+                f.close()
+
+        def recv_udp(self):
+                while True:
+                        try:
+                                if self.sock != None : udp_result = self.sock.recvfrom(1500)
+                        except (sock_timeout, TimeoutError, OSError):
+                                return None
+                        except :
+                                print_exc()
+                                return None
+
+                        if self.flag_stop == True:
+                                return None
+
+                        if udp_result[1] == self.server_addr:
+                                return udp_result[0]
+
+#==========================================================
+
+def main():
+        arg_val = {}
+        arg_val['bidno'] = '12345678'
+        arg_val['pid']   = '1234'
+        arg_val['group'] = 0
+        udp = udp_worker(None, arg_val)
+        udp.start()
+        udp.wait_for_start()
+        udp.join()
+
+if __name__ == '__main__' :
+        try:
+                main()
+        except KeyboardInterrupt:
+                pass
+        except:
+                print_exc()
+
