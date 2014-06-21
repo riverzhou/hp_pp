@@ -322,8 +322,6 @@ class ssl_image_pool_maker(pp_thread):
                         qsize           = [0,0]
                         qsize[0]        = self.manager.queue_workers[0].qsize()
                         qsize[1]        = self.manager.queue_workers[1].qsize()
-                        delay           = int(pool_size/10)
-                        if delay  < 1   : delay = 1
                         if self.manager.flag_start_pool == True:
                                 dsize[0] = pool_size - qsize[0]
                                 dsize[1] = pool_size - qsize[1]
@@ -331,7 +329,7 @@ class ssl_image_pool_maker(pp_thread):
                                         if self.manager.worker_on_way[0] > 3 * dsize[0] or qsize[0] + self.manager.worker_on_way[0] > self.max_worker:
                                                 break
                                         try:
-                                                worker  = ssl_image_worker(self.manager.key_val[0], self.manager, None, int(i/delay))
+                                                worker  = ssl_image_worker(self.manager.key_val[0], self.manager, None, 1)
                                                 worker.start()
                                         except:
                                                 print_exc()
@@ -343,7 +341,7 @@ class ssl_image_pool_maker(pp_thread):
                                         if self.manager.worker_on_way[1] > 3 * dsize[1] or qsize[1] + self.manager.worker_on_way[1] > self.max_worker:
                                                 break
                                         try:
-                                                worker  = ssl_image_worker(self.manager.key_val[1], self.manager, None, int(i/delay))
+                                                worker  = ssl_image_worker(self.manager.key_val[1], self.manager, None, 1)
                                                 worker.start()
                                         except:
                                                 print_exc()
@@ -446,8 +444,6 @@ class ssl_price_pool_maker(pp_thread):
                         qsize           = [0,0]
                         qsize[0]        = self.manager.queue_workers[0].qsize()
                         qsize[1]        = self.manager.queue_workers[1].qsize()
-                        delay           = int(pool_size/10)
-                        if delay  < 1   : delay = 1
                         if self.manager.flag_start_pool == True:
                                 dsize[0] = pool_size - qsize[0]
                                 dsize[1] = pool_size - qsize[1]
@@ -455,7 +451,7 @@ class ssl_price_pool_maker(pp_thread):
                                         if self.manager.worker_on_way[0] > 3 * dsize[0] or qsize[0] + self.manager.worker_on_way[0] > self.max_worker:
                                                 break
                                         try:
-                                                worker  = ssl_price_worker(self.manager.key_val[0], self.manager, None, int(i/delay))
+                                                worker  = ssl_price_worker(self.manager.key_val[0], self.manager, None, 1)
                                                 worker.start()
                                         except:
                                                 print_exc()
@@ -467,7 +463,7 @@ class ssl_price_pool_maker(pp_thread):
                                         if self.manager.worker_on_way[1] > 3 * dsize[1] or qsize[1] + self.manager.worker_on_way[1] > self.max_worker:
                                                 break
                                         try:
-                                                worker  = ssl_price_worker(self.manager.key_val[1], self.manager, None, int(i/delay))
+                                                worker  = ssl_price_worker(self.manager.key_val[1], self.manager, None, 1)
                                                 worker.start()
                                         except:
                                                 print_exc()
