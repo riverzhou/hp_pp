@@ -228,10 +228,9 @@ class proto_ssl_login(proto_ssl):
                 else:
                         key_val['name'] = info_val['CLIENTNAME']
                         key_val['pid']  = info_val['PID']
-                        printer.info(string)
-                printer.info(string)
-                printer.info(sorted(key_val.items()))
-                printer.info('')
+                #printer.info(string)
+                #printer.info(sorted(key_val.items()))
+                #printer.info('')
                 return key_val
 
 #----------------------------------------------
@@ -266,10 +265,9 @@ class proto_ssl_image(proto_ssl):
                         printer.error(string)
                 else:
                         key_val['image']    = self.image_decode(info_val['IMAGE_CONTENT'])
-                        printer.info(string)
-                printer.info(string)
-                printer.info(sorted(key_val.items()))
-                printer.info('')
+                #printer.info(string)
+                #printer.info(sorted(key_val.items()))
+                #printer.info('')
                 return key_val
 
 #----------------------------------------------
@@ -312,10 +310,9 @@ class proto_ssl_price(proto_ssl):
                         key_val['price'] = info_val['BIDAMOUNT']
                         key_val['name']  = info_val['CLIENTNAME']
                         key_val['bidno'] = info_val['BIDNUMBER']
-                        printer.info(string)
-                printer.info(string)
-                printer.info(sorted(key_val.items()))
-                printer.info('')
+                #printer.info(string)
+                #printer.info(sorted(key_val.items()))
+                #printer.info('')
                 return key_val
 
 #----------------------------------------------
