@@ -133,6 +133,8 @@ class udp_worker(pp_thread):
                 if info_val == None:
                         return
 
+                printer.critical(udp_recv)
+
                 ctime = info_val['ltime']
                 stime = info_val['systime']
                 price = info_val['price']
