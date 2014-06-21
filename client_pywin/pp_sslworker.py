@@ -329,7 +329,7 @@ class ssl_image_pool_maker(pp_thread):
                                         if self.manager.worker_on_way[0] > 3 * dsize[0] or qsize[0] + self.manager.worker_on_way[0] > self.max_worker:
                                                 break
                                         try:
-                                                worker  = ssl_image_worker(self.manager.key_val[0], self.manager, None, 1)
+                                                worker  = ssl_image_worker(self.manager.key_val[0], self.manager, None, i)
                                                 worker.start()
                                         except:
                                                 print_exc()
@@ -341,7 +341,7 @@ class ssl_image_pool_maker(pp_thread):
                                         if self.manager.worker_on_way[1] > 3 * dsize[1] or qsize[1] + self.manager.worker_on_way[1] > self.max_worker:
                                                 break
                                         try:
-                                                worker  = ssl_image_worker(self.manager.key_val[1], self.manager, None, 1)
+                                                worker  = ssl_image_worker(self.manager.key_val[1], self.manager, None, i)
                                                 worker.start()
                                         except:
                                                 print_exc()
@@ -451,7 +451,7 @@ class ssl_price_pool_maker(pp_thread):
                                         if self.manager.worker_on_way[0] > 3 * dsize[0] or qsize[0] + self.manager.worker_on_way[0] > self.max_worker:
                                                 break
                                         try:
-                                                worker  = ssl_price_worker(self.manager.key_val[0], self.manager, None, 1)
+                                                worker  = ssl_price_worker(self.manager.key_val[0], self.manager, None, i)
                                                 worker.start()
                                         except:
                                                 print_exc()
@@ -463,7 +463,7 @@ class ssl_price_pool_maker(pp_thread):
                                         if self.manager.worker_on_way[1] > 3 * dsize[1] or qsize[1] + self.manager.worker_on_way[1] > self.max_worker:
                                                 break
                                         try:
-                                                worker  = ssl_price_worker(self.manager.key_val[1], self.manager, None, 1)
+                                                worker  = ssl_price_worker(self.manager.key_val[1], self.manager, None, i)
                                                 worker.start()
                                         except:
                                                 print_exc()
