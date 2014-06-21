@@ -152,7 +152,7 @@ class udp_worker(pp_thread):
                         except:
                                 print_exc()
                 self.console.update_udp_info(ctime, stime, price)
-                printer.info(sorted(info_val.items()))
+                printer.warning(sorted(info_val.items()))
 
         def recv_udp(self):
                 while True:
