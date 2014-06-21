@@ -20,7 +20,7 @@ from pp_sslproto        import *
 #==========================================================
 
 class ssl_worker(pp_thread):
-        connect_timeout = 60
+        connect_timeout = 150
 
         def __init__(self, key_val, manager, info = '', delay = 0):
                 pp_thread.__init__(self, info)
