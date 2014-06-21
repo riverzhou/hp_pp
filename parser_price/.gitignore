@@ -7,7 +7,5 @@
 *.txt
 *.ttf
 *.res
-*.pcap
-pcap
 __pycache__
 core
