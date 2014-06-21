@@ -129,6 +129,8 @@ class ssl_login_worker(ssl_worker):
                 if info_val == None:
                         return
 
+                printer.info(sorted(info_val.items()))
+
                 if info_val['status'] != 200 :
                         logger.error('ack status error : %s' % info_val['status'])
                         printer.error('ack status error : %s' % info_val['status'])
@@ -170,6 +172,8 @@ class ssl_image_worker(ssl_worker):
 
                 if info_val == None:
                         return
+
+                printer.info(sorted(info_val.items()))
 
                 if info_val['status'] != 200 :
                         logger.error('ack status error : %s' % info_val['status'])
@@ -235,6 +239,8 @@ class ssl_price_worker(ssl_worker):
                 if info_val == None:
                         worker_out(group)
                         return
+
+                printer.info(sorted(info_val.items()))
 
                 if info_val['status'] != 200 :
                         logger.error('ack status error : %s' % info_val['status'])
