@@ -5,7 +5,7 @@ from traceback  import print_exc
 from queue      import Queue
 from threading  import Thread
 
-from matplotlib.pyplot import ion, ioff, plot, legend, grid, draw, show, figure
+from matplotlib.pyplot import ion, ioff, plot, legend, grid, draw, show, figure, subplots_adjust
 
 Thread.daemon = True
 
@@ -27,57 +27,48 @@ class data_info():
                 else:
                         return info
 
-data_pic  = data_info()
-
+line1 = None
 def pic_draw():
-        ion()
+        global line1
 
-        x = [0,1]
-        y = [0,1]
+        x = [0]
+        y = [0]
 
         figure(figsize = (16,9))
         line1 = plot(x,y,'r')[0]
         line1.axes.set_xlim(min(x), max(x))
         line1.axes.set_ylim(min(y), max(y))
         line1.set_label("line1")
+        subplots_adjust(bottom = 0.15)
         legend()
         grid()
         draw()
-
-        while True:
-                global data_pic
-                key_val = data_pic.get()
-                if key_val == None : break
-                x = key_val['x']
-                y = key_val['y']
-                line1.set_xdata(x)
-                line1.set_ydata(y)
-                line1.axes.set_xlim(min(x), max(x))
-                line1.axes.set_ylim(min(y), max(y))
-                draw()
-
-        ioff()
         show()
 
 class data_creater(Thread):
         def run(self):
-                global data_pic
+                global line1
                 i = 0
                 x = []
                 y = []
                 key_val = {}
 
                 while True:
+                        if line1 == None:
+                                sleep(1)
+                                continue
                         x.append(i)
-                        y.append(i)
-                        key_val['x'] = x
-                        key_val['y'] = y
-                        data_pic.put(key_val)
-                        i += 100
-                        if i > 2000 : break
-                        sleep(1)
+                        y.append(i*i)
 
-                data_pic.put(None)
+                        line1.set_xdata(x)
+                        line1.set_ydata(y)
+                        line1.axes.set_xlim(min(x), max(x))
+                        line1.axes.set_ylim(min(y), max(y))
+                        draw()
+
+                        i += 100
+                        if i > 5000 : break
+                        sleep(0.1)
 
 
 def main():
@@ -93,4 +84,5 @@ if __name__ == '__main__' :
                 pass
         except:
                 print_exc()
+
 
