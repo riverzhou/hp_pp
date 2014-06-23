@@ -60,6 +60,11 @@ class data_creater(Thread):
                         x.append(i)
                         y.append(i*i)
 
+                        #if len(x) >= 10 : del(x[0])
+                        #if len(y) >= 10 : del(y[0])
+
+                        #print(x,y)
+
                         line1.set_xdata(x)
                         line1.set_ydata(y)
                         line1.axes.set_xlim(min(x), max(x))
