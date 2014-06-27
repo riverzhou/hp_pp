@@ -29,7 +29,7 @@ class Console():
 
 
                 self.Frame1 = Frame (master)
-                self.Frame1.place(relx=0.05,rely=0.04,relheight=0.2,relwidth=0.9)
+                self.Frame1.place(relx=0.03,rely=0.01,relheight=0.31,relwidth=0.94)
                 self.Frame1.configure(relief=GROOVE)
                 self.Frame1.configure(borderwidth="2")
                 self.Frame1.configure(relief=GROOVE)
@@ -39,7 +39,7 @@ class Console():
                 self.Frame1.configure(width=595)
 
                 self.Frame6 = Frame (self.Frame1)
-                self.Frame6.place(relx=0.39,rely=0.14,relheight=0.72,relwidth=0.58)
+                self.Frame6.place(relx=0.39,rely=0.09,relheight=0.36,relwidth=0.58)
                 self.Frame6.configure(relief=GROOVE)
                 self.Frame6.configure(borderwidth="2")
                 self.Frame6.configure(relief=GROOVE)
@@ -49,7 +49,7 @@ class Console():
                 self.Frame6.configure(width=345)
 
                 self.input_bidno = Entry (self.Frame6)
-                self.input_bidno.place(relx=0.41,rely=0.19,relheight=0.26,relwidth=0.24)
+                self.input_bidno.place(relx=0.09,rely=0.47,relheight=0.32,relwidth=0.24)
 
                 self.input_bidno.configure(background="white")
                 self.input_bidno.configure(disabledforeground="#a3a3a3")
@@ -63,7 +63,7 @@ class Console():
                 self.input_bidno.configure(selectforeground="black")
 
                 self.input_passwd = Entry (self.Frame6)
-                self.input_passwd.place(relx=0.41,rely=0.57,relheight=0.26
+                self.input_passwd.place(relx=0.41,rely=0.47,relheight=0.32
                         ,relwidth=0.24)
                 self.input_passwd.configure(background="white")
                 self.input_passwd.configure(disabledforeground="#a3a3a3")
@@ -76,43 +76,8 @@ class Console():
                 self.input_passwd.configure(selectbackground="#c4c4c4")
                 self.input_passwd.configure(selectforeground="black")
 
-                self.button_login = Button (self.Frame6)
-                self.button_login.place(relx=0.72,rely=0.57,height=28,width=81)
-                self.button_login.configure(activebackground="#d9d9d9")
-                self.button_login.configure(activeforeground="#000000")
-                self.button_login.configure(background=_bgcolor)
-                self.button_login.configure(disabledforeground="#a3a3a3")
-                self.button_login.configure(foreground="#000000")
-                self.button_login.configure(highlightbackground="#d9d9d9")
-                self.button_login.configure(highlightcolor="black")
-                self.button_login.configure(pady="0")
-                self.button_login.configure(text='''登录''')
-                self.button_login.bind('<Button-1>',self.proc_login)
-
-                self.Label7 = Label (self.Frame6)
-                self.Label7.place(relx=0.14,rely=0.19,height=23,width=40)
-                self.Label7.configure(activebackground="#f9f9f9")
-                self.Label7.configure(activeforeground="black")
-                self.Label7.configure(background=_bgcolor)
-                self.Label7.configure(disabledforeground="#a3a3a3")
-                self.Label7.configure(foreground="#000000")
-                self.Label7.configure(highlightbackground="#d9d9d9")
-                self.Label7.configure(highlightcolor="black")
-                self.Label7.configure(text='''账号''')
-
-                self.Label8 = Label (self.Frame6)
-                self.Label8.place(relx=0.14,rely=0.57,height=23,width=40)
-                self.Label8.configure(activebackground="#f9f9f9")
-                self.Label8.configure(activeforeground="black")
-                self.Label8.configure(background=_bgcolor)
-                self.Label8.configure(disabledforeground="#a3a3a3")
-                self.Label8.configure(foreground="#000000")
-                self.Label8.configure(highlightbackground="#d9d9d9")
-                self.Label8.configure(highlightcolor="black")
-                self.Label8.configure(text='''密码''')
-
                 self.check_use_group2 = Checkbutton (self.Frame6)
-                self.check_use_group2.place(relx=0.72,rely=0.19,relheight=0.26
+                self.check_use_group2.place(relx=0.72,rely=0.12,relheight=0.33
                         ,relwidth=0.23)
                 self.check_use_group2.configure(activebackground="#d9d9d9")
                 self.check_use_group2.configure(activeforeground="#000000")
@@ -124,8 +89,127 @@ class Console():
                 self.check_use_group2.configure(text='''使用组2''')
                 self.check_use_group2.configure(variable=self.var_use_group2)
 
+                self.button_ssl_login = Button (self.Frame6)
+                self.button_ssl_login.place(relx=0.72,rely=0.47,height=28,width=81)
+                self.button_ssl_login.configure(activebackground="#d9d9d9")
+                self.button_ssl_login.configure(activeforeground="#000000")
+                self.button_ssl_login.configure(background=_bgcolor)
+                self.button_ssl_login.configure(disabledforeground="#a3a3a3")
+                self.button_ssl_login.configure(foreground="#000000")
+                self.button_ssl_login.configure(highlightbackground="#d9d9d9")
+                self.button_ssl_login.configure(highlightcolor="black")
+                self.button_ssl_login.configure(pady="0")
+                self.button_ssl_login.configure(text='''SSL登录''')
+                self.button_ssl_login.bind('<Button-1>',self.proc_ssl_login)
+
+                self.Label1 = Label (self.Frame6)
+                self.Label1.place(relx=0.14,rely=0.12,height=23,width=47)
+                self.Label1.configure(activebackground="#f9f9f9")
+                self.Label1.configure(activeforeground="black")
+                self.Label1.configure(background=_bgcolor)
+                self.Label1.configure(disabledforeground="#a3a3a3")
+                self.Label1.configure(foreground="#000000")
+                self.Label1.configure(highlightbackground="#d9d9d9")
+                self.Label1.configure(highlightcolor="black")
+                self.Label1.configure(text='''账号''')
+
+                self.Label5 = Label (self.Frame6)
+                self.Label5.place(relx=0.46,rely=0.12,height=23,width=47)
+                self.Label5.configure(activebackground="#f9f9f9")
+                self.Label5.configure(activeforeground="black")
+                self.Label5.configure(background=_bgcolor)
+                self.Label5.configure(disabledforeground="#a3a3a3")
+                self.Label5.configure(foreground="#000000")
+                self.Label5.configure(highlightbackground="#d9d9d9")
+                self.Label5.configure(highlightcolor="black")
+                self.Label5.configure(text='''密码''')
+
+                self.Frame26 = Frame (self.Frame1)
+                self.Frame26.place(relx=0.39,rely=0.51,relheight=0.4,relwidth=0.58)
+                self.Frame26.configure(relief=GROOVE)
+                self.Frame26.configure(borderwidth="2")
+                self.Frame26.configure(relief=GROOVE)
+                self.Frame26.configure(background=_bgcolor)
+                self.Frame26.configure(highlightbackground="#d9d9d9")
+                self.Frame26.configure(highlightcolor="black")
+                self.Frame26.configure(width=345)
+
+                self.input_udp_bidno = Entry (self.Frame26)
+                self.input_udp_bidno.place(relx=0.23,rely=0.11,relheight=0.28
+                        ,relwidth=0.42)
+                self.input_udp_bidno.configure(background="white")
+                self.input_udp_bidno.configure(disabledforeground="#a3a3a3")
+                self.input_udp_bidno.configure(font="TkFixedFont")
+                self.input_udp_bidno.configure(foreground="#000000")
+                self.input_udp_bidno.configure(highlightbackground="#d9d9d9")
+                self.input_udp_bidno.configure(highlightcolor="black")
+                self.input_udp_bidno.configure(insertbackground="black")
+                self.input_udp_bidno.configure(justify=RIGHT)
+                self.input_udp_bidno.configure(selectbackground="#c4c4c4")
+                self.input_udp_bidno.configure(selectforeground="black")
+
+                self.input_udp_pid = Entry (self.Frame26)
+                self.input_udp_pid.place(relx=0.23,rely=0.53,relheight=0.28
+                        ,relwidth=0.42)
+                self.input_udp_pid.configure(background="white")
+                self.input_udp_pid.configure(disabledforeground="#a3a3a3")
+                self.input_udp_pid.configure(font="TkFixedFont")
+                self.input_udp_pid.configure(foreground="#000000")
+                self.input_udp_pid.configure(highlightbackground="#d9d9d9")
+                self.input_udp_pid.configure(highlightcolor="black")
+                self.input_udp_pid.configure(insertbackground="black")
+                self.input_udp_pid.configure(justify=RIGHT)
+                self.input_udp_pid.configure(selectbackground="#c4c4c4")
+                self.input_udp_pid.configure(selectforeground="black")
+
+                self.button_udp_login = Button (self.Frame26)
+                self.button_udp_login.place(relx=0.72,rely=0.53,height=27,width=81)
+                self.button_udp_login.configure(activebackground="#d9d9d9")
+                self.button_udp_login.configure(activeforeground="#000000")
+                self.button_udp_login.configure(background=_bgcolor)
+                self.button_udp_login.configure(disabledforeground="#a3a3a3")
+                self.button_udp_login.configure(foreground="#000000")
+                self.button_udp_login.configure(highlightbackground="#d9d9d9")
+                self.button_udp_login.configure(highlightcolor="black")
+                self.button_udp_login.configure(pady="0")
+                self.button_udp_login.configure(text='''UDP登录''')
+                self.button_udp_login.bind('<Button-1>',self.proc_udp_login)
+
+                self.Label6 = Label (self.Frame26)
+                self.Label6.place(relx=0.06,rely=0.11,height=33,width=57)
+                self.Label6.configure(activebackground="#f9f9f9")
+                self.Label6.configure(activeforeground="black")
+                self.Label6.configure(background=_bgcolor)
+                self.Label6.configure(disabledforeground="#a3a3a3")
+                self.Label6.configure(foreground="#000000")
+                self.Label6.configure(highlightbackground="#d9d9d9")
+                self.Label6.configure(highlightcolor="black")
+                self.Label6.configure(text='''BID''')
+
+                self.Label7 = Label (self.Frame26)
+                self.Label7.place(relx=0.06,rely=0.53,height=33,width=57)
+                self.Label7.configure(activebackground="#f9f9f9")
+                self.Label7.configure(activeforeground="black")
+                self.Label7.configure(background=_bgcolor)
+                self.Label7.configure(disabledforeground="#a3a3a3")
+                self.Label7.configure(foreground="#000000")
+                self.Label7.configure(highlightbackground="#d9d9d9")
+                self.Label7.configure(highlightcolor="black")
+                self.Label7.configure(text='''PID''')
+
+                self.output_udp_status = Message (self.Frame26)
+                self.output_udp_status.place(relx=0.72,rely=0.11,relheight=0.35
+                        ,relwidth=0.23)
+                self.output_udp_status.configure(background=_bgcolor)
+                self.output_udp_status.configure(foreground="#000000")
+                self.output_udp_status.configure(highlightbackground="#d9d9d9")
+                self.output_udp_status.configure(highlightcolor="black")
+                self.output_udp_status.configure(justify=CENTER)
+                self.output_udp_status.configure(text='''未登录''')
+                self.output_udp_status.configure(width=81)
+
                 self.Frame7 = Frame (self.Frame1)
-                self.Frame7.place(relx=0.03,rely=0.14,relheight=0.72,relwidth=0.31)
+                self.Frame7.place(relx=0.03,rely=0.09,relheight=0.36,relwidth=0.31)
                 self.Frame7.configure(relief=GROOVE)
                 self.Frame7.configure(borderwidth="2")
                 self.Frame7.configure(relief=GROOVE)
@@ -134,29 +218,38 @@ class Console():
                 self.Frame7.configure(highlightcolor="black")
                 self.Frame7.configure(width=185)
 
-                self.Frame10 = Frame (self.Frame7)
-                self.Frame10.place(relx=0.22,rely=0.29,relheight=0.52,relwidth=0.51)
+                self.output_login_status = Message (self.Frame7)
+                self.output_login_status.place(relx=0.11,rely=0.24,relheight=0.53
+                        ,relwidth=0.79)
+                self.output_login_status.configure(background=_bgcolor)
+                self.output_login_status.configure(foreground="#000000")
+                self.output_login_status.configure(highlightbackground="#d9d9d9")
+                self.output_login_status.configure(highlightcolor="black")
+                self.output_login_status.configure(text='''未登录''')
+                self.output_login_status.configure(width=147)
+
+                self.Frame10 = Frame (self.Frame1)
+                self.Frame10.place(relx=0.03,rely=0.51,relheight=0.4,relwidth=0.31)
                 self.Frame10.configure(relief=GROOVE)
                 self.Frame10.configure(borderwidth="2")
                 self.Frame10.configure(relief=GROOVE)
                 self.Frame10.configure(background=_bgcolor)
                 self.Frame10.configure(highlightbackground="#d9d9d9")
                 self.Frame10.configure(highlightcolor="black")
-                self.Frame10.configure(width=95)
+                self.Frame10.configure(width=185)
 
-                self.output_login_status = Message (self.Frame10)
-                self.output_login_status.place(relx=0.11,rely=0.18,relheight=0.64
-                        ,relwidth=0.81)
-                self.output_login_status.configure(background=_bgcolor)
-                self.output_login_status.configure(foreground="#000000")
-                self.output_login_status.configure(highlightbackground="#d9d9d9")
-                self.output_login_status.configure(highlightcolor="black")
-                self.output_login_status.configure(justify=CENTER)
-                self.output_login_status.configure(text='''未登录''')
-                self.output_login_status.configure(width=77)
+                self.output_bid_status = Message (self.Frame10)
+                self.output_bid_status.place(relx=0.11,rely=0.21,relheight=0.58
+                        ,relwidth=0.79)
+                self.output_bid_status.configure(background=_bgcolor)
+                self.output_bid_status.configure(foreground="#000000")
+                self.output_bid_status.configure(highlightbackground="#d9d9d9")
+                self.output_bid_status.configure(highlightcolor="black")
+                self.output_bid_status.configure(text='''无拍卖会''')
+                self.output_bid_status.configure(width=147)
 
                 self.Frame3 = Frame (master)
-                self.Frame3.place(relx=0.05,rely=0.26,relheight=0.36,relwidth=0.9)
+                self.Frame3.place(relx=0.03,rely=0.34,relheight=0.35,relwidth=0.94)
                 self.Frame3.configure(relief=GROOVE)
                 self.Frame3.configure(borderwidth="2")
                 self.Frame3.configure(relief=GROOVE)
@@ -493,7 +586,7 @@ class Console():
                 self.button_price_connect.bind('<Button-1>',self.proc_price_connect)
 
                 self.Frame5 = Frame (master)
-                self.Frame5.place(relx=0.05,rely=0.64,relheight=0.32,relwidth=0.9)
+                self.Frame5.place(relx=0.03,rely=0.71,relheight=0.28,relwidth=0.94)
                 self.Frame5.configure(relief=GROOVE)
                 self.Frame5.configure(borderwidth="2")
                 self.Frame5.configure(relief=GROOVE)
@@ -503,7 +596,7 @@ class Console():
                 self.Frame5.configure(width=595)
 
                 self.Frame2 = Frame (self.Frame5)
-                self.Frame2.place(relx=0.39,rely=0.09,relheight=0.83,relwidth=0.58)
+                self.Frame2.place(relx=0.39,rely=0.09,relheight=0.81,relwidth=0.58)
                 self.Frame2.configure(relief=GROOVE)
                 self.Frame2.configure(borderwidth="2")
                 self.Frame2.configure(relief=GROOVE)
@@ -513,7 +606,7 @@ class Console():
                 self.Frame2.configure(width=345)
 
                 self.input_image_price = Entry (self.Frame2)
-                self.input_image_price.place(relx=0.41,rely=0.21,relheight=0.14
+                self.input_image_price.place(relx=0.41,rely=0.17,relheight=0.15
                         ,relwidth=0.24)
                 self.input_image_price.configure(background="white")
                 self.input_image_price.configure(disabledforeground="#a3a3a3")
@@ -527,7 +620,7 @@ class Console():
                 self.input_image_price.configure(selectforeground="black")
 
                 self.input_image_decode = Entry (self.Frame2)
-                self.input_image_decode.place(relx=0.41,rely=0.67,relheight=0.14
+                self.input_image_decode.place(relx=0.41,rely=0.69,relheight=0.15
                         ,relwidth=0.24)
                 self.input_image_decode.configure(background="white")
                 self.input_image_decode.configure(disabledforeground="#a3a3a3")
@@ -541,7 +634,7 @@ class Console():
                 self.input_image_decode.configure(selectforeground="black")
 
                 self.button_image_price = Button (self.Frame2)
-                self.button_image_price.place(relx=0.72,rely=0.21,height=28,width=81)
+                self.button_image_price.place(relx=0.72,rely=0.17,height=28,width=81)
                 self.button_image_price.configure(activebackground="#d9d9d9")
                 self.button_image_price.configure(activeforeground="#000000")
                 self.button_image_price.configure(background=_bgcolor)
@@ -554,7 +647,7 @@ class Console():
                 self.button_image_price.bind('<Button-1>',self.proc_image_price)
 
                 self.button_image_decode = Button (self.Frame2)
-                self.button_image_decode.place(relx=0.72,rely=0.67,height=28,width=81)
+                self.button_image_decode.place(relx=0.72,rely=0.69,height=28,width=81)
                 self.button_image_decode.configure(activebackground="#d9d9d9")
                 self.button_image_decode.configure(activeforeground="#000000")
                 self.button_image_decode.configure(background=_bgcolor)
@@ -567,7 +660,7 @@ class Console():
                 self.button_image_decode.bind('<Button-1>',self.proc_image_decode)
 
                 self.Frame19 = Frame (self.Frame2)
-                self.Frame19.place(relx=0.07,rely=0.21,relheight=0.18,relwidth=0.25)
+                self.Frame19.place(relx=0.09,rely=0.17,relheight=0.2,relwidth=0.25)
                 self.Frame19.configure(relief=GROOVE)
                 self.Frame19.configure(borderwidth="2")
                 self.Frame19.configure(relief=GROOVE)
@@ -588,7 +681,7 @@ class Console():
                 self.output_last_price.configure(width=77)
 
                 self.output_image = Label (self.Frame2)
-                self.output_image.place(relx=0.03,rely=0.62,height=53,width=120)
+                self.output_image.place(relx=0.03,rely=0.63,height=43,width=120)
                 self.output_image.configure(activebackground="#f9f9f9")
                 self.output_image.configure(activeforeground="black")
                 self.output_image.configure(background=_bgcolor)
@@ -597,9 +690,10 @@ class Console():
                 self.output_image.configure(highlightbackground="#d9d9d9")
                 self.output_image.configure(highlightcolor="black")
                 self.output_image.configure(text='''图片''')
+                self.output_image.configure(width=120)
 
                 self.Frame25 = Frame (self.Frame2)
-                self.Frame25.place(relx=0.41,rely=0.44,relheight=0.18,relwidth=0.25)
+                self.Frame25.place(relx=0.41,rely=0.4,relheight=0.2,relwidth=0.25)
                 self.Frame25.configure(relief=GROOVE)
                 self.Frame25.configure(borderwidth="2")
                 self.Frame25.configure(relief=GROOVE)
@@ -620,7 +714,7 @@ class Console():
                 self.output_price_onway_work.configure(width=70)
 
                 self.Frame9 = Frame (self.Frame5)
-                self.Frame9.place(relx=0.03,rely=0.09,relheight=0.83,relwidth=0.31)
+                self.Frame9.place(relx=0.03,rely=0.09,relheight=0.81,relwidth=0.31)
                 self.Frame9.configure(relief=GROOVE)
                 self.Frame9.configure(borderwidth="2")
                 self.Frame9.configure(relief=GROOVE)
@@ -630,7 +724,7 @@ class Console():
                 self.Frame9.configure(width=185)
 
                 self.Label9 = Label (self.Frame9)
-                self.Label9.place(relx=0.05,rely=0.15,height=23,width=42)
+                self.Label9.place(relx=0.05,rely=0.17,height=23,width=42)
                 self.Label9.configure(activebackground="#f9f9f9")
                 self.Label9.configure(activeforeground="black")
                 self.Label9.configure(background=_bgcolor)
@@ -652,7 +746,7 @@ class Console():
                 self.Label10.configure(text='''第二次''')
 
                 self.Label11 = Label (self.Frame9)
-                self.Label11.place(relx=0.05,rely=0.77,height=23,width=42)
+                self.Label11.place(relx=0.05,rely=0.74,height=23,width=42)
                 self.Label11.configure(activebackground="#f9f9f9")
                 self.Label11.configure(activeforeground="black")
                 self.Label11.configure(background=_bgcolor)
@@ -663,7 +757,7 @@ class Console():
                 self.Label11.configure(text='''第三次''')
 
                 self.Frame15 = Frame (self.Frame9)
-                self.Frame15.place(relx=0.43,rely=0.1,relheight=0.18,relwidth=0.46)
+                self.Frame15.place(relx=0.43,rely=0.11,relheight=0.2,relwidth=0.46)
                 self.Frame15.configure(relief=GROOVE)
                 self.Frame15.configure(borderwidth="2")
                 self.Frame15.configure(relief=GROOVE)
@@ -683,7 +777,7 @@ class Console():
                 self.output_first_price.configure(width=67)
 
                 self.Frame16 = Frame (self.Frame9)
-                self.Frame16.place(relx=0.43,rely=0.41,relheight=0.18,relwidth=0.46)
+                self.Frame16.place(relx=0.43,rely=0.4,relheight=0.2,relwidth=0.46)
                 self.Frame16.configure(relief=GROOVE)
                 self.Frame16.configure(borderwidth="2")
                 self.Frame16.configure(relief=GROOVE)
@@ -703,7 +797,7 @@ class Console():
                 self.output_second_price.configure(width=67)
 
                 self.Frame17 = Frame (self.Frame9)
-                self.Frame17.place(relx=0.43,rely=0.72,relheight=0.18,relwidth=0.46)
+                self.Frame17.place(relx=0.43,rely=0.69,relheight=0.2,relwidth=0.46)
                 self.Frame17.configure(relief=GROOVE)
                 self.Frame17.configure(borderwidth="2")
                 self.Frame17.configure(relief=GROOVE)
@@ -725,8 +819,12 @@ class Console():
 
 #------------------------------------------------------------------------------
 
-        def proc_login(self,p1):
-                print ('proc_login')
+        def proc_ssl_login(self,p1):
+                print ('proc_ssl_login')
+                sys.stdout.flush()
+
+        def proc_udp_login(self,p1):
+                print ('proc_udp_login')
                 sys.stdout.flush()
 
         def proc_image_connect(self,p1):
