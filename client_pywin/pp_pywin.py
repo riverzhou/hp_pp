@@ -217,8 +217,10 @@ class cmd_proc(pp_sender):
                         'logout':               self.proc_logout,
                         'ssl_login':            self.proc_ssl_login,
                         'udp_login':            self.proc_udp_login,
-                        'image_connect':        self.proc_image_connect,
-                        'price_connect':        self.proc_price_connect,
+                        'image_channel_connect':self.proc_image_channel_connect,
+                        'price_channel_connect':self.proc_price_channel_connect,
+                        'image_channel_stop':   self.proc_image_channel_stop,
+                        'price_channel_stop':   self.proc_price_channel_stop,
                         'image_channel':        self.proc_image_channel,
                         'price_channel':        self.proc_price_channel,
                         'image_price':          self.proc_image_price,
@@ -240,13 +242,21 @@ class cmd_proc(pp_sender):
                 except:
                         print_exc()
 
-        def proc_image_connect(self, key_val):
+        def proc_image_channel_connect(self, key_val):
                 global proc_ssl_image
                 proc_ssl_image.set_pool_start()
 
-        def proc_price_connect(self, key_val):
+        def proc_price_channel_connect(self, key_val):
                 global proc_ssl_price
                 proc_ssl_price.set_pool_start()
+
+        def proc_image_channel_stop(self, key_val):
+                global proc_ssl_image
+                proc_ssl_image.set_pool_stop()
+
+        def proc_price_channel_stop(self, key_val):
+                global proc_ssl_price
+                proc_ssl_price.set_pool_stop()
 
         def proc_image_channel(self, key_val):
                 global proc_ssl_image
@@ -288,7 +298,14 @@ class cmd_proc(pp_sender):
 class Console(Console):
         def __init__(self, master=None):
                 super(Console, self).__init__(master)
+
+                self.dict_image_button = {'C' : '连图片通道', 'S' : '停图片通道'}
+                self.dict_price_button = {'C' : '连价格通道', 'S' : '停价格通道'}
+                self.flag_image_button = None
+                self.flag_price_button = None
+
                 self.load_database()
+
                 self.cmd_proc = cmd_proc(self)
                 self.cmd_proc.start()
                 self.cmd_proc.wait_for_start()
@@ -306,6 +323,8 @@ class Console(Console):
                 self.lock_price3        = Lock()
                 self.lock_worker        = Lock()
                 self.lock_image         = Lock()
+                self.lock_image_button  = Lock()
+                self.lock_price_button  = Lock()
 
         def load_database(self):
                 global database
@@ -382,15 +401,53 @@ class Console(Console):
                 db['udp_pid']      = key_val['udp_pid']
                 self.save_database(db)
 
-        def proc_image_connect(self,p1):
+        def proc_image_channel_stop(self):
                 key_val = {}
-                key_val['cmd']    = 'image_connect'
+                key_val['cmd']    = 'image_channel_stop'
                 self.cmd_proc.put(key_val)
 
-        def proc_price_connect(self,p1):
+        def proc_price_channel_stop(self):
                 key_val = {}
-                key_val['cmd']    = 'price_connect'
+                key_val['cmd']    = 'price_channel_stop'
                 self.cmd_proc.put(key_val)
+
+        def proc_image_channel_connect(self):
+                key_val = {}
+                key_val['cmd']    = 'image_channel_connect'
+                self.cmd_proc.put(key_val)
+
+        def proc_price_channel_connect(self):
+                key_val = {}
+                key_val['cmd']    = 'price_channel_connect'
+                self.cmd_proc.put(key_val)
+
+        def proc_image_connect(self,p1):
+                self.lock_image_button.acquire()
+                if self.flag_image_button == 'C' or self.flag_image_button == None:
+                        self.proc_image_channel_connect()
+                        self.flag_image_button = 'S'
+                        self.update_image_button('S')
+                elif self.flag_image_button == 'S':
+                        self.proc_image_channel_stop()
+                        self.flag_image_button = 'C'
+                        self.update_image_button('C')
+                else:
+                        logger.error('image button status error')
+                self.lock_image_button.release()
+
+        def proc_price_connect(self,p1):
+                self.lock_price_button.acquire()
+                if self.flag_price_button == 'C' or self.flag_price_button == None:
+                        self.proc_price_channel_connect()
+                        self.flag_price_button = 'S'
+                        self.update_price_button('S')
+                elif self.flag_price_button == 'S':
+                        self.proc_price_channel_stop()
+                        self.flag_price_button = 'C'
+                        self.update_price_button('C')
+                else:
+                        logger.error('price button status error')
+                self.lock_price_button.release()
 
         def proc_image_channel(self,p1):
                 key_val = {}
@@ -436,6 +493,24 @@ class Console(Console):
         #-------------------------------------
         # 回调接口
         #-------------------------------------
+
+        def update_image_button(self, info):
+                try:
+                        info = self.dict_image_button[info]
+                except:
+                        print_exc()
+                        return
+                self.button_image_connect['text']   = info
+                self.button_image_connect.update_idletasks()
+
+        def update_price_button(self, info):
+                try:
+                        info = self.dict_price_button[info]
+                except:
+                        print_exc()
+                        return
+                self.button_price_connect['text']   = info
+                self.button_price_connect.update_idletasks()
 
         def update_login_status(self, info):
                 self.lock_login_status.acquire()

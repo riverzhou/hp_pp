@@ -390,6 +390,9 @@ class ssl_image_sender(ssl_sender):
                 self.maker.start()
                 self.maker.wait_for_start()
 
+        def set_pool_stop(self):
+                self.flag_start_pool = False
+
         def set_pool_start(self):
                 self.flag_start_pool = True
 
@@ -510,6 +513,9 @@ class ssl_price_sender(ssl_sender):
                 self.maker  = ssl_price_pool_maker(self, 'ssl_price_pool_maker')
                 self.maker.start()
                 self.maker.wait_for_start()
+
+        def set_pool_stop(self):
+                self.flag_start_pool = False
 
         def set_pool_start(self):
                 self.flag_start_pool = True
