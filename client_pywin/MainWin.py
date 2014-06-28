@@ -269,7 +269,7 @@ class Console():
                 self.Frame8.configure(width=185)
 
                 self.Label2 = Label (self.Frame8)
-                self.Label2.place(relx=0.05,rely=0.18,height=23,width=54)
+                self.Label2.place(relx=0.05,rely=0.13,height=33,width=64)
                 self.Label2.configure(activebackground="#f9f9f9")
                 self.Label2.configure(activeforeground="black")
                 self.Label2.configure(background=_bgcolor)
@@ -278,9 +278,10 @@ class Console():
                 self.Label2.configure(highlightbackground="#d9d9d9")
                 self.Label2.configure(highlightcolor="black")
                 self.Label2.configure(text='''变价时间''')
+                self.Label2.configure(width=64)
 
                 self.Label3 = Label (self.Frame8)
-                self.Label3.place(relx=0.05,rely=0.49,height=23,width=54)
+                self.Label3.place(relx=0.05,rely=0.44,height=33,width=64)
                 self.Label3.configure(activebackground="#f9f9f9")
                 self.Label3.configure(activeforeground="black")
                 self.Label3.configure(background=_bgcolor)
@@ -289,9 +290,10 @@ class Console():
                 self.Label3.configure(highlightbackground="#d9d9d9")
                 self.Label3.configure(highlightcolor="black")
                 self.Label3.configure(text='''系统时间''')
+                self.Label3.configure(width=64)
 
                 self.Label4 = Label (self.Frame8)
-                self.Label4.place(relx=0.05,rely=0.8,height=23,width=54)
+                self.Label4.place(relx=0.05,rely=0.76,height=33,width=64)
                 self.Label4.configure(activebackground="#f9f9f9")
                 self.Label4.configure(activeforeground="black")
                 self.Label4.configure(background=_bgcolor)
@@ -300,6 +302,7 @@ class Console():
                 self.Label4.configure(highlightbackground="#d9d9d9")
                 self.Label4.configure(highlightcolor="black")
                 self.Label4.configure(text='''当前价格''')
+                self.Label4.configure(width=64)
 
                 self.Frame11 = Frame (self.Frame8)
                 self.Frame11.place(relx=0.43,rely=0.13,relheight=0.16,relwidth=0.46)
@@ -690,10 +693,9 @@ class Console():
                 self.output_image.configure(highlightbackground="#d9d9d9")
                 self.output_image.configure(highlightcolor="black")
                 self.output_image.configure(text='''图片''')
-                self.output_image.configure(width=120)
 
                 self.Frame25 = Frame (self.Frame2)
-                self.Frame25.place(relx=0.41,rely=0.4,relheight=0.2,relwidth=0.25)
+                self.Frame25.place(relx=0.41,rely=0.43,relheight=0.2,relwidth=0.25)
                 self.Frame25.configure(relief=GROOVE)
                 self.Frame25.configure(borderwidth="2")
                 self.Frame25.configure(relief=GROOVE)
@@ -724,7 +726,7 @@ class Console():
                 self.Frame9.configure(width=185)
 
                 self.Label9 = Label (self.Frame9)
-                self.Label9.place(relx=0.05,rely=0.17,height=23,width=42)
+                self.Label9.place(relx=0.11,rely=0.11,height=33,width=42)
                 self.Label9.configure(activebackground="#f9f9f9")
                 self.Label9.configure(activeforeground="black")
                 self.Label9.configure(background=_bgcolor)
@@ -733,9 +735,10 @@ class Console():
                 self.Label9.configure(highlightbackground="#d9d9d9")
                 self.Label9.configure(highlightcolor="black")
                 self.Label9.configure(text='''第一次''')
+                self.Label9.configure(width=42)
 
                 self.Label10 = Label (self.Frame9)
-                self.Label10.place(relx=0.05,rely=0.46,height=23,width=42)
+                self.Label10.place(relx=0.11,rely=0.4,height=33,width=42)
                 self.Label10.configure(activebackground="#f9f9f9")
                 self.Label10.configure(activeforeground="black")
                 self.Label10.configure(background=_bgcolor)
@@ -744,9 +747,10 @@ class Console():
                 self.Label10.configure(highlightbackground="#d9d9d9")
                 self.Label10.configure(highlightcolor="black")
                 self.Label10.configure(text='''第二次''')
+                self.Label10.configure(width=42)
 
                 self.Label11 = Label (self.Frame9)
-                self.Label11.place(relx=0.05,rely=0.74,height=23,width=42)
+                self.Label11.place(relx=0.11,rely=0.69,height=33,width=42)
                 self.Label11.configure(activebackground="#f9f9f9")
                 self.Label11.configure(activeforeground="black")
                 self.Label11.configure(background=_bgcolor)
@@ -755,6 +759,7 @@ class Console():
                 self.Label11.configure(highlightbackground="#d9d9d9")
                 self.Label11.configure(highlightcolor="black")
                 self.Label11.configure(text='''第三次''')
+                self.Label11.configure(width=42)
 
                 self.Frame15 = Frame (self.Frame9)
                 self.Frame15.place(relx=0.43,rely=0.11,relheight=0.2,relwidth=0.46)
