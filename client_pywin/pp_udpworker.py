@@ -146,7 +146,7 @@ class udp_worker(pp_thread):
                 code  = info_val['code']
 
                 if code == 'F':
-                        self.console.update_udp_status(datetime.strftime(datetime.now(), '%H:%M:%S'))
+                        if self.console != None : self.console.update_udp_status(datetime.strftime(datetime.now(), '%H:%M:%S'))
                         return
 
                 bidinfo = info_val['bidinfo']
@@ -175,9 +175,10 @@ class udp_worker(pp_thread):
                                 self.event_shot.set()
                         except:
                                 print_exc()
-                self.console.update_udp_info(ctime, stime, price)
 
-                self.console.update_bid_status(bidinfo)
+                if self.console != None : self.console.update_udp_info(ctime, stime, price)
+
+                if self.console != None : self.console.update_bid_status(bidinfo)
 
                 printer.warning(sorted(info_val.items()))
 
