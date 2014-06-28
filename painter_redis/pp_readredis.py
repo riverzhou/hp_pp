@@ -177,10 +177,21 @@ class redis_parser(pp_thread):
                 self.result_count_a += 1
 
         def write_result_b(self, result):
-                self.result_data_b[2].append(result[0])
-                self.result_data_b[1].append(result[1])
-                self.result_data_b[0].append(self.result_count_b)
-                self.result_count_b += 1
+                if len(self.result_data_b[2]) < 60:
+                        self.result_data_b[2].append(result[0])
+                else:
+                        del(self.result_data_b[2][0])
+                        self.result_data_b[2].append(result[0])
+
+                if len(self.result_data_b[1]) < 60:
+                        self.result_data_b[1].append(result[1])
+                else:
+                        del(self.result_data_b[1][0])
+                        self.result_data_b[1].append(result[1])
+
+                if self.result_count_b < 60:
+                        self.result_data_b[0].append(self.result_count_b)
+                        self.result_count_b += 1
 
         def send_result_a(self):
                 if self.output != None:
