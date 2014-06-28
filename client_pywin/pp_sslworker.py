@@ -201,6 +201,10 @@ class ssl_image_worker(ssl_worker):
                 #logger.debug(sorted(ack_val.items()))
                 logger.debug(ack_sid)
 
+                if self.flag_stop == True:
+                        logger.error('image ack recived but thread be stoped. Do not proc callback.')
+                        return
+
                 if callback != None : callback(ack_val)
 
 class ssl_price_worker(ssl_worker):
