@@ -139,6 +139,7 @@ class udp_worker(pp_thread):
                 if udp_recv == None:
                         return
 
+                udp_recv = self.proto.parse_decode(udp_recv)
                 info_val = self.proto.parse_ack(udp_recv)
                 if info_val == None:
                         return
