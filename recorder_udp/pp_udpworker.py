@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 
+from datetime       import datetime
 from traceback      import print_exc
 from socket         import socket, AF_INET, SOCK_DGRAM
 from socket         import timeout as sock_timeout
 from threading      import Lock
-from datetime       import datetime
-from os             import getcwd
 
 from pp_baseclass   import pp_thread
 from pp_udpproto    import udp_proto
@@ -14,6 +13,22 @@ from pp_server      import server_dict
 from pp_log         import logger, printer
 
 #=============================================================
+
+class price():
+        def __init__(self):
+                self.cur_price  = 0
+                self.lock_price = Lock()
+
+        def set(self, price):
+                self.lock_price.acquire()
+                try:
+                        self.current_price = int(price)
+                except:
+                        print_exc()
+                self.lock_price.release()
+
+        def get(self):
+                return self.current_price
 
 #-------------------------------------------------------------
 
@@ -25,14 +40,24 @@ class udp_format(pp_thread):
                 self.worker = worker
 
         def main(self):
-                while True:
-                        if self.flag_stop == True: break
+                for i in range(2):
+                        if self.flag_stop == True: return 
                         if self.worker.sock != None:
                                 try:
                                         self.worker.format_udp()
                                 except:
                                         print_exc()
-                        if self.event_stop.wait(self.interval) == True: break
+                        if self.event_stop.wait(1) == True: return 
+
+                while True:
+                        if self.flag_stop == True: return 
+                        if self.worker.sock != None:
+                                try:
+                                        self.worker.format_udp()
+                                except:
+                                        print_exc()
+                        if self.event_stop.wait(self.interval) == True: return 
+
 
 class udp_worker(pp_thread):
         udp_timeout = 10
@@ -59,8 +84,6 @@ class udp_worker(pp_thread):
                 logger.info('Client %s : login bind udp_sock @%s ' % (self.bidno, self.sock.getsockname()))
 
                 self.proto       = udp_proto()
-                self.fcount      = 0
-                self.path        = getcwd()
 
         def main(self):
                 self.udp_format = udp_format(self)
@@ -116,16 +139,48 @@ class udp_worker(pp_thread):
                 if udp_recv == None:
                         return
 
-                info = self.proto.decode(udp_recv)
-                self.write_to_file(info)
+                info_val = self.proto.parse_ack(udp_recv)
+                if info_val == None:
+                        return
 
-        def write_to_file(self, info):
-                if len(info) == 0 : return
-                self.fcount += 1
-                name = self.path + '/record/' + str(self.fcount) + '_' + datetime.strftime(datetime.now(), '%Y%m%d%H%M%S.%f') + '.txt'
-                f = open(name, 'wb')
-                f.write(info)
-                f.close()
+                code  = info_val['code']
+
+                if code == 'F':
+                        if self.console != None : self.console.update_udp_status(datetime.strftime(datetime.now(), '%H:%M:%S'))
+                        return
+
+                bidinfo = info_val['bidinfo']
+
+                if code == 'C':
+                        self.console.update_bid_status(bidinfo)
+                        return
+
+                printer.critical(udp_recv)
+
+                ctime = info_val['ltime']
+                stime = info_val['systime']
+                price = info_val['price']
+
+                try:
+                        int_price = int(price)
+                except:
+                        print_exc()
+                        return
+
+                global current_price
+                current_price.set(int_price)
+
+                if self.price_shot != 0 and self.event_shot != None and self.price_shot <= int_price  + 300 and self.price_shot >= int_price - 300:
+                        try:
+                                self.event_shot.set()
+                        except:
+                                print_exc()
+
+                if self.console != None : self.console.update_udp_info(ctime, stime, price)
+
+                if self.console != None : self.console.update_bid_status(bidinfo)
+
+                printer.warning(sorted(info_val.items()))
 
         def recv_udp(self):
                 while True:
@@ -145,21 +200,7 @@ class udp_worker(pp_thread):
 
 #==========================================================
 
-def main():
-        arg_val = {}
-        arg_val['bidno'] = '12345678'
-        arg_val['pid']   = '1234'
-        arg_val['group'] = 0
-        udp = udp_worker(None, arg_val)
-        udp.start()
-        udp.wait_for_start()
-        udp.join()
+current_price = price()
 
-if __name__ == '__main__' :
-        try:
-                main()
-        except KeyboardInterrupt:
-                pass
-        except:
-                print_exc()
+
 
