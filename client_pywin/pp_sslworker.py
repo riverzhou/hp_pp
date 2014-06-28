@@ -2,25 +2,24 @@
 
 #==========================================================
 
-from pp_log             import logger, printer
 from threading          import Thread, Event, Lock, Semaphore
 from queue              import Queue, LifoQueue, Empty
 from traceback          import print_exc
-
-from http.client        import HTTPSConnection, HTTPConnection
-from socket             import timeout as sock_timeout
 from time               import sleep
+from http.client        import HTTPSConnection, HTTPConnection
 
+from pp_log             import logger, printer
+from pp_config          import pywin_config
 from pp_baseclass       import pp_thread, pp_sender
 from pp_server          import server_dict
-from readini            import pywin_config
 from pp_udpworker       import current_price
 from pp_sslproto        import *
 
 #==========================================================
 
 class ssl_worker(pp_thread):
-        connect_timeout = 150
+        global pywin_config
+        session_timeout = int(pywin_config['thread_ssl_timeout'])
 
         def __init__(self, key_val, manager, info = '', delay = 0):
                 pp_thread.__init__(self, info)
@@ -62,7 +61,7 @@ class ssl_worker(pp_thread):
                                 continue
                         break
                 self.manager.feedback('connected', self.group, self)
-                ev = self.event_proc.wait(self.connect_timeout)
+                ev = self.event_proc.wait(self.session_timeout)
                 self.lock_close.acquire()
                 self.flag_closed = True
                 self.lock_close.release()
