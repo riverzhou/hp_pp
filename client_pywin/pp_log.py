@@ -8,7 +8,7 @@ from    datetime        import datetime
 from    redis           import StrictRedis
 from    traceback       import print_exc
 
-from    readini         import pywin_config
+from    pp_config       import pywin_config
 
 #=========================================================================================
 
