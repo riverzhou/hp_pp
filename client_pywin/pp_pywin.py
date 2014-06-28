@@ -299,8 +299,8 @@ class Console(Console):
         def __init__(self, master=None):
                 super(Console, self).__init__(master)
 
-                self.dict_image_button = {'C' : '连图片通道', 'S' : '停图片通道'}
-                self.dict_price_button = {'C' : '连价格通道', 'S' : '停价格通道'}
+                self.dict_image_button = {'C' : ('连图片通道','blue'), 'S' : ('停图片通道','red')}
+                self.dict_price_button = {'C' : ('连价格通道','blue'), 'S' : ('停价格通道','red')}
                 self.flag_image_button = None
                 self.flag_price_button = None
 
@@ -496,20 +496,26 @@ class Console(Console):
 
         def update_image_button(self, info):
                 try:
-                        info = self.dict_image_button[info]
+                        text  = self.dict_image_button[info][0]
+                        color = self.dict_image_button[info][1]
                 except:
                         print_exc()
                         return
-                self.button_image_connect['text']   = info
+                self.button_image_connect['text']               = text
+                self.button_image_connect['foreground']         = color
+                self.button_image_connect['activeforeground']   = color
                 self.button_image_connect.update_idletasks()
 
         def update_price_button(self, info):
                 try:
-                        info = self.dict_price_button[info]
+                        text  = self.dict_price_button[info][0]
+                        color = self.dict_price_button[info][1]
                 except:
                         print_exc()
                         return
-                self.button_price_connect['text']   = info
+                self.button_price_connect['text']               = text
+                self.button_price_connect['foreground']         = color
+                self.button_price_connect['activeforeground']   = color
                 self.button_price_connect.update_idletasks()
 
         def update_login_status(self, info):
