@@ -23,6 +23,8 @@ class foobar_logger():
 
         def critical(self,log): pass
 
+        def wait_for_flush(self): pass
+
 #-----------------------------------------------------------------------------------------
 
 class pp_thread(Thread):
