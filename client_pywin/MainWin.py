@@ -681,7 +681,7 @@ class Console():
                 self.output_last_price.configure(width=77)
 
                 self.output_image = Label (self.Frame2)
-                self.output_image.place(relx=0.03,rely=0.63,height=43,width=110)
+                self.output_image.place(relx=0.01,rely=0.63,height=43,width=120)
                 self.output_image.configure(activebackground="#f9f9f9")
                 self.output_image.configure(activeforeground="black")
                 self.output_image.configure(background=_bgcolor)
