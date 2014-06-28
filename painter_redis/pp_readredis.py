@@ -5,7 +5,7 @@ from    queue           import Queue, LifoQueue
 from    redis           import StrictRedis
 from    traceback       import print_exc
 from    pickle          import dumps, loads
-from    time            import sleep, time
+from    time            import sleep, time, localtime, mktime, strptime, strftime
 
 from    pp_baseclass    import pp_thread
 from    pp_config       import pp_config
@@ -88,25 +88,10 @@ class redis_parser(pp_thread):
                         print('unknow code')
 
         def sub_time(self, time2, time1):
-                h1 , m1, s1 = time1.split(':')
-                h2 , m2, s2 = time2.split(':')
-                h1 , m1, s1 = int(h1), int(m1), int(s1)
-                h2 , m2, s2 = int(h2), int(m2), int(s2)
-                return ((h2-h1)*3600 + (m2-m1)*60 + (s2-s1))
+                return int(mktime(strptime(time2, "%H:%M:%S"))) - int(mktime(strptime(time1, "%H:%M:%S")))
         
         def add_time(self, time):
-                h , m, s = time.split(':')
-                h , m, s = int(h), int(m), int(s)
-                s += 1
-                if s == 60 :
-                        s = 0
-                        m += 1
-                        if m == 60 :
-                                m = 0
-                                h += 1
-                                if h == 24 :
-                                        h = 0
-                return  ('%.2d:%.2d:%.2d' % (h,m,s))
+                return strftime("%H:%M:%S", localtime(int(mktime(strptime(time, "%H:%M:%S"))) + 1))
 
         def clear_data_a(self):
                 self.result_data_a = ([],[])
