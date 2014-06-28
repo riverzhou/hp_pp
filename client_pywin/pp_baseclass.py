@@ -40,7 +40,7 @@ class pp_thread(Thread):
                 self.event_started.set()
                 try:
                         self.main()
-                except KeyboardInterrupt:
+                except  KeyboardInterrupt:
                         pass
                 if self.thread_info != None : logger.debug('Thread %s : Id %s : %s : stoped' % (self.__class__.__name__, self.ident, self.thread_info))
 
@@ -63,7 +63,7 @@ class pp_sender(pp_thread):
         def get(self):
                 try:
                         return self.queue.get()
-                except KeyboardInterrupt:
+                except  KeyboardInterrupt:
                         raise KeyboardInterrupt
 
         def main(self):
@@ -89,7 +89,7 @@ class buff_sender(pp_sender):
                 try:
                         self.sock.sendall(buff)
                         return True
-                except KeyboardInterrupt:
+                except  KeyboardInterrupt:
                         raise KeyboardInterrupt
                 except:
                         print_exc()
