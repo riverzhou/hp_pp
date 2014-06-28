@@ -58,11 +58,13 @@ class redis_parser(pp_thread):
 
                 self.origin_data_a = []
                 self.origin_data_b = []
-                self.lock_data_a = Lock()
-                self.lock_data_b = Lock()
+                self.lock_data_a   = Lock()
+                self.lock_data_b   = Lock()
 
-                self.result_data_a = ([],[])
-                self.result_data_b = ([],[])
+                self.result_data_a  = ([],[],[])
+                self.result_data_b  = ([],[],[])
+                self.result_count_a = 0
+                self.result_count_b = 0
 
                 self.reader = redis_reader(self, 'redis_reader')
                 if self.reader == None : return None
@@ -94,10 +96,12 @@ class redis_parser(pp_thread):
                 return strftime("%H:%M:%S", localtime(int(mktime(strptime(time, "%H:%M:%S"))) + 1))
 
         def clear_data_a(self):
-                self.result_data_a = ([],[])
+                self.result_data_a  = ([],[],[])
+                self.result_count_a = 0
 
         def clear_data_b(self):
-                self.result_data_b = ([],[])
+                self.result_data_b  = ([],[],[])
+                self.result_count_b = 0
 
         def parse_data_a(self):
                 last_time   = None
@@ -109,7 +113,7 @@ class redis_parser(pp_thread):
                 self.lock_data_a.release()
                 for parse in data:
                         time   = parse['systime']
-                        number = parse['number']
+                        number = int(parse['number'])
                         if last_time == None :
                                 last_time   = time
                                 last_number = number
@@ -137,7 +141,7 @@ class redis_parser(pp_thread):
                 self.lock_data_b.release()
                 for parse in data:
                         time   = parse['systime']
-                        price  = parse['price']
+                        price  = int(parse['price'])
                         if last_time == None :
                                 last_time   = time
                                 last_price  = price
@@ -156,22 +160,28 @@ class redis_parser(pp_thread):
                         self.write_result_b((time, price))
 
         def write_result_a(self, result):
-                self.result_data_a[0].append(result[0])
+                self.result_data_a[2].append(result[0])
                 self.result_data_a[1].append(result[1])
+                self.result_data_a[0].append(self.result_count_a)
+                self.result_count_a += 1
 
         def write_result_b(self, result):
-                self.result_data_b[0].append(result[0])
+                self.result_data_b[2].append(result[0])
                 self.result_data_b[1].append(result[1])
+                self.result_data_b[0].append(self.result_count_b)
+                self.result_count_b += 1
 
         def send_result_a(self):
                 if self.output != None:
-                        self.output.put_a(self.result_data_a)
+                        #self.output.put_a(self.result_data_a)
+                        self.output.put(self.result_data_a)
                 else:
                         print(self.result_data_a)
 
         def send_result_b(self):
                 if self.output != None:
-                        self.output.put_b(self.result_data_b)
+                        #self.output.put_b(self.result_data_b)
+                        self.output.put(self.result_data_b)
                 else:
                         print(self.result_data_b)
 
