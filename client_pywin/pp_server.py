@@ -49,3 +49,12 @@ server_dict = {
         1 : pp_server_dict_2 ,
         }
 
+
+if __name__ == '__main__':
+        print('0:')
+        for key in sorted(server_dict[0]):
+                print('%s : %s ' % (key, server_dict[0][key]))
+        print('1:')
+        for key in sorted(server_dict[1]):
+                print('%s : %s ' % (key, server_dict[1][key]))
+
