@@ -172,12 +172,10 @@ class redis_logger():
                 redis_ip      = pp_config['redis_ip']
                 redis_db      = pp_config['redis_db']
                 try:
-                        red = StrictRedis(host = redis_ip, port = redis_port, password = redis_passwd, db = redis_db)
+                        return StrictRedis(host = redis_ip, port = redis_port, password = redis_passwd, db = redis_db)
                 except:
                         print_exc()
                         return None
-                else:
-                        return red
 
 #-----------------------------------------------------------------------------------------
 
