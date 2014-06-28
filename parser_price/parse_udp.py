@@ -54,10 +54,22 @@ def parse_info_b(info):
         info = info.split('^')
         return 'B',info[9],info[10],info[11]
 
+def parse_info_c(info):
+        p1 = info.find('<INFO>') + len('<INFO>')
+        p2 = info.find('</INFO>')
+        info = info[p1:p2]
+        #print(info)
+        return 'C', info
+
+def parse_info_unknow(info):
+        #print(info)
+        return 'F', info
+
 def parse_info(info):
         if '<TYPE>INFO</TYPE><INFO>A' in info : return parse_info_a(info)
         if '<TYPE>INFO</TYPE><INFO>B' in info : return parse_info_b(info)
-        return None
+        if '<TYPE>INFO</TYPE><INFO>C' in info : return parse_info_c(info)
+        return parse_info_unknow(info)
 
 def write_result_a_full(res, time, number):
         string = '%s - %s\n' % (time, number)
@@ -92,6 +104,12 @@ def write_result_a(res, time, number):
 def write_result_b(res, time, price):
         write_result_b_30(res, time, price)
         write_result_b_60(res, time, price)
+
+def write_result_c(res, string):
+        res['c'].write(string.encode())
+
+def write_result_f(res, string):
+        res['f'].write(string.encode())
 
 def proc_result_a(res, result):
         last_time   = None
@@ -143,17 +161,33 @@ def proc_result_b(res, result):
                 write_result_b(res, time, price)
         return True
 
+def proc_result_c(res, result):
+        for parse in result:
+                if parse[0] != 'C' : continue
+                write_result_c(res, parse[1])
+        return True
+
+def proc_result_f(res, result):
+        for parse in result:
+                if parse[0] != 'F' : continue
+                write_result_f(res, parse[1])
+        return True
+
 def parse_ack():
         ack             = open('udp.ack', 'rb')
         res_a_full      = open('a_full.res', 'wb')
         res_a_60        = open('a_60.res', 'wb')
         res_b_30        = open('b_30.res', 'wb')
         res_b_60        = open('b_60.res', 'wb')
+        res_c           = open('c.res', 'wb')
+        res_f           = open('f.res', 'wb')
         res             = {}
         res['a_full']   = res_a_full
         res['a_60']     = res_a_60
         res['b_30']     = res_b_30
         res['b_60']     = res_b_60
+        res['c']        = res_c
+        res['f']        = res_f
         result = []
         while True:
                 head = ack.read(4)
@@ -168,6 +202,8 @@ def parse_ack():
                 #if parse != None : print(parse)
         proc_result_a(res, result)
         proc_result_b(res, result)
+        proc_result_c(res, result)
+        proc_result_f(res, result)
         for key in res: res[key].close()
 
 if __name__ == '__main__' :
