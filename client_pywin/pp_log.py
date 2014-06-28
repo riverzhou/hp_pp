@@ -7,6 +7,7 @@ from    queue           import Queue, LifoQueue
 from    datetime        import datetime
 from    redis           import StrictRedis
 from    traceback       import print_exc
+from    pickle          import dumps, loads
 
 from    pp_config       import pp_config
 
@@ -121,30 +122,45 @@ class redis_logger():
                 self.redis_sender.start()
                 self.redis_sender.wait_for_start()
 
-        def debug(self, log):
+        def debug(self, log, bin=False):
                 if self.log_level > self.dict_log_level['debug']: return
                 time = datetime.strftime(datetime.now(), '%y-%m-%d %H:%M:%S.%f')
-                self.redis_sender.send(('debug',(time, log)))
+                if bin == True:
+                        self.redis_sender.send(('debug', dumps((time, log),0)))
+                else:
+                        self.redis_sender.send(('debug', (time, log)))
 
-        def info(self, log):
+        def info(self, log, bin=False):
                 if self.log_level > self.dict_log_level['info']: return
                 time = datetime.strftime(datetime.now(), '%y-%m-%d %H:%M:%S.%f')
-                self.redis_sender.send(('info',(time, log)))
+                if bin == True:
+                        self.redis_sender.send(('info', dumps((time, log),0)))
+                else:
+                        self.redis_sender.send(('info', (time, log)))
 
-        def warning(self, log):
+        def warning(self, log, bin=False):
                 if self.log_level > self.dict_log_level['warning']: return
                 time = datetime.strftime(datetime.now(), '%y-%m-%d %H:%M:%S.%f')
-                self.redis_sender.send(('warning',(time, log)))
+                if bin == True:
+                        self.redis_sender.send(('warning', dumps((time, log),0)))
+                else:
+                        self.redis_sender.send(('warning', (time, log)))
 
-        def error(self, log):
+        def error(self, log, bin=False):
                 if self.log_level > self.dict_log_level['error']: return
                 time = datetime.strftime(datetime.now(), '%y-%m-%d %H:%M:%S.%f')
-                self.redis_sender.send(('error',(time, log)))
+                if bin == True:
+                        self.redis_sender.send(('error', dumps((time, log),0)))
+                else:
+                        self.redis_sender.send(('error', (time, log)))
 
-        def critical(self, log):
+        def critical(self, log, bin=False):
                 if self.log_level > self.dict_log_level['critical']: return
                 time = datetime.strftime(datetime.now(), '%y-%m-%d %H:%M:%S.%f')
-                self.redis_sender.send(('critical',(time, log)))
+                if bin == True:
+                        self.redis_sender.send(('critical', dumps((time, log),0)))
+                else:
+                        self.redis_sender.send(('critical', (time, log)))
 
         def wait_for_flush(self):
                 self.redis_sender.queue.join()
