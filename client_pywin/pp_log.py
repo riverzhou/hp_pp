@@ -98,30 +98,49 @@ class redis_sender(pp_sender):
                         return False
 
 class redis_logger():
-        def __init__(self):
+        dict_log_level= {
+                        'all'      : 0,
+                        'debug'    : 10,
+                        'info'     : 20,
+                        'warning'  : 30,
+                        'error'    : 40,
+                        'critical' : 50,
+                        'null'     : 60,
+                        }
+        def __init__(self, level = 'debug'):
                 self.redis = self.connect_redis()
                 if self.redis == None : return None
+
+                level = level if level in self.dict_log_level else 'debug'
+
+                self.log_level = self.dict_log_level[level]
+
                 self.redis_sender = redis_sender(self.redis, 'redis_sender')
                 self.redis_sender.start()
                 self.redis_sender.wait_for_start()
 
         def debug(self, log):
+                if self.log_level > self.dict_log_level['debug']: return
                 time = datetime.strftime(datetime.now(), '%y-%m-%d %H:%M:%S.%f')
                 self.redis_sender.send(('debug',(time, log)))
 
         def info(self, log):
+                if self.log_level > self.dict_log_level['info']: return
                 time = datetime.strftime(datetime.now(), '%y-%m-%d %H:%M:%S.%f')
                 self.redis_sender.send(('info',(time, log)))
 
         def warning(self, log):
+                if self.log_level > self.dict_log_level['warning']: return
                 time = datetime.strftime(datetime.now(), '%y-%m-%d %H:%M:%S.%f')
                 self.redis_sender.send(('warning',(time, log)))
 
         def error(self, log):
+                if self.log_level > self.dict_log_level['error']: return
                 time = datetime.strftime(datetime.now(), '%y-%m-%d %H:%M:%S.%f')
                 self.redis_sender.send(('error',(time, log)))
 
         def critical(self, log):
+                if self.log_level > self.dict_log_level['critical']: return
                 time = datetime.strftime(datetime.now(), '%y-%m-%d %H:%M:%S.%f')
                 self.redis_sender.send(('critical',(time, log)))
 
