@@ -9,7 +9,7 @@ from time               import sleep
 from http.client        import HTTPSConnection, HTTPConnection
 
 from pp_log             import logger, printer
-from pp_config          import pywin_config
+from pp_config          import pp_config
 from pp_baseclass       import pp_thread, pp_sender
 from pp_server          import server_dict
 from pp_udpworker       import current_price
@@ -18,8 +18,8 @@ from pp_sslproto        import *
 #==========================================================
 
 class ssl_worker(pp_thread):
-        global pywin_config
-        session_timeout = int(pywin_config['thread_ssl_timeout'])
+        global pp_config
+        session_timeout = int(pp_config['thread_ssl_timeout'])
 
         def __init__(self, key_val, manager, info = '', delay = 0):
                 pp_thread.__init__(self, info)
@@ -370,8 +370,8 @@ class ssl_image_sender(ssl_sender):
 
         def __init__(self, info = '', lifo = False):
                 ssl_sender.__init__(self, info, lifo)
-                global pywin_config
-                self.pool_size = int(pywin_config['thread_image_size'])
+                global pp_config
+                self.pool_size = int(pp_config['thread_image_size'])
                 self.queue_workers      = (Queue(), Queue())
                 self.lock_worker_on_way = (Lock(), Lock())
                 self.worker_on_way      = [0,0]
@@ -495,8 +495,8 @@ class ssl_price_sender(ssl_sender):
 
         def __init__(self, info = '', lifo = False):
                 ssl_sender.__init__(self, info, lifo)
-                global pywin_config
-                self.pool_size = int(pywin_config['thread_price_size'])
+                global pp_config
+                self.pool_size = int(pp_config['thread_price_size'])
                 self.queue_workers      = (Queue(), Queue())
                 self.lock_worker_on_way = (Lock(), Lock())
                 self.worker_on_way      = [0,0]

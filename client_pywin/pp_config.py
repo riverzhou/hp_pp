@@ -21,7 +21,7 @@ def parse_ini():
 
         return key_val
 
-pywin_config = parse_ini()
+pp_config = parse_ini()
 
 if __name__ == '__main__' :
-        print(sorted(pywin_config.items()))
+        print(sorted(pp_config.items()))

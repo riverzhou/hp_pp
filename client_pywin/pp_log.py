@@ -8,7 +8,7 @@ from    datetime        import datetime
 from    redis           import StrictRedis
 from    traceback       import print_exc
 
-from    pp_config       import pywin_config
+from    pp_config       import pp_config
 
 #=========================================================================================
 
@@ -129,11 +129,11 @@ class redis_logger():
                 self.redis_sender.queue.join()
 
         def connect_redis(self):
-                global pywin_config
-                redis_passwd  = pywin_config['redis_pass']
-                redis_port    = pywin_config['redis_port']
-                redis_ip      = pywin_config['redis_ip']
-                redis_db      = pywin_config['redis_db']
+                global pp_config
+                redis_passwd  = pp_config['redis_pass']
+                redis_port    = pp_config['redis_port']
+                redis_ip      = pp_config['redis_ip']
+                redis_db      = pp_config['redis_db']
                 try:
                         red = StrictRedis(host = redis_ip, port = redis_port, password = redis_passwd, db = redis_db)
                 except:
