@@ -17,6 +17,7 @@ class udp_proto():
                 info = info.split('^')
                 key_val = {}
                 key_val['code']         = 'A'
+                key_val['bidinfo']      = '上半场'
                 key_val['systime']      = info[9]
                 key_val['price']        = info[11]
                 key_val['ltime']        = info[12]
@@ -30,15 +31,29 @@ class udp_proto():
                 info = info.split('^')
                 key_val = {}
                 key_val['code']         = 'B'
+                key_val['bidinfo']      = '下半场'
                 key_val['systime']      = info[9]
                 key_val['price']        = info[10]
                 key_val['ltime']        = info[11]
                 key_val['hprice']       = info[13]
                 return  key_val
 
+        def parse_info_c(self, info):
+                key_val = {}
+                key_val['code']         = 'C'
+                key_val['bidinfo']      = '无拍卖会'
+                return  key_val
+
+        def parse_info_f(self, info):
+                key_val = {}
+                key_val['code']         = 'F'
+                return  key_val
+
         def parse_info(self, info):
                 if '<TYPE>INFO</TYPE><INFO>A' in info : return self.parse_info_a(info)
                 if '<TYPE>INFO</TYPE><INFO>B' in info : return self.parse_info_b(info)
+                if '<TYPE>INFO</TYPE><INFO>C' in info : return self.parse_info_c(info)
+                if '<xml><TYPE>FORMAT</TYPE><INFO>' in info : return self.parse_info_f(info)
                 return None
 
         def parse_ack(self, buff) :

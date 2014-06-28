@@ -17,9 +17,51 @@ from MainWin            import Console
 
 #===========================================================
 
-class pp_client():
-        def __init__(self, console, key_val):
+class pp_udp():
+        def __init__(self, console, commander, key_val):
                 self.console                    = console
+                self.commander                  = commander
+                self.udp                        = [None, None]
+                self.info_val                   = {}
+                self.info_val['udp_bidno']      = key_val['udp_bidno']
+                self.info_val['udp_pid']        = key_val['udp_pid']
+
+        def login(self, key_val):
+                self.stop()
+
+                arg_val = ({},{})
+
+                arg_val[0]['bidno'] = self.info_val['udp_bidno']
+                arg_val[0]['pid']   = self.info_val['udp_pid']
+                arg_val[0]['group'] = 0
+
+                arg_val[1]['bidno'] = self.info_val['udp_bidno']
+                arg_val[1]['pid']   = self.info_val['udp_pid']
+                arg_val[1]['group'] = 1
+
+                self.udp[0] = udp_worker(self.console, arg_val[0])
+                self.udp[1] = udp_worker(self.console, arg_val[1])
+
+                self.start()
+
+        def reg(self, price_shot, event_shot):
+                self.udp[0].reg(price_shot, event_shot)
+                self.udp[1].reg(price_shot, event_shot)
+
+        def start(self):
+                if self.udp[0] != None :        self.udp[0].start()
+                if self.udp[1] != None :        self.udp[1].start()
+
+        def stop(self):
+                if self.udp[0] != None :        self.udp[0].stop()
+                if self.udp[1] != None :        self.udp[1].stop()
+                self.udp[0] = None
+                self.udp[1] = None
+
+class pp_client():
+        def __init__(self, console, commander, key_val):
+                self.console                    = console
+                self.commander                  = commander
                 self.machine                    = proto_machine()
                 self.udp                        = None
                 self.udp2                       = None
@@ -66,12 +108,6 @@ class pp_client():
                 self.lock_price_worker.release()
                 self.console.update_price_worker('%.2d : %.2d' % (worker[0], worker[1]))
 
-        def stop_udp(self):
-                if self.udp != None :           return self.udp.stop()
-
-        def stop_udp2(self):
-                if self.udp2 != None :          return self.udp2.stop()
-
         def login_ok(self, key_val):
                 if key_val == None :            return
                 if 'errcode' in key_val :
@@ -79,43 +115,13 @@ class pp_client():
                         return
 
                 self.lock_login_cb.acquire()
-
-                self.info_val['pid']            = key_val['pid']
-
-                self.stop_udp()
-                self.stop_udp2()
-
-                arg_val = {
-                        'bidno' : self.info_val['bidno'] ,
-                        'pid'   : self.info_val['pid'] ,
-                        'group' : 0 ,
-                        }
-                arg_val2 = {
-                        'bidno' : self.info_val['bidno'] ,
-                        'pid'   : self.info_val['pid'] ,
-                        'group' : 1 ,
-                        }
-
-                self.udp  = udp_worker(self.console, arg_val)
-                self.udp2 = udp_worker(self.console, arg_val2)
-
+                self.info_val['pid'] = key_val['pid']
+                udp_bidno = self.info_val['bidno']
+                udp_pid   = self.info_val['pid']
                 self.lock_login_cb.release()
 
-                self.udp.start()
-                self.udp2.start()
-                self.udp.wait_for_start(5)
-                self.udp2.wait_for_start(5)
-
-                try:
-                        self.udp.format_udp()
-                except:
-                        pass
-                try:
-                        self.udp2.format_udp()
-                except:
-                        pass
-
                 self.console.update_login_status(key_val['name'])
+                self.console.update_udp_input(udp_bidno, udp_pid)
 
         def login(self, key_val):
                 global proc_ssl_login
@@ -173,8 +179,10 @@ class pp_client():
                 self.info_val['shot_price']     = self.info_val['last_price']
                 self.info_val['image_decode']   = key_val['image']
                 self.event_shot.clear()
-                self.udp.reg(self.info_val['shot_price'], self.event_shot)
-                self.udp2.reg(self.info_val['shot_price'], self.event_shot)
+                if self.commander.udp != None : 
+                        self.commander.udp.reg(self.info_val['shot_price'], self.event_shot)
+                else:
+                        logger.error('commander.udp == None')
                 try:
                         arg_val = {}
                         for key in self.info_val :
@@ -207,7 +215,8 @@ class cmd_proc(pp_sender):
         def __init__(self, console):
                 self.func_dict =     {
                         'logout':               self.proc_logout,
-                        'login':                self.proc_login,
+                        'ssl_login':            self.proc_ssl_login,
+                        'udp_login':            self.proc_udp_login,
                         'image_connect':        self.proc_image_connect,
                         'price_connect':        self.proc_price_connect,
                         'image_channel':        self.proc_image_channel,
@@ -218,6 +227,7 @@ class cmd_proc(pp_sender):
                 pp_sender.__init__(self)
                 self.console = console
                 self.client  = None
+                self.udp     = None
 
         def proc(self, key_val):
                 try:
@@ -250,14 +260,22 @@ class cmd_proc(pp_sender):
                 if self.client != None :
                         self.client.logout(key_val)
 
-        def proc_login(self, key_val):
-                if   self.client == None :
-                        self.client = pp_client(self.console, key_val)
+        def proc_ssl_login(self, key_val):
+                if self.client == None :
+                        self.client = pp_client(self.console, self, key_val)
                 elif self.client.info_val['bidno'] != key_val['bidno'] or self.client.info_val['passwd'] != key_val['passwd']:
-                        self.client.stop_udp()
-                        self.client = pp_client(self.console, key_val)
+                        self.client = pp_client(self.console, self, key_val)
                 if self.client != None :
                         self.client.login(key_val)
+
+        def proc_udp_login(self, key_val):
+                if self.udp == None :
+                        self.udp = pp_udp(self.console, self, key_val)
+                elif self.udp.info_val['udp_bidno'] != key_val['udp_bidno'] or self.udp.info_val['udp_pid'] != key_val['udp_pid']:
+                        self.udp.stop()
+                        self.udp = pp_udp(self.console, self, key_val)
+                if self.udp != None :
+                        self.udp.login(key_val)
 
         def proc_image_price(self, key_val):
                 if self.client != None :
@@ -278,13 +296,16 @@ class Console(Console):
                 proc_ssl_image.reg(self)
                 proc_ssl_price.reg(self)
 
-                self.lock_login  = Lock()
-                self.lock_udp    = Lock()
-                self.lock_price1 = Lock()
-                self.lock_price2 = Lock()
-                self.lock_price3 = Lock()
-                self.lock_worker = Lock()
-                self.lock_image  = Lock()
+                self.lock_login_status  = Lock()
+                self.lock_bid_status    = Lock()
+                self.lock_udp_status    = Lock()
+                self.lock_udp_input     = Lock()
+                self.lock_udp_info      = Lock()
+                self.lock_price1        = Lock()
+                self.lock_price2        = Lock()
+                self.lock_price3        = Lock()
+                self.lock_worker        = Lock()
+                self.lock_image         = Lock()
 
         def load_database(self):
                 global database
@@ -294,8 +315,24 @@ class Console(Console):
                 bidno       = database.db['bidno']       if 'bidno'       in database.db else ''
                 passwd      = database.db['passwd']      if 'passwd'      in database.db else ''
 
-                self.input_bidno.insert(0, bidno)
-                self.input_passwd.insert(0, passwd)
+                udp_bidno   = database.db['udp_bidno']   if 'udp_bidno'   in database.db else ''
+                udp_pid     = database.db['udp_pid']     if 'udp_pid'     in database.db else ''
+
+                if bidno != '':
+                        self.input_bidno.delete(0, 'end')
+                        self.input_bidno.insert(0, bidno)
+
+                if passwd != '':
+                        self.input_passwd.delete(0, 'end')
+                        self.input_passwd.insert(0, passwd)
+
+                if udp_bidno != '':
+                        self.input_udp_bidno.delete(0, 'end')
+                        self.input_udp_bidno.insert(0, udp_bidno)
+
+                if udp_pid != '':
+                        self.input_udp_pid.delete(0, 'end')
+                        self.input_udp_pid.insert(0, udp_pid)
 
         def save_database(self, key_val):
                 global database
@@ -308,9 +345,9 @@ class Console(Console):
         # 按钮触发处理
         #-------------------------------------
 
-        def proc_login(self,p1):
+        def proc_ssl_login(self,p1):
                 key_val = {}
-                key_val['cmd']    = 'login'
+                key_val['cmd']    = 'ssl_login'
                 key_val['bidno']  = self.input_bidno.get()
                 key_val['passwd'] = self.input_passwd.get()
                 key_val['group']  = self.var_use_group2.get()
@@ -324,6 +361,25 @@ class Console(Console):
                 db ={}
                 db['bidno']       = key_val['bidno']
                 db['passwd']      = key_val['passwd']
+                self.save_database(db)
+
+        def proc_udp_login(self,p1):
+                key_val = {}
+                key_val['cmd']    = 'udp_login'
+                self.lock_udp_input.acquire()
+                key_val['udp_bidno']  = self.input_udp_bidno.get()
+                key_val['udp_pid']    = self.input_udp_pid.get()
+                self.lock_udp_input.release()
+                try:
+                        int(key_val['udp_bidno'])
+                        int(key_val['udp_pid'])
+                except:
+                        return
+                self.cmd_proc.put(key_val)
+
+                db ={}
+                db['udp_bidno']    = key_val['udp_bidno']
+                db['udp_pid']      = key_val['udp_pid']
                 self.save_database(db)
 
         def proc_image_connect(self,p1):
@@ -382,20 +438,42 @@ class Console(Console):
         #-------------------------------------
 
         def update_login_status(self, info):
-                self.lock_login.acquire()
+                self.lock_login_status.acquire()
                 self.output_login_status['text']    = info
                 self.output_login_status.update_idletasks()
-                self.lock_login.release()
+                self.lock_login_status.release()
+
+        def update_udp_status(self, info):
+                self.lock_udp_status.acquire()
+                self.output_udp_status['text']      = info
+                self.output_udp_status.update_idletasks()
+                self.lock_udp_status.release()
+
+        def update_bid_status(self, info):
+                self.lock_bid_status.acquire()
+                self.output_bid_status['text']      = info
+                self.output_bid_status.update_idletasks()
+                self.lock_bid_status.release()
+
+        def update_udp_input(self, bidno, pid):
+                self.lock_udp_input.acquire()
+                self.input_udp_bidno.delete(0, 'end')
+                self.input_udp_pid.delete(0, 'end')
+                self.input_udp_bidno.insert(0, bidno)
+                self.input_udp_pid.insert(0, pid)
+                self.input_udp_pid.update_idletasks()
+                #self.input_udp_bidno.update_idletasks()
+                self.lock_udp_input.release()
 
         def update_udp_info(self, ctime, stime, price):
-                self.lock_udp.acquire()
+                self.lock_udp_info.acquire()
                 self.output_current_price['text']   = price
                 self.output_system_time['text']     = stime
                 self.output_change_time['text']     = ctime
                 self.output_current_price.update_idletasks()
                 #self.output_system_time.update_idletasks()
                 #self.output_change_time.update_idletasks()
-                self.lock_udp.release()
+                self.lock_udp_info.release()
 
         def update_image_channel(self, current, goal, onway):
                 self.output_image_current_channel['text'] = current

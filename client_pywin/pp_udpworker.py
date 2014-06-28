@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#from time           import strftime, localtime, time
+from datetime       import datetime
 from traceback      import print_exc
 from socket         import socket, AF_INET, SOCK_DGRAM
 from socket         import timeout as sock_timeout
@@ -40,14 +40,24 @@ class udp_format(pp_thread):
                 self.worker = worker
 
         def main(self):
-                while True:
-                        if self.flag_stop == True: break
+                for i in range(2):
+                        if self.flag_stop == True: return 
                         if self.worker.sock != None:
                                 try:
                                         self.worker.format_udp()
                                 except:
                                         print_exc()
-                        if self.event_stop.wait(self.interval) == True: break
+                        if self.event_stop.wait(1) == True: return 
+
+                while True:
+                        if self.flag_stop == True: return 
+                        if self.worker.sock != None:
+                                try:
+                                        self.worker.format_udp()
+                                except:
+                                        print_exc()
+                        if self.event_stop.wait(self.interval) == True: return 
+
 
 class udp_worker(pp_thread):
         udp_timeout = 10
@@ -133,6 +143,18 @@ class udp_worker(pp_thread):
                 if info_val == None:
                         return
 
+                code  = info_val['code']
+
+                if code == 'F':
+                        self.console.update_udp_status(datetime.strftime(datetime.now(), '%H:%M:%S'))
+                        return
+
+                bidinfo = info_val['bidinfo']
+
+                if code == 'C':
+                        self.console.update_bid_status(bidinfo)
+                        return
+
                 printer.critical(udp_recv)
 
                 ctime = info_val['ltime']
@@ -154,6 +176,9 @@ class udp_worker(pp_thread):
                         except:
                                 print_exc()
                 self.console.update_udp_info(ctime, stime, price)
+
+                self.console.update_bid_status(bidinfo)
+
                 printer.warning(sorted(info_val.items()))
 
         def recv_udp(self):
