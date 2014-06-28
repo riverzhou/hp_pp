@@ -15,8 +15,9 @@ from    pp_config       import pp_config
 class redis_reader(pp_thread):
         key_name = pp_config['redis_key']
 
-        def __init__(self, output=None, info=None):
+        def __init__(self, mode, output=None, info=''):
                 pp_thread.__init__(self, info)
+                self.mode     = mode
                 self.output   = output
                 self.redis    = self.connect_redis()
                 if self.redis == None : return None
@@ -36,41 +37,51 @@ class redis_reader(pp_thread):
         def get_info(self):
                 try:
                         return self.redis.blpop(self.key_name)
-                except KeyboardInterrupt:
+                except  KeyboardInterrupt:
                         raise KeyboardInterrupt
                 except:
                         print_exc()
                         return None
 
         def main(self):
+                if self.mode != 'A' and self.mode != 'B' : return
                 while True:
                         redis_info = self.get_info()
                         if redis_info == None : break
                         time, key_val = loads(redis_info[1])
                         #time = time.split(' ')[1].split('.')[0]
                         #print(key_val)
+                        if self.mode == 'A' and key_val['code'] == 'B' :
+                                if self.output != None : self.output.set_flag_end()
+                                break
                         if self.output != None : self.output.put(key_val)
 
 class redis_parser(pp_thread):
-        def __init__(self, output=None, info=None):
+        def __init__(self, mode, output=None, info=''):
                 pp_thread.__init__(self, info)
-                self.output = output
+                self.mode           = mode
+                self.output         = output
 
-                self.origin_data_a = []
-                self.origin_data_b = []
-                self.lock_data_a   = Lock()
-                self.lock_data_b   = Lock()
+                self.origin_data_a  = []
+                self.origin_data_b  = []
+                self.lock_data_a    = Lock()
+                self.lock_data_b    = Lock()
 
                 self.result_data_a  = ([],[],[])
                 self.result_data_b  = ([],[],[])
                 self.result_count_a = 0
                 self.result_count_b = 0
 
-                self.reader = redis_reader(self, 'redis_reader')
+                self.flag_end       = False
+
+                self.reader = redis_reader(self.mode, self, 'redis_reader')
                 if self.reader == None : return None
 
                 self.reader.start()
                 self.reader.wait_for_start()
+
+        def set_flag_end(self):
+                self.flag_end = True
 
         def put(self, info):
                 try:
@@ -185,25 +196,34 @@ class redis_parser(pp_thread):
                 else:
                         print(self.result_data_b)
 
-        def proc(self):
-                if len(self.origin_data_b) == 0 :
-                        self.clear_data_a()
-                        self.parse_data_a()
-                        self.send_result_a()
-                else:
-                        self.clear_data_b()
-                        self.parse_data_b()
-                        self.send_result_b()
+        def proc_a(self):
+                self.clear_data_a()
+                self.parse_data_a()
+                self.send_result_a()
+
+        def proc_b(self):
+                self.clear_data_b()
+                self.parse_data_b()
+                self.send_result_b()
 
         def main(self):
-                while True:
-                        self.proc()
-                        sleep(time() % 1)
+                if self.mode == 'A' :
+                        while True:
+                                if self.flag_end : break
+                                self.proc_a()
+                                sleep(time() % 1)
+                elif self.mode == 'B' :
+                        while True:
+                                if self.flag_end : break
+                                self.proc_b()
+                                sleep(time() % 1)
+                else:
+                        return
 
 #================================ for test ===============================================
 
 def main():
-        parser = redis_parser(None,'redis_parser')
+        parser = redis_parser('B', None, 'redis_parser')
         if parser == None : return
         parser.start()
         parser.wait_for_start()
