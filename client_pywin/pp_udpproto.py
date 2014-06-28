@@ -56,9 +56,11 @@ class udp_proto():
                 if '<xml><TYPE>FORMAT</TYPE><INFO>' in info : return self.parse_info_f(info)
                 return None
 
-        def parse_ack(self, buff) :
-                string = self.decode(buff).decode('gb18030')
+        def parse_ack(self, string) :
                 return self.parse_info(string)
+
+        def parse_decode(self, buff) :
+                return self.decode(buff).decode('gb18030')
 
         #-----------------------------------------------------
 
