@@ -180,7 +180,7 @@ class udp_worker(pp_thread):
 
                 if self.console != None : self.console.update_bid_status(bidinfo)
 
-                printer.warning(sorted(info_val.items()))
+                printer.warning(info_val, True)
 
         def recv_udp(self):
                 while True:

@@ -46,4 +46,6 @@ if __name__ == '__main__' :
                 pass
         except:
                 print_exc()
+        finally:
+                print()
 
