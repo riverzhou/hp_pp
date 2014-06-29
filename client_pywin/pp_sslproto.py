@@ -124,7 +124,6 @@ class proto_ssl():
                 return s3.strip()
 
         def parse_ssl_ack(self, string):
-                #printer.debug(string)
                 xml_string = string.strip()
                 key_val = {}
                 try:

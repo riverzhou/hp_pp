@@ -152,7 +152,7 @@ class ssl_login_worker(ssl_worker):
                 ack_sid   = proto.get_sid_from_head(info_val['head'])
                 ack_val   = proto.parse_login_ack(info_val['body'])
                 #ack_val['sid'] = ack_sid
-                printer.debug(sorted(ack_val.items()))
+                #printer.debug(sorted(ack_val.items()))
                 #logger.debug(sorted(ack_val.items()))
 
                 if callback != None : callback(ack_val)
@@ -197,7 +197,7 @@ class ssl_image_worker(ssl_worker):
                 ack_val   = proto.parse_image_ack(info_val['body'])
                 ack_val['sid']   = ack_sid
                 ack_val['price'] = price
-                printer.debug(sorted(ack_val.items()))
+                #printer.debug(sorted(ack_val.items()))
                 #logger.debug(sorted(ack_val.items()))
                 logger.debug(ack_sid)
 
@@ -270,7 +270,7 @@ class ssl_price_worker(ssl_worker):
                 ack_sid   = proto.get_sid_from_head(info_val['head'])
                 ack_val   = proto.parse_price_ack(info_val['body'])
                 #ack_val['sid'] = ack_sid
-                printer.debug(sorted(ack_val.items()))
+                #printer.debug(sorted(ack_val.items()))
                 #logger.debug(sorted(ack_val.items()))
 
                 worker_out(group)
