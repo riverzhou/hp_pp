@@ -29,12 +29,10 @@ class data_info(pp_sender):
                 global line1, list_z
                 if len(x) == 0 or len(y) == 0 : return
                 while line1 == None : sleep(1)
-                line1.set_xdata(x)
-                line1.set_ydata(y)
-                line1.axes.set_xlim(min(x), max(x))
-                line1.axes.set_ylim(min(y), max(y))
                 list_z = z
                 set_locator(self.mode, x, y)
+                line1.set_xdata(x)
+                line1.set_ydata(y)
                 draw()
 
 #=============================================================
