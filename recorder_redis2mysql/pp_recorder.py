@@ -10,17 +10,14 @@ from pp_config          import pp_config
 
 #=============================================================
 
-dump_day = '14-06-21'
-db_name  = 'pp_14_06_21'
-
 class mysql_db():
-        global pp_config, db_name
+        global  pp_config
         ip      = pp_config['mysql_ip']
         port    = pp_config['mysql_port']
         user    = pp_config['mysql_user']
         passwd  = pp_config['mysql_pass']
-        db      = db_name
-        table   = 'udp'
+        db      = pp_config['mysql_db']
+        table   = pp_config['mysql_table']
 
         add_udp_record = (('INSERT INTO %s ' % table) + 
                '(daytime, info) ' +
@@ -48,12 +45,13 @@ class mysql_db():
                 self.mysql.close()
 
 class redis_db():
-        global pp_config
+        global  pp_config
         ip      = pp_config['redis_ip']
         port    = pp_config['redis_port']
         passwd  = pp_config['redis_pass']
         db      = pp_config['redis_db']
         key     = pp_config['redis_key']
+        day     = pp_config['redis_day']
 
         def connect_redis(self):
                 try:
@@ -74,7 +72,7 @@ class redis_db():
                 return self.redis.delete(self.key)
 
 def main():
-        global dump_day
+        global  pp_config
         mdb = mysql_db()
         rdb = redis_db()
 
@@ -90,7 +88,7 @@ def main():
                 date = date.strip('\'')
                 day, time = date.split(' ', 1)
                 time = time.split('.', 1)[0]
-                if day == dump_day :
+                if day == pp_config['redis_day'] :
                         datetime = date + ' ' + time
                         #print(datetime, info)
                         mdb.put((datetime, info))
