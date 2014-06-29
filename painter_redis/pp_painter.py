@@ -51,6 +51,7 @@ def set_locator(mode, list_x, list_y):
         yaxis = gca().yaxis
 
         if mode == 'B':
+                xlim(int(min(list_x)), int(max(max(list_x),60)+1))
                 ylim(int(min(list_y)), int(max(list_y))+300)
                 xaxis.set_major_locator(MultipleLocator(1))
                 xaxis.set_minor_locator(MultipleLocator(1))
@@ -65,6 +66,7 @@ def set_locator(mode, list_x, list_y):
                 return True
 
         if mode == 'A':
+                xlim(0, int(max(max(list_x),60)+1))
                 ylim(0, int(max(list_y)))
                 n = len(list_x) / 30
                 n = int(n) if n > 1 else 1
