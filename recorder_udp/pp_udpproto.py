@@ -135,12 +135,5 @@ class udp_proto():
         def encode(self, buff):
                 return self.decode(buff)
 
-        def print_bytes(self, buff):
-                out     = ''
-                for b in buff:
-                        out += hex(b)
-                        out += ' '
-                printer.debug(out)
-
 #--------------------------------------------------------------------------------------
 
