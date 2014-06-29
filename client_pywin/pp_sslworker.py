@@ -53,7 +53,7 @@ class ssl_worker(pp_thread):
                         self.handler._http_vsn_str = 'HTTP/1.0'
                         try:
                                 self.handler.connect()
-                        except (sock_timeout, TimeoutError):
+                        except  TimeoutError:
                                 self.close()
                                 continue
                         except:
