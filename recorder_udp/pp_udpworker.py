@@ -153,7 +153,7 @@ class udp_worker(pp_thread):
                 bidinfo = info_val['bidinfo']
 
                 if code == 'C':
-                        self.console.update_bid_status(bidinfo)
+                        if self.console != None : self.console.update_bid_status(bidinfo)
                         return
 
                 printer.critical(udp_recv)
