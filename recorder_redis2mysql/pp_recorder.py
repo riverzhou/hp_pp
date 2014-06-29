@@ -89,7 +89,7 @@ def main():
                 day, time = date.split(' ', 1)
                 time = time.split('.', 1)[0]
                 if day == pp_config['redis_day'] :
-                        datetime = date + ' ' + time
+                        datetime = day + ' ' + time
                         #print(datetime, info)
                         mdb.put((datetime, info))
         mdb.flush()
