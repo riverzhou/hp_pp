@@ -3,7 +3,6 @@
 from datetime       import datetime
 from traceback      import print_exc
 from socket         import socket, AF_INET, SOCK_DGRAM
-from socket         import timeout as sock_timeout
 from threading      import Lock
 
 from pp_baseclass   import pp_thread
@@ -187,7 +186,7 @@ class udp_worker(pp_thread):
                 while True:
                         try:
                                 if self.sock != None : udp_result = self.sock.recvfrom(1500)
-                        except (sock_timeout, TimeoutError, OSError):
+                        except (TimeoutError, OSError):
                                 return None
                         except :
                                 print_exc()
