@@ -101,10 +101,10 @@ class redis_parser(pp_thread):
                         print('unknow code')
 
         def sub_time(self, time2, time1):
-                return int(mktime(strptime(time2, "%H:%M:%S"))) - int(mktime(strptime(time1, "%H:%M:%S")))
+                return int(mktime(strptime('1970-01-01 '+time2, "%Y-%m-%d %H:%M:%S"))) - int(mktime(strptime('1970-01-01 '+time1, "%Y-%m-%d %H:%M:%S")))
         
         def add_time(self, time):
-                return strftime("%H:%M:%S", localtime(int(mktime(strptime(time, "%H:%M:%S"))) + 1))
+                return strftime("%H:%M:%S", localtime(int(mktime(strptime('1970-01-01 '+time, "%Y-%m-%d %H:%M:%S"))) + 1))
 
         def clear_data_a(self):
                 self.result_data_a  = ([],[],[])

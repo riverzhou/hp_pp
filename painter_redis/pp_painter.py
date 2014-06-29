@@ -52,7 +52,7 @@ def set_locator(mode, list_x, list_y):
 
         if mode == 'B':
                 xlim(int(min(list_x)), int(max(max(list_x),60)+1))
-                ylim(int(min(list_y)), int(max(list_y))+300)
+                ylim(int(min(list_y))-100, int(max(list_y))+300)
                 xaxis.set_major_locator(MultipleLocator(1))
                 xaxis.set_minor_locator(MultipleLocator(1))
                 xaxis.set_major_formatter(FuncFormatter( formatter_x))
