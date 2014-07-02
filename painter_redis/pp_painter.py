@@ -8,11 +8,11 @@ from sys                import argv
 from matplotlib.pyplot  import plot, legend, grid, draw, show, figure, subplots_adjust, gca, xlim, ylim, MultipleLocator, FuncFormatter
 
 from pp_baseclass       import pp_sender
-from pp_readredis       import redis_parser
+from pp_redis           import redis_parser
 
 #=============================================================
 
-MultipleLocator.MAXTICKS = 3600
+MultipleLocator.MAXTICKS = 5000
 
 #=============================================================
 
