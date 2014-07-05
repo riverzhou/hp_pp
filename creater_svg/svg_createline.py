@@ -55,7 +55,7 @@ def draw_multi_line(name, dict_data):
         min_y = None
         max_y = None
         for name in dict_data:
-                print(name)
+                #print(name)
                 list_x, list_y = dict_data[name]
                 line.x_labels = map(str, list_x)
                 line.add(name, list_y)
