@@ -86,13 +86,7 @@ def fmt_readexcel2list():
                 format_data[m] = []
                 for time in dict_format:
                         format_data[m].append(dict_format[time])
-        #print(format_data)
         return format_data
-
-
-def clean_table(mysql):
-        table = ''
-        mysql.clean_table(table)
 
 def main():
         global dict_table
@@ -106,6 +100,5 @@ def main():
         mysql.flush()
 
 if __name__ == '__main__':
-        #fmt_readexcel2list()
         main()
 
