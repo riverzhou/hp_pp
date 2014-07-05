@@ -30,6 +30,7 @@ def draw_line(name, list_x, list_y):
         line.title = name 
         line.range = (min(list_y)-100, max(list_y)+300)
         line.x_labels = list_x
+        line.y_labels = map(lambda x:x*100, range(int((min(list_y)/100)-1), int((max(list_y)/100+4))))
         line.add(name, list_y)
         return line.render()
 
@@ -57,7 +58,6 @@ def draw_multi_line(name, dict_data):
         for name in dict_data:
                 #print(name)
                 list_x, list_y = dict_data[name]
-                line.x_labels = map(str, list_x)
                 line.add(name, list_y)
                 min_list_y = min(list_y)
                 max_list_y = max(list_y)
@@ -66,6 +66,8 @@ def draw_multi_line(name, dict_data):
         if min_y == None : min_y = 0
         if max_y == None : max_y = 0 
         line.range = (min_y-100, max_y+300)
+        line.x_labels = map(str, list_x)
+        line.y_labels = map(lambda x:x*100, range(int((min_y/100)-1), int((max_y/100+4))))
         return line.render()
  
 def create_line(name, list_data):
@@ -99,9 +101,8 @@ def main():
         list_data = dict_data[date]
         name = 'history:price:%s:60' % date
         line = create_line(name, list_data)
-        name = name.replace('-','_')
         print(name)
-        print(line)
+        #print(line)
 
 if __name__ == '__main__':
         from svg_mysql2dict import read_mysql2dict

@@ -55,7 +55,6 @@ def main():
                 list_y = create_list_y(redis_data)
                 name = 'current:price:%s:60' % date
                 line = draw_line(name, list_x, list_y)
-                #name = name.replace('-','_')
                 redis.set(name, line)
                 sleep(1)
 
