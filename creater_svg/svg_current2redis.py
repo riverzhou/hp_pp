@@ -13,12 +13,17 @@ from fmt_date       import *
 
 #==============================================
 
+intertime = 1 # 秒，支持浮点
+
+def getsleeptime(itime):
+        return itime - time()%itime
+
 count_redis_data = 0
 
 def read_redis_data():
         global count_redis_data
         count_redis_data += 1
-        if count_redis_data > 61 :
+        if count_redis_data > 60 :
                 count_redis_data = 0
         return count_redis_data
 
@@ -44,7 +49,7 @@ def create_list_x():
         return list_y
 
 def main():
-        global dict_date, list_month
+        global dict_date, list_month, intertime
         redis = redis_db()
 
         list_y = None
@@ -56,7 +61,7 @@ def main():
                 name = 'current:price:%s:60' % date
                 line = draw_line(name, list_x, list_y)
                 redis.set(name, line)
-                sleep(1)
+                sleep(getsleeptime(intertime))
 
 #------------------------------------------------------------------
 

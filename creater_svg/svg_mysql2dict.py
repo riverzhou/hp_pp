@@ -10,12 +10,18 @@ from fmt_date           import *
 
 #=================================================
 
-def read_mysql2dict():
-        global dict_table, dict_date, list_month, pp_config
+def read_mysql2dict(t = 'price'):
+        global dict_date, list_month, pp_config
         mysql = mysql_db()
         dict_data = OrderedDict()
+        if t == 'price':
+                prefix = 'format_price_'
+        elif t == 'number':
+                prefix = 'format_number_'
+        else:
+                return dict_data
         for m in list_month:
-                table = dict_table[m]
+                table = prefix + dict_date[m].replace('-','_')
                 list_data = mysql.read(table)
                 if list_data == None : continue
                 dict_data[dict_date[m]] = list_data
