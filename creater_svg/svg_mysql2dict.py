@@ -16,7 +16,7 @@ def time_sub(end, begin):
 
 def read_mysql2dict(begin = '11:29:00', end = '11:30:00', mode = 'price'):
         global dict_date, list_month, pp_config
-        mysql = mysql_db()
+        mysql = mysql_db(pp_config['mysql_format_db'])
         dict_data = OrderedDict()
         if mode == 'price':
                 prefix = 'format_price_'
