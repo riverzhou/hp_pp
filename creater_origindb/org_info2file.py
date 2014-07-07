@@ -4,8 +4,6 @@ from mysql.connector    import connect
 from redis              import StrictRedis
 from traceback          import print_exc
 
-from pp_baseclass       import pp_thread
-from pp_log             import logger
 from pp_config          import pp_config
 
 #=============================================================
