@@ -5,46 +5,18 @@ from redis              import StrictRedis
 from traceback          import print_exc
 
 from pp_config          import pp_config
+from pp_db              import redis_db
 
 #=============================================================
 
 info_db  = 15
 log_file = 'info.log'
 
-class redis_db():
-        global  pp_config, info_db
-        ip      = pp_config['redis_ip']
-        port    = pp_config['redis_port']
-        passwd  = pp_config['redis_pass']
-        db      = info_db
-        key     = 'info'
-        day     = pp_config['redis_day']
-
-        def connect_redis(self):
-                try:
-                        return StrictRedis(host = self.ip, port = self.port, password = self.passwd, db = self.db)
-                except:
-                        print_exc()
-                        return None
-
-        def __init__(self):
-                self.redis    = self.connect_redis()
-                if self.redis == None : return None
-                print('redis connect succeed')
-                print()
-
-        def get(self):
-                return self.redis.lrange(self.key, 0, -1)
-
-        def clean(self):
-                return self.redis.delete(self.key)
-
-
 def main():
-        global  pp_config, log_file
-        rdb = redis_db()
+        global  pp_config, log_file, info_db
+        rdb = redis_db(info_db)
         log = open(log_file, 'a')
-        buff = rdb.get()
+        buff = rdb.get(pp_config['redis_key'])
         for line in buff:
                 line = line.decode().lstrip('(').rstrip(')')
                 try:
@@ -60,6 +32,7 @@ def main():
                         datetime = day + ' ' + time
                         #print(datetime + '\t'+ info)
                         log.write(datetime + '\t'+ info+'\r\n')
+        log.close()
         print()
         print('info saved into file.')
 

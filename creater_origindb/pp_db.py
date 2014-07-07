@@ -14,7 +14,6 @@ class mysql_db():
         port    = pp_config['mysql_port']
         user    = pp_config['mysql_user']
         passwd  = pp_config['mysql_pass']
-        db      = pp_config['mysql_db']
 
         def connect_mysql(self):
                 try:
@@ -23,21 +22,50 @@ class mysql_db():
                         print_exc()
                         return None
 
-        def __init__(self):
-                self.mysql    = self.connect_mysql()
+        def __init__(self, db):
+                self.db     = db
+                self.mysql  = self.connect_mysql()
                 if self.mysql == None : return None
                 self.cursor = self.mysql.cursor()
                 print('mysql connect succeed')
 
-        def insert(self, table, data, commit=True):
+        def insert_log(self, table, data, commit=True):
                 sql = ('INSERT INTO %s ' % table) + ('(datetime, info) VALUES (%s, %s)')
                 #print(sql)
                 self.cursor.execute(sql, data)
                 if commit == True : self.mysql.commit()
                 print(table,'instert ok.')
 
-        def insert_list(self, table, list_data, commit=True):
+        def insert_log_list(self, table, list_data, commit=True):
                 sql = ('INSERT INTO %s ' % table) + ('(datetime, info) VALUES (%s, %s)')
+                #print(sql)
+                self.cursor.executemany(sql, list_data)
+                if commit == True : self.mysql.commit()
+                print(table,'instert ok.')
+
+        def insert_price(self, table, data, commit=True):
+                sql = ('INSERT INTO %s ' % table) + ('(datetime, price, count) VALUES (%s, %s, %s)')
+                #print(sql)
+                self.cursor.execute(sql, data)
+                if commit == True : self.mysql.commit()
+                print(table,'instert ok.')
+
+        def insert_price_list(self, table, list_data, commit=True):
+                sql = ('INSERT INTO %s ' % table) + ('(datetime, price, count) VALUES (%s, %s, %s)')
+                #print(sql)
+                self.cursor.executemany(sql, list_data)
+                if commit == True : self.mysql.commit()
+                print(table,'instert ok.')
+
+        def insert_number(self, table, data, commit=True):
+                sql = ('INSERT INTO %s ' % table) + ('(datetime, number, count) VALUES (%s, %s, %s)')
+                #print(sql)
+                self.cursor.execute(sql, data)
+                if commit == True : self.mysql.commit()
+                print(table,'instert ok.')
+
+        def insert_number_list(self, table, list_data, commit=True):
+                sql = ('INSERT INTO %s ' % table) + ('(datetime, number, count) VALUES (%s, %s, %s)')
                 #print(sql)
                 self.cursor.executemany(sql, list_data)
                 if commit == True : self.mysql.commit()
@@ -72,8 +100,6 @@ class redis_db():
         ip      = pp_config['redis_ip']
         port    = pp_config['redis_port']
         passwd  = pp_config['redis_pass']
-        db      = pp_config['redis_db']
-        day     = pp_config['redis_day']
 
         def connect_redis(self):
                 try:
@@ -82,24 +108,28 @@ class redis_db():
                         print_exc()
                         return None
 
-        def __init__(self):
-                self.redis    = self.connect_redis()
+        def __init__(self, db = None):
+                self.db     = db if db != None else pp_config['redis_db']
+                self.redis  = self.connect_redis()
                 if self.redis == None : return None
                 print('redis connect succeed')
 
         def get(self, key):
                 return self.redis.lrange(key, 0, -1)
 
+        def set(self, key, val):
+                return self.redis.set(key, val)
+
         def clean(self, key):
                 return self.redis.delete(key)
 
 
-#=========================================================
+#------------------------------------------------------------------------
 
 def main():
         global  pp_config
-        mdb = mysql_db()
-        rdb = redis_db()
+        mdb = mysql_db(pp_config['mysql_format_db'])
+        rdb = redis_db(pp_config['redis_db'])
 
         mdb.flush()
         print('date saved into mysql.')
@@ -113,5 +143,4 @@ if __name__ == '__main__' :
                 print_exc()
         finally:
                 print()
-
 
