@@ -4,8 +4,6 @@ from mysql.connector    import connect
 from redis              import StrictRedis
 from traceback          import print_exc
 
-from pp_baseclass       import pp_thread
-from pp_log             import logger
 from pp_config          import pp_config
 
 #=============================================================
@@ -17,11 +15,6 @@ class mysql_db():
         user    = pp_config['mysql_user']
         passwd  = pp_config['mysql_pass']
         db      = pp_config['mysql_db']
-        table   = pp_config['mysql_table']
-
-        add_udp_record = (('INSERT INTO %s ' % table) + 
-               '(daytime, info) ' +
-               'VALUES (%s, %s)')
 
         def connect_mysql(self):
                 try:
@@ -36,13 +29,43 @@ class mysql_db():
                 self.cursor = self.mysql.cursor()
                 print('mysql connect succeed')
 
-        def put(self, buff):
-                self.cursor.execute(self.add_udp_record, buff)
+        def insert(self, table, data, commit=True):
+                sql = ('INSERT INTO %s ' % table) + ('(datetime, info) VALUES (%s, %s)')
+                #print(sql)
+                self.cursor.execute(sql, data)
+                if commit == True : self.mysql.commit()
+                print(table,'instert ok.')
+
+        def insert_list(self, table, list_data, commit=True):
+                sql = ('INSERT INTO %s ' % table) + ('(datetime, info) VALUES (%s, %s)')
+                #print(sql)
+                self.cursor.executemany(sql, list_data)
+                if commit == True : self.mysql.commit()
+                print(table,'instert ok.')
+
+        def read(self, table):
+                sql = ('SELECT * FROM  %s ' % table)
+                self.cursor.execute(sql)
+                print(table,'read ok.')
+                return self.cursor.fetchall()
+
+        def clean_table(self, table):
+                self.mysql.commit()
+                #sql = 'DELETE FROM %s' % table
+                sql = 'TRUNCATE TABLE %s' % table
+                #print(sql)
+                self.cursor.execute(sql)
+                self.mysql.commit()
+                print(table,'clean ok.')
+
+        def close(self):
+                self.cursor.close()
+                self.mysql.close()
 
         def flush(self):
                 self.mysql.commit()
-                self.cursor.close()
-                self.mysql.close()
+                self.close()
+
 
 class redis_db():
         global  pp_config
@@ -50,7 +73,6 @@ class redis_db():
         port    = pp_config['redis_port']
         passwd  = pp_config['redis_pass']
         db      = pp_config['redis_db']
-        key     = pp_config['redis_key']
         day     = pp_config['redis_day']
 
         def connect_redis(self):
@@ -65,18 +87,25 @@ class redis_db():
                 if self.redis == None : return None
                 print('redis connect succeed')
 
-        def get(self):
-                return self.redis.lrange(self.key, 0, -1)
+        def get(self, key):
+                return self.redis.lrange(key, 0, -1)
 
-        def clean(self):
-                return self.redis.delete(self.key)
+        def clean(self, key):
+                return self.redis.delete(key)
+
+
+#=========================================================
 
 def main():
         global  pp_config
         mdb = mysql_db()
         rdb = redis_db()
 
-        buff = rdb.get()
+        redis_key = pp_config['redis_key']
+        redis_day = pp_config['redis_day']
+
+        buff = rdb.get(redis_key)
+        list_data = []
         for line in buff:
                 line = line.decode().lstrip('(').rstrip(')')
                 try:
@@ -88,10 +117,12 @@ def main():
                 date = date.strip('\'')
                 day, time = date.split(' ', 1)
                 time = time.split('.', 1)[0]
-                if day == pp_config['redis_day'] :
+                if day == redis_day :
                         datetime = day + ' ' + time
-                        #print(datetime, info)
-                        mdb.put((datetime, info))
+                        list_data.append((datetime, info))
+        prefix = 'format_origin_20'
+        table = prefix + redis_day.replace('-','_')
+        mdb.insert_list(table, list_data)
         mdb.flush()
         print('date saved into mysql.')
 
