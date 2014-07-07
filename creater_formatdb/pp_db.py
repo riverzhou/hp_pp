@@ -5,8 +5,6 @@ from redis              import StrictRedis
 from traceback          import print_exc
 
 from pp_config          import pp_config
-#from pp_baseclass       import pp_thread
-#from pp_log             import logger
 
 #=============================================================
 
@@ -45,6 +43,12 @@ class mysql_db():
                 if commit == True : self.mysql.commit()
                 print(table,'instert ok.')
 
+        def read(self, table):
+                sql = ('SELECT * FROM  %s ' % table)
+                self.cursor.execute(sql)
+                print(table,'read ok.')
+                return self.cursor.fetchall()
+
         def clean_table(self, table):
                 self.mysql.commit()
                 #sql = 'DELETE FROM %s' % table
@@ -54,10 +58,14 @@ class mysql_db():
                 self.mysql.commit()
                 print(table,'clean ok.')
 
-        def flush(self):
-                self.mysql.commit()
+        def close(self):
                 self.cursor.close()
                 self.mysql.close()
+
+        def flush(self):
+                self.mysql.commit()
+                self.close()
+
 
 class redis_db():
         global  pp_config
@@ -85,6 +93,7 @@ class redis_db():
 
         def clean(self):
                 return self.redis.delete(self.key)
+
 
 #------------------------------------------------------------------------
 
