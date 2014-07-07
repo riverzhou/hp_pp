@@ -5,6 +5,7 @@
 import sys
 
 from pp_sslproto        import *
+from pp_server          import server_dict
 
 #==========================================================
 
@@ -13,7 +14,7 @@ wget_user_dict    = {
                      '52131206' : '1706' ,
                     }
 
-wget_server_group = 1                   # 1/2 , 选择服务器组
+wget_server_group = 0                   # 0/1 , 选择服务器组
 
 wget_machinecode  = 'ABCDEFGHI'         
 #wget_machinecode = ''                  # 为空串表示自动生成随机特征码
@@ -24,7 +25,7 @@ wget_agent        = 'Mozilla/3.0 (compatible; Indy Library)'
 #==========================================================
 
 def proc_login(argv):
-        global wget_user_dict, wget_machinecode, wget_loginimage
+        global wget_user_dict, wget_machinecode, wget_loginimage, server_dict, wget_server_group
 
         if len(argv) != 3:
                 return usage()
@@ -40,10 +41,9 @@ def proc_login(argv):
         key_val['passwd']       = wget_user_dict[bidno]
         key_val['mcode']        = machine.mcode
         key_val['login_image']  = machine.image
-        key_val['host_name']    = login_server
-        #key_val['host_ip']      = gethostbyname(image_server)
+        key_val['host_name']    = server_dict[wget_server_group]['login']['name']
 
-        main_write_file('login.req', proto_ssl_login(key_val).make_wget_login_req())
+        main_write_file('login.req', proto_ssl_login(key_val).make_wget_login_req(key_val['host_name']))
         main_wget_cmd('login')
 
 def proc_image(argv):
@@ -63,11 +63,9 @@ def proc_image(argv):
         key_val['bidno']        = bidno
         key_val['passwd']       = wget_user_dict[bidno]
         key_val['mcode']        = machine.mcode
-        #key_val['login_image']  = machine.image
-        key_val['host_name']    = image_server
-        #key_val['host_ip']      = gethostbyname(image_server)
+        key_val['host_name']    = server_dict[wget_server_group]['toubiao']['name']
 
-        main_write_file('image.req', proto_ssl_image(key_val).make_wget_image_req(price))
+        main_write_file('image.req', proto_ssl_image(key_val).make_wget_image_req(key_val['host_name'], price))
         main_wget_cmd('image', 'login')
 
 def proc_price(argv):
@@ -88,11 +86,9 @@ def proc_price(argv):
         key_val['bidno']        = bidno
         key_val['passwd']       = wget_user_dict[bidno]
         key_val['mcode']        = machine.mcode
-        #key_val['login_image']  = machine.image
-        key_val['host_name']    = image_server
-        #key_val['host_ip']      = gethostbyname(image_server)
+        key_val['host_name']    = server_dict[wget_server_group]['toubiao']['name']
 
-        main_write_file('price.req', proto_ssl_price(key_val).make_wget_price_req(price, image))
+        main_write_file('price.req', proto_ssl_price(key_val).make_wget_price_req(key_val['host_name'], price, image))
         main_wget_cmd('price', 'image')
 
 #---------------------------------------
@@ -117,13 +113,6 @@ def main_wget_cmd(operate, load = ''):
                 ))
         print(wget_cmd)
         return wget_cmd
-
-def main_init_dns():
-        global login_server, price_server, image_server, wget_server_group, pp_server_dict, pp_server_dict_2
-        server_dict = pp_server_dict if wget_server_group == 1 else pp_server_dict_2
-        login_server = server_dict['login'][0]
-        image_server = server_dict['toubiao'][0]
-        price_server = server_dict['toubiao'][0]
 
 def main_write_file(name, buff):
         f = open(name, 'wb')
@@ -153,10 +142,7 @@ def pp_test(argv):
                 return usage()
         if not argv[1] in func_list :
                 return usage()
-        #main_init_dump()
-        main_init_dns()
         func_list[argv[1]](argv)
-        #main_write_dump()
 
 #----------------------------------------------------------
 
