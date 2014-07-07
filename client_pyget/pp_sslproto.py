@@ -11,24 +11,6 @@ from pp_log                     import logger, printer
 
 #==================================================================================================================
 
-pp_server_dict = {
-        'login'    : ('tblogin.alltobid.com',   443),
-        'toubiao'  : ('toubiao.alltobid.com',   443),
-        'result'   : ('tbresult.alltobid.com',  443),
-        'query'    : ('tbquery.alltobid.com',   443),
-        'udp'      : ('tbudp.alltobid.com',     999),
-}
-
-pp_server_dict_2 = {
-        'login'    : ('tblogin2.alltobid.com',  443),
-        'toubiao'  : ('toubiao2.alltobid.com',  443),
-        'result'   : ('tbresult2.alltobid.com', 443),
-        'query'    : ('tbquery2.alltobid.com',  443),
-        'udp'      : ('tbudp2.alltobid.com',    999),
-}
-
-#==================================================================================================================
-
 base64_kv =    {
         '0':  ord('A'),
         '1':  ord('B'),
@@ -94,6 +76,7 @@ base64_kv =    {
         'z':  ord('9'),
         '+':  ord('+'),
         '/':  ord('/'),
+        '=':  ord('='),
         }
 
 #------------------------------------------------------------------------------------------------------------------
@@ -114,15 +97,13 @@ class proto_ssl():
                 self.login_pid   = key_val['login_pid']     if 'login_pid'   in key_val  else None
                 self.login_sid   = key_val['login_sid']     if 'login_sid'   in key_val  else None
                 self.image_sid   = key_val['image_sid']     if 'image_sid'   in key_val  else None
-                self.host_name   = key_val['host_name']     if 'host_name'   in key_val  else None
-                self.host_ip     = key_val['host_ip']       if 'host_ip'     in key_val  else None
 
         '''HTTP/1.0\r\nContent-Type: text/html\r\nHost: tblogin.alltobid.com:443\r\nAccept: text/html, */*\r\nUser-Agent: Mozilla/3.0 (compatible; IndyLibrary)\r\n\r\n'''
         '''HTTP/1.0\r\nContent-Type: text/html\r\nHost: toubiao2.alltobid.com:443\r\nAccept: text/html, */*\r\nUser-Agent: Mozilla/3.0 (compatible; Indy Library)\r\nCookie: JSESSIONID=%s\r\n\r\n'''
-        def make_ssl_head(self, sid = None):
+        def make_ssl_head(self, host_name, sid = None):
                 headers = OrderedDict()
                 headers['Content-Type'] = 'text/html'
-                headers['Host']         = '%s:443' % self.host_name
+                headers['Host']         = '%s:443' % host_name
                 headers['Accept']       = 'text/html, */*'
                 headers['User-Agent']   = '%s'     % self.agent
                 if sid != None : headers['Cookie'] = 'JSESSIONID=%s' % sid
@@ -143,7 +124,6 @@ class proto_ssl():
                 return s3.strip()
 
         def parse_ssl_ack(self, string):
-                #printer.debug(string)
                 xml_string = string.strip()
                 key_val = {}
                 try:
@@ -182,9 +162,12 @@ class proto_ssl():
                 global  base64_kv
                 key_val = base64_kv
                 size    = len(string)
-                output  = bytearray(size)
+                slen    = ((size+3) >> 2) << 2
+                output  = bytearray(slen)
                 for i in range(size):
                         output[i] = key_val[string[i]]
+                for i in range(size, slen):
+                        output[i] = ord('=')
                 return output.decode()
 
         #----------------------------------------------
@@ -230,8 +213,8 @@ class proto_ssl_login(proto_ssl):
                         self.login_image
                         ))
 
-        def make_wget_login_req(self):
-                return self.get_wget_req(self.host_name, self.make_login_req())
+        def make_wget_login_req(self, host_name):
+                return self.get_wget_req(host_name, self.make_login_req())
 
         def parse_login_ack(self, buff):
                 string   = buff.decode('gb18030')
@@ -240,12 +223,13 @@ class proto_ssl_login(proto_ssl):
                 if 'ERRORCODE' in info_val :
                         key_val['errcode']  = info_val['ERRORCODE']
                         key_val['errstring']= info_val['ERRORSTRING']
+                        printer.error(string)
                 else:
                         key_val['name'] = info_val['CLIENTNAME']
                         key_val['pid']  = info_val['PID']
-                printer.info(string)
-                printer.info(sorted(key_val.items()))
-                printer.info('')
+                #printer.info(string)
+                #printer.info(sorted(key_val.items()))
+                #printer.info('')
                 return key_val
 
 #----------------------------------------------
@@ -267,8 +251,8 @@ class proto_ssl_image(proto_ssl):
                         self.get_image_checkcode(price)
                         ))
 
-        def make_wget_image_req(self, price):
-                return self.get_wget_req(self.host_name, self.make_image_req(price))
+        def make_wget_image_req(self, host_name, price):
+                return self.get_wget_req(host_name, self.make_image_req(price))
 
         def parse_image_ack(self, buff):
                 string   = buff.decode('gb18030')
@@ -277,11 +261,12 @@ class proto_ssl_image(proto_ssl):
                 if info_val['ERRORCODE'] != '0' :
                         key_val['errcode']  = info_val['ERRORCODE']
                         key_val['errstring']= info_val['ERRORSTRING']
+                        printer.error(string)
                 else:
                         key_val['image']    = self.image_decode(info_val['IMAGE_CONTENT'])
-                printer.info(string)
-                printer.info(sorted(key_val.items()))
-                printer.info('')
+                #printer.info(string)
+                #printer.info(sorted(key_val.items()))
+                #printer.info('')
                 return key_val
 
 #----------------------------------------------
@@ -307,8 +292,8 @@ class proto_ssl_price(proto_ssl):
                         image
                         ))
 
-        def make_wget_price_req(self, price, image):
-                return self.get_wget_req(self.host_name, self.make_price_req(price, image))
+        def make_wget_price_req(self, host_name, price, image):
+                return self.get_wget_req(host_name, self.make_price_req(price, image))
 
         def parse_price_ack(self, buff):
                 string   = buff.decode('gb18030')
@@ -317,15 +302,16 @@ class proto_ssl_price(proto_ssl):
                 if 'ERRORCODE' in info_val :
                         key_val['errcode']  = info_val['ERRORCODE']
                         key_val['errstring']= info_val['ERRORSTRING']
+                        printer.error(string)
                 else:
                         key_val['time']  = info_val['BIDTIME']
                         key_val['count'] = info_val['BIDCOUNT']
                         key_val['price'] = info_val['BIDAMOUNT']
                         key_val['name']  = info_val['CLIENTNAME']
                         key_val['bidno'] = info_val['BIDNUMBER']
-                printer.info(string)
-                printer.info(sorted(key_val.items()))
-                printer.info('')
+                #printer.info(string)
+                #printer.info(sorted(key_val.items()))
+                #printer.info('')
                 return key_val
 
 #----------------------------------------------

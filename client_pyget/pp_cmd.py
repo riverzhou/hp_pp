@@ -9,6 +9,7 @@ import sys
 
 from pp_log             import logger, printer
 from pp_https           import pyget
+from pp_server          import server_dict
 from pp_sslproto        import *
 from pic_viewer         import show_photo
 
@@ -19,7 +20,7 @@ pyget_user_dict    = {
                      '98765432' : '4321' ,
                     }
 
-pyget_server_group = 1                   # 1/2 , 选择服务器组
+pyget_server_group = 0                   # 0/1 , 选择服务器组
 
 pyget_machinecode  = ''                  # 为空串表示自动生成随机特征码
 pyget_loginimage   = ''
@@ -27,7 +28,7 @@ pyget_loginimage   = ''
 #==========================================================
 
 def proc_login(argv):
-        global pyget_user_dict, pyget_machinecode, pyget_loginimage
+        global pyget_user_dict, pyget_machinecode, pyget_loginimage, server_dict
 
         if len(argv) != 3:
                 return usage()
@@ -43,11 +44,11 @@ def proc_login(argv):
         key_val['passwd']       = pyget_user_dict[bidno]
         key_val['mcode']        = machine.mcode
         key_val['login_image']  = machine.image
-        key_val['host_name']    = login_server
-        key_val['host_ip']      = gethostbyname(login_server)
+        key_val['host_name']    = server_dict[pyget_server_group]['login']['name'] 
+        key_val['host_ip']      = server_dict[pyget_server_group]['login']['ip']
 
         proto    = proto_ssl_login(key_val)
-        info_val = pyget(login_server, proto.make_login_req(), proto.make_ssl_head())
+        info_val = pyget(key_val['host_ip'], proto.make_login_req(), proto.make_ssl_head(key_val['host_name']))
         print(sorted(info_val.items()), '\n\n')
 
         if info_val['status'] != 200 :
@@ -78,12 +79,11 @@ def proc_image(argv):
         key_val['bidno']        = bidno
         key_val['passwd']       = pyget_user_dict[bidno]
         key_val['mcode']        = machine.mcode
-        #key_val['login_image']  = machine.image
-        key_val['host_name']    = image_server
-        key_val['host_ip']      = gethostbyname(image_server)
+        key_val['host_name']    = server_dict[pyget_server_group]['toubiao']['name'] 
+        key_val['host_ip']      = server_dict[pyget_server_group]['toubiao']['ip']
 
         proto    = proto_ssl_image(key_val)
-        info_val = pyget(image_server, proto.make_image_req(price), proto.make_ssl_head())
+        info_val = pyget(key_val['host_ip'], proto.make_image_req(price), proto.make_ssl_head(key_val['host_name']))
         print(sorted(info_val.items()),'\n\n')
 
         if info_val['status'] != 200 :
@@ -118,9 +118,8 @@ def proc_price(argv):
         key_val['bidno']        = bidno
         key_val['passwd']       = pyget_user_dict[bidno]
         key_val['mcode']        = machine.mcode
-        #key_val['login_image']  = machine.image
-        key_val['host_name']    = image_server
-        key_val['host_ip']      = gethostbyname(image_server)
+        key_val['host_name']    = server_dict[pyget_server_group]['toubiao']['name'] 
+        key_val['host_ip']      = server_dict[pyget_server_group]['toubiao']['ip']
 
         image_sid = database.db['image_sid']  if 'image_sid' in database.db else None
         if image_sid == None :
@@ -128,7 +127,7 @@ def proc_price(argv):
                 return
 
         proto    = proto_ssl_price(key_val)
-        info_val = pyget(price_server, proto.make_price_req(price, image), proto.make_ssl_head(image_sid))
+        info_val = pyget(key_val['host_ip'], proto.make_price_req(price, image), proto.make_ssl_head(key_val['host_ip'], image_sid))
         print(sorted(info_val.items()), '\n\n')
         print(proto.make_ssl_head(image_sid))
 
@@ -144,13 +143,6 @@ def proc_price(argv):
         return ack_sid, ack_val
 
 #---------------------------------------
-
-def main_init_dns():
-        global login_server, price_server, image_server, pyget_server_group, pp_server_dict, pp_server_dict_2
-        server_dict = pp_server_dict if pyget_server_group == 1 else pp_server_dict_2
-        login_server = server_dict['login'][0]
-        image_server = server_dict['toubiao'][0]
-        price_server = server_dict['toubiao'][0]
 
 def main_write_file(name, buff):
         f = open(name, 'wb')
@@ -216,7 +208,6 @@ def pp_cmd(argv):
         if not argv[1] in func_list :
                 return usage()
         load_dump()
-        main_init_dns()
         func_list[argv[1]](argv)
         save_dump()
 
