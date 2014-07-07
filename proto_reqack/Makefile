@@ -1,0 +1,4 @@
+
+clean:
+	@echo > /dev/null
+
