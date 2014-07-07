@@ -120,7 +120,7 @@ def main():
                 if day == redis_day :
                         datetime = day + ' ' + time
                         list_data.append((datetime, info))
-        prefix = 'format_origin_20'
+        prefix = 'format_origin_'
         table = prefix + redis_day.replace('-','_')
         mdb.insert_list(table, list_data)
         mdb.flush()
