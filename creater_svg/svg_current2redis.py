@@ -8,7 +8,7 @@ from pygal          import Line, Config
 from pp_db          import redis_db
 
 from svg_mysql2dict import read_mysql2dict
-from svg_createline import draw_line
+from svg_createline import draw_price_line
 from fmt_date       import *
 
 #==============================================
@@ -59,7 +59,7 @@ def main():
                 redis_data = read_redis_data()
                 list_y = create_list_y(redis_data)
                 name = 'current:price:%s:60' % date
-                line = draw_line(name, list_x, list_y)
+                line = draw_price_line(name, list_x, list_y)
                 redis.set(name, line)
                 sleep(getsleeptime(intertime))
 

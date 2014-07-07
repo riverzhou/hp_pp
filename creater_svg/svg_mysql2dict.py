@@ -15,13 +15,15 @@ def time_sub(end, begin):
         return int(mktime(strptime('1970-01-01 '+end, '%Y-%m-%d %H:%M:%S'))) - int(mktime(strptime('1970-01-01 '+begin, '%Y-%m-%d %H:%M:%S')))
 
 def read_mysql2dict(begin = '11:29:00', end = '11:30:00', mode = 'price'):
-        global dict_date, list_month, pp_config
+        global dict_date, list_price_month, list_number_month, pp_config
         mysql = mysql_db(pp_config['mysql_format_db'])
         dict_data = OrderedDict()
         if mode == 'price':
                 prefix = 'format_price_'
+                list_month = list_price_month
         elif mode == 'number':
                 prefix = 'format_number_'
+                list_month = list_number_month
         else:
                 return dict_data
         for m in list_month:
@@ -40,7 +42,7 @@ def read_mysql2dict(begin = '11:29:00', end = '11:30:00', mode = 'price'):
 #====================================================
 
 def main():
-        dict_data = read_mysql2dict('11:29:00', '11:30:00')
+        dict_data = read_mysql2dict()
         print(dict_data)
 
 if __name__ == '__main__':

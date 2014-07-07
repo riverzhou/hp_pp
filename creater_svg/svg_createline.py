@@ -10,7 +10,7 @@ from pp_db          import redis_db
 
 #==============================================
 
-def draw_line(name, list_x, list_y):
+def draw_price_line(name, list_x, list_y):
         line = Line()
         line.disable_xml_declaration = True
         line.js = []
@@ -34,7 +34,7 @@ def draw_line(name, list_x, list_y):
         line.add(name, list_y)
         return line.render()
 
-def draw_multi_line(name, dict_data):
+def draw_multi_price_line(name, dict_data):
         line = Line()
         line.disable_xml_declaration = True
         line.js = []
@@ -70,15 +70,15 @@ def draw_multi_line(name, dict_data):
         line.y_labels = map(lambda x:x*100, range(int((min_y/100)-1), int((max_y/100+4))))
         return line.render()
  
-def create_line(name, list_data):
+def create_price_line(name, list_data):
         list_x = []
         list_y = []
         for d in list_data:
                 list_x.append(str(d[1]).split()[1])
                 list_y.append(d[2])
-        return draw_line(name, list_x, list_y)
+        return draw_price_line(name, list_x, list_y)
 
-def create_multi_line(name, dict_data):
+def create_multi_price_line(name, dict_data):
         dict_data_new = OrderedDict()
         for date in dict_data:
                 list_data = dict_data[date]
@@ -88,19 +88,55 @@ def create_multi_line(name, dict_data):
                         list_x.append(str(d[1]).split()[1])
                         list_y.append(d[2])
                 dict_data_new[date] = ((list_x,list_y))
-        return draw_multi_line(name, dict_data_new)
+        return draw_multi_price_line(name, dict_data_new)
+
+#------------------------------------------------------------------
+
+def draw_number_line(name, list_x, list_y):
+        line = Line()
+        line.disable_xml_declaration = True
+        line.js = []
+
+        line.x_label_rotation = 45
+        line.x_labels_major_count = 31
+        #line.y_labels_major_every = 3
+        line.show_legend = False
+        line.print_values = False
+        line.width  = 1280
+        line.height = 720
+        line.value_formatter = lambda x:str(int(x))
+        #line.major_label_font_size = 20
+        #line.print_zeroes = True
+        line.show_minor_x_labels = False
+        #line.show_minor_y_labels = True
+        line.show_dots = False
+
+        line.title = name
+        #line.range = (min(list_y)-100, max(list_y)+300)
+        line.x_labels = list_x
+        #line.y_labels = map(lambda x:x*100, range(int((min(list_y)/100)-1), int((max(list_y)/100+4))))
+        line.add(name, list_y)
+        return line.render()
+
+def create_number_line(name, list_data):
+        list_x = []
+        list_y = []
+        for d in list_data:
+                list_x.append(str(d[1]).split()[1])
+                list_y.append(d[2])
+        return draw_number_line(name, list_x, list_y)
 
 #------------------------------------------------------------------
 
 def main():
         global dict_date, list_month
         redis = redis_db()
-        dict_data = read_mysql2dict()
+        dict_data = read_mysql2dict('10:30:00', '11:00:00', 'number')
         list_date = list(map(lambda x : dict_date[x], list_month))
-        date = '2014-05-24'
+        date = '2014-06-29'
         list_data = dict_data[date]
-        name = 'history:price:%s:60' % date
-        line = create_line(name, list_data)
+        name = 'history:number:%s:full' % date
+        line = create_number_line(name, list_data)
         print(name)
         #print(line)
 
