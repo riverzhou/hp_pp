@@ -64,7 +64,7 @@ def main():
         format_data = fmt_readexcel2list()
         for m in format_data:
                 list_data = format_data[m]
-                table = dict_table[m]
+                table = 'format_price_' + dict_date[m].replace('-','_')
                 mysql.clean_table(table)
                 mysql.insert_list(table, list_data)
         mysql.flush()
