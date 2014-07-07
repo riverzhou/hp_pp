@@ -124,7 +124,7 @@ class redis_logger():
 
         def debug(self, log, bin=False):
                 if self.log_level > self.dict_log_level['debug']: return
-                time = datetime.strftime(datetime.now(), '%y-%m-%d %H:%M:%S.%f')
+                time = datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S.%f')
                 if bin == True:
                         self.redis_sender.send(('debug', dumps((time, log),0)))
                 else:
@@ -132,7 +132,7 @@ class redis_logger():
 
         def info(self, log, bin=False):
                 if self.log_level > self.dict_log_level['info']: return
-                time = datetime.strftime(datetime.now(), '%y-%m-%d %H:%M:%S.%f')
+                time = datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S.%f')
                 if bin == True:
                         self.redis_sender.send(('info', dumps((time, log),0)))
                 else:
@@ -140,7 +140,7 @@ class redis_logger():
 
         def warning(self, log, bin=False):
                 if self.log_level > self.dict_log_level['warning']: return
-                time = datetime.strftime(datetime.now(), '%y-%m-%d %H:%M:%S.%f')
+                time = datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S.%f')
                 if bin == True:
                         self.redis_sender.send(('warning', dumps((time, log),0)))
                 else:
@@ -148,7 +148,7 @@ class redis_logger():
 
         def error(self, log, bin=False):
                 if self.log_level > self.dict_log_level['error']: return
-                time = datetime.strftime(datetime.now(), '%y-%m-%d %H:%M:%S.%f')
+                time = datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S.%f')
                 if bin == True:
                         self.redis_sender.send(('error', dumps((time, log),0)))
                 else:
@@ -156,7 +156,7 @@ class redis_logger():
 
         def critical(self, log, bin=False):
                 if self.log_level > self.dict_log_level['critical']: return
-                time = datetime.strftime(datetime.now(), '%y-%m-%d %H:%M:%S.%f')
+                time = datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S.%f')
                 if bin == True:
                         self.redis_sender.send(('critical', dumps((time, log),0)))
                 else:
