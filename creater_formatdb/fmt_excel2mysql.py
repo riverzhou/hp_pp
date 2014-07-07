@@ -52,21 +52,18 @@ def fmt_readexcel2list():
                 time = dict_time[m]
                 time_begin = date + ' ' + time[0]
                 time_end   = date + ' ' + time[1]
-                dict_format = fmt_formater(origin_data[m], time_begin, time_end)
-                format_data[m] = []
-                for time in dict_format:
-                        format_data[m].append(dict_format[time])
+                format_data[m] = fmt_formater(origin_data[m], time_begin, time_end)
         return format_data
 
 def main():
-        global dict_table
-        mysql = mysql_db()
+        global dict_table, pp_config
+        mysql = mysql_db(pp_config['mysql_format_db'])
         format_data = fmt_readexcel2list()
         for m in format_data:
                 list_data = format_data[m]
                 table = 'format_price_' + dict_date[m].replace('-','_')
                 mysql.clean_table(table)
-                mysql.insert_list(table, list_data)
+                mysql.insert_price_list(table, list_data)
         mysql.flush()
 
 if __name__ == '__main__':
