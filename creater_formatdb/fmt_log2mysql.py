@@ -13,6 +13,9 @@ from pp_udpproto        import udp_proto
 #====================================================
 
 date = '2014-06-29'
+month = '6月'
+
+#----------------------------------------------------
 
 def covert(source):
         return (str(source[1]), source[2])
@@ -47,14 +50,25 @@ def parse_log(parser, date, list_log):
         return (list_price, list_number)
         
 def main():
-        global date
+        global date, month, dict_number_time, dict_price_time
+
         org_mysql = mysql_db(pp_config['mysql_origin_db'])
         list_log = read_log(org_mysql, date)
         org_mysql.close()
         parser = udp_proto()
         list_price, list_number = parse_log(parser, date, list_log)
-        list_format_price  = fmt_formater(list_price,  date + ' ' + '11:00:00', date + ' ' + '11:30:00')
-        list_format_number = fmt_formater(list_number, date + ' ' + '10:30:00', date + ' ' + '11:00:00')
+
+        time_number = dict_number_time[month]
+        time_number_begin = date + ' ' + time_number[0]
+        time_number_end   = date + ' ' + time_number[1]
+
+        time_price = dict_price_time[month]
+        time_price_begin = date + ' ' + time_price[0]
+        time_price_end   = date + ' ' + time_price[1]
+
+        list_format_price  = fmt_formater(list_price,  time_price_begin,  time_price_end)
+        list_format_number = fmt_formater(list_number, time_number_begin, time_number_end)
+
         fmt_mysql = mysql_db(pp_config['mysql_format_db'])
         write_number(fmt_mysql, date, list_format_number)
         write_price(fmt_mysql, date, list_format_price)

@@ -49,7 +49,7 @@ def fmt_readexcel2list():
         format_data = OrderedDict()
         for m in list_month:
                 date = dict_date[m]
-                time = dict_time[m]
+                time = dict_price_time[m]
                 time_begin = date + ' ' + time[0]
                 time_end   = date + ' ' + time[1]
                 format_data[m] = fmt_formater(origin_data[m], time_begin, time_end)
