@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 
-from threading      import Lock
-from datetime       import datetime
-from os             import getcwd
-
-from pp_baseclass   import pp_thread
 from pp_udpworker   import udp_worker
 
 from pp_log         import logger
