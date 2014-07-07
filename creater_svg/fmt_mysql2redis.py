@@ -47,7 +47,7 @@ def price_m2r():
         write_dict2redis(dict_redis)
 
 def number_m2r():
-        dict_data = read_mysql2dict('number')
+        dict_data = read_mysql2dict(mode = 'number')
         dict_redis = fmt_dict2redis(dict_data)
         write_dict2redis(dict_redis, 'number')
 
