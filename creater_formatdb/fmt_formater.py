@@ -13,6 +13,7 @@ def time_add(time, second):
 
 def fmt_formater(list_origin, begin, end):
         dict_format = OrderedDict()
+        list_format = []
         n = time_sub(end, begin) + 1
         for i in range(n):
                 time = time_add(begin, i)
@@ -27,6 +28,6 @@ def fmt_formater(list_origin, begin, end):
                 if dict_format[time][1] == 0 : dict_format[time][1] = pre_price
                 if dict_format[time][1] > pre_price : pre_price = dict_format[time][1]
         for time in dict_format:
-                dict_format[time] = tuple(dict_format[time])
-        return dict_format
+                list_format.append(tuple(dict_format[time]))
+        return list_format
 
