@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from time           import sleep
+from time           import sleep, time
 from random         import randint
 from itertools      import repeat
 
