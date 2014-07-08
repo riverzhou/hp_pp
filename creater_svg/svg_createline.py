@@ -102,6 +102,7 @@ def draw_number_line(name, list_x, list_y):
         #line.y_labels_major_every = 3
         line.show_legend = False
         line.print_values = False
+        line.print_zeroes = False
         line.width  = 1280
         line.height = 720
         line.value_formatter = lambda x:str(int(x))
@@ -110,6 +111,7 @@ def draw_number_line(name, list_x, list_y):
         line.show_minor_x_labels = False
         #line.show_minor_y_labels = True
         line.show_dots = False
+        #line.interpolate = 'hermite'
 
         line.title = name
         #line.range = (min(list_y)-100, max(list_y)+300)
