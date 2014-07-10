@@ -130,6 +130,32 @@ def create_number_line(name, list_data):
 
 #------------------------------------------------------------------
 
+def draw_price_dm_line(name, list_x, list_y):
+        line = Line()
+        line.disable_xml_declaration = True
+        line.js = []
+
+        line.x_label_rotation = 45
+        line.y_labels_major_every = 1
+        line.show_legend = False
+        line.print_values = False
+        line.width  = 1280
+        line.height = 720
+        line.value_formatter = lambda x:str(int(x))
+        #line.major_label_font_size = 20
+        #line.print_zeroes = True
+        #line.show_minor_x_labels = True
+        #line.show_minor_y_labels = True
+
+        line.title = name 
+        line.range = (min(list_y)-100, max(list_y)+100)
+        line.x_labels = list_x
+        line.y_labels = map(lambda x:x*100, range(int((min(list_y)/100)-1), int((max(list_y)/100+2))))
+        line.add(name, list_y)
+        return line.render()
+
+#------------------------------------------------------------------
+
 def main():
         global dict_date, list_month
         redis = redis_db()

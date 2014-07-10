@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
 
-#list_price_month = ['1月','2月','3月','4月','5月','6月']
+list_price_month = ['1月','2月','3月','4月','5月','6月']
 
-list_price_month = ['6月']
+#list_price_month = ['6月']
+
+list_price_dm_month = ['1月','2月','3月','4月','5月','6月']
 
 list_number_month = ['6月']
 
