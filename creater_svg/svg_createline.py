@@ -157,10 +157,10 @@ def draw_price_dm_line(name, list_x, list_y):
 #------------------------------------------------------------------
 
 def main():
-        global dict_date, list_month
+        global dict_date, list_price_month
         redis = redis_db()
         dict_data = read_mysql2dict('10:30:00', '11:00:00', 'number')
-        list_date = list(map(lambda x : dict_date[x], list_month))
+        list_date = list(map(lambda x : dict_date[x], list_price_month))
         date = '2014-06-29'
         list_data = dict_data[date]
         name = 'history:number:%s:full' % date
