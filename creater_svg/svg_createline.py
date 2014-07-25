@@ -28,9 +28,11 @@ def draw_price_line(name, list_x, list_y):
         #line.show_minor_y_labels = True
 
         line.title = name 
-        line.range = (min(list_y)-100, max(list_y)+300)
+        digital_y = list(filter(lambda x:x != None, list_y))
+        if digital_y == [] : digital_y = [0]
+        line.range = (min(digital_y)-100, max(digital_y)+300)
         line.x_labels = list_x
-        line.y_labels = map(lambda x:x*100, range(int((min(list_y)/100)-1), int((max(list_y)/100+4))))
+        line.y_labels = map(lambda x:x*100, range(int((min(digital_y)/100)-1), int((max(digital_y)/100+4))))
         line.add(name, list_y)
         return line.render()
 

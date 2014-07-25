@@ -123,6 +123,8 @@ class redis_db():
         def clean(self, key):
                 return self.redis.delete(key)
 
+        def blk_get_one(self, key):
+                return self.redis.blpop(key)[1]
 
 #------------------------------------------------------------------------
 
