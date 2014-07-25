@@ -2,98 +2,30 @@
 
 from socketserver       import UDPServer, BaseRequestHandler
 from time               import time, localtime, strftime, sleep
-from abc                import ABCMeta, abstractmethod
 from struct             import pack, unpack
 from traceback          import print_exc
 from hashlib            import md5
 from xml.etree          import ElementTree
 from threading          import Thread, Event, Lock, Semaphore
 
-from pp_thread          import pp_subthread, pp_sender
+from pp_baseclass       import pp_thread, pp_sender
+from pp_config          import pp_config
+from pp_db              import mysql_db
 from pp_log             import logger, printer
 
 #-------------------------------------------
 
-UDP_SERVER =('', 999)
+UDP_SERVER =('0.0.0.0', 999)
 
 Thread.daemon  = True
 UDPServer.allow_reuse_address = True
 UDPServer.request_queue_size  = 100
 
 #================================================================================
-'''
-<TYPE>INFO</TYPE><INFO>A拍卖会：2014年4月19日上海市个人非营业性客车额度投标拍卖会
-投放额度数：8200
-本场拍卖会警示价：72600
-拍卖会起止时间：10:30至11:30
-首次出价时段：10:30至11:00
-修改出价时段：11:00至11:30
-
-          目前为首次出价时段
-系统目前时间：10:39:50
-目前已投标人数：77163
-目前最低可成交价：100
-最低可成交价出价时间：10:30:15</INFO>
-'''
-#-------------------------------------------------------------------------------=
-'''
-<TYPE>INFO</TYPE><INFO>B拍卖会：2014年4月19日上海市个人非营业性客车额度投标拍卖会
-投放额度数：8200
-目前已投标人数：94241
-拍卖会起止时间：10:30至11:30
-首次出价时段：10:30至11:00
-修改出价时段：11:00至11:30
-
-          目前为修改出价时段
-系统目前时间：11:09:37
-目前最低可成交价：72600
-最低可成交价出价时间：10:30:08
-目前修改价格区间：72300至72900</INFO>
-'''
-#================================================================================
-'''
-<xml><TYPE>FORMAT</TYPE><INFO>
-拍卖会：%1%
-投放额度数：%2%
-本场拍卖会警示价：%3%
-拍卖会起止时间：%4%至%5%
-首次出价时段：%6%至%7%
-修改出价时段：%8%至%9%
-
-          目前为首次出价时段
-系统目前时间：%10%
-目前已投标人数：%11%
-目前最低可成交价：%12%
-最低可成交价出价时间：%13%
-#
-拍卖会：%1%
-投放额度数：%2%
-目前已投标人数：%3%
-拍卖会起止时间：%4%至%5%
-首次出价时段：%6%至%7%
-修改出价时段：%8%至%9%
-
-          目前为修改出价时段
-系统目前时间：%10%
-目前最低可成交价：%11%
-最低可成交价出价时间：%12%
-目前修改价格区间：%13%至%14%</INFO><xml>
-'''
-#-------------------------------------------------------------------------------=
-'''
-<TYPE>INFO</TYPE><INFO>A2014年5月24日上海市个人非营业性客车额度投标拍卖会^7400^72600^10:30^11:30^10:30^11:00^11:00^11:30^10:30:13^8891^72600^10:30:13</INFO>
-'''
-#-------------------------------------------------------------------------------=
-'''
-<TYPE>INFO</TYPE><INFO>B2014年5月24日上海市个人非营业性客车额度投标拍卖会^7400^114121^10:30^11:30^10:30^11:00^11:00^11:30^11:00:14^72600^10:30:12^72300^72900</INFO>
-'''
 #================================================================================
 
 class proto_udp():
-        __metaclass__ = ABCMeta
-
-        @staticmethod
-        def decode(data):
+        def decode(self, data):
                 buff = b''
                 len0 = len(data)
                 len1 = len0 // 4
@@ -107,8 +39,7 @@ class proto_udp():
                 buff = buff[0:len0]
                 return buff
 
-        @staticmethod
-        def encode(data):
+        def encode(self, data):
                 buff = b''
                 len0 = len(data)
                 len1 = len0 // 4
@@ -122,8 +53,7 @@ class proto_udp():
                 buff = buff[0:len0]
                 return buff
 
-        @staticmethod
-        def udp_make_format_ack(key_val):
+        def udp_make_format_ack(self, key_val):
                 return ( (
                         '<xml><TYPE>FORMAT</TYPE><INFO>\r\n' +
                         '拍卖会：%1%\r\n' +
@@ -155,41 +85,7 @@ class proto_udp():
                         key_val['addr']
                         )
 
-        @staticmethod
-        def udp_make_client_ack(key_val):
-                return ( (
-                        '<xml><TYPE>FORMAT</TYPE><INFO>\r\n' +
-                        '拍卖会：%1%\r\n' +
-                        '投放额度数：%2%\r\n' +
-                        '本场拍卖会警示价：%3%\r\n' +
-                        '拍卖会起止时间：%4%至%5%\r\n' +
-                        '首次出价时段：%6%至%7%\r\n' +
-                        '修改出价时段：%8%至%9%\r\n' +
-                        '\r\n' +
-                        '          目前为首次出价时段\r\n' +
-                        '系统目前时间：%10%\r\n' +
-                        '目前已投标人数：%11%\r\n' +
-                        '目前最低可成交价：%12%\r\n' +
-                        '最低可成交价出价时间：%13%\r\n' +
-                        '#\r\n' +
-                        '拍卖会：%1%\r\n' +
-                        '投放额度数：%2%\r\n' +
-                        '目前已投标人数：%3%\r\n' +
-                        '拍卖会起止时间：%4%至%5%\r\n' +
-                        '首次出价时段：%6%至%7%\r\n' +
-                        '修改出价时段：%8%至%9%\r\n' +
-                        '\r\n' +
-                        '          目前为修改出价时段\r\n' +
-                        '系统目前时间：%10%\r\n' +
-                        '目前最低可成交价：%11%\r\n' +
-                        '最低可成交价出价时间：%12%\r\n' +
-                        '目前修改价格区间：%13%至%14%</INFO><xml>'
-                        ).encode('gb18030') ,
-                        key_val['addr']
-                        )
-
-        @staticmethod
-        def parse_ack(string):
+        def parse_ack(self, string):
                 key_val = {}
                 try:
                         xml_string = '<XML>' + string.strip() + '</XML>'
@@ -237,45 +133,32 @@ class proto_udp():
 
 #------------------------------------------------------
 
-class info_maker(pp_subthread, proto_udp):
+class info_maker(pp_thread, proto_udp):
         #strftime('%H:%M:%S',localtime(time()))
-        def __init__(self):
-                pp_subthread.__init__(self)
+        def __init__(self, info = ''):
+                pp_thread.__init__(self, info)
                 proto_udp.__init__(self)
                 self.addr_list = []
                 self.lock_addr = Lock()
                 self.number = 0
                 self.price  = 100
 
-        def run(self):
-                printer.debug('Thread %s : %s started' % (self.__class__.__name__, self.ident))
-                self.started_set()
-                try:
-                        count  = 0
-                        time_a = 600            # 上半场持续时间（秒）
-                        time_b = 600            # 下半场持续时间（秒）
-                        while True:
-                                if count < time_a :
-                                        self.proc_a()
-                                        count += 1
-                                elif count < time_a + time_b :
-                                        self.proc_b()
-                                        count += 1
-                                else :
-                                        self.proc_reset()
-                                        count = 0
+        def main(self):
+                time_a = 600            # 上半场持续时间（秒）
+                time_b = 600            # 下半场持续时间（秒）
+                while True:
+                        count = 0
+                        while count < time_a :
+                                self.make_a(count)
+                                count += 1
                                 sleep(1)
-                except KeyboardInterrupt:
-                        pass
-                except :
-                        print_exc()
-                printer.debug('Thread %s : %s stoped' % (self.__class__.__name__, self.ident))
+                        count = 0
+                        while count < time_b :
+                                self.make_b(count)
+                                count += 1
+                                sleep(1)
 
-        def proc_reset(self):
-                self.number = 1
-                self.price  = 100
-
-        def proc_a(self):
+        def make_a(self, count):
                 if len(self.addr_list) == 0 :
                         return
                 key_val = {}
@@ -287,7 +170,7 @@ class info_maker(pp_subthread, proto_udp):
                 self.price  += 100
                 self.proc(self.udp_make_a_info(key_val))
 
-        def proc_b(self):
+        def make_b(self, count):
                 if len(self.addr_list) == 0 :
                         return
                 key_val = {}
@@ -299,7 +182,7 @@ class info_maker(pp_subthread, proto_udp):
                 self.price  += 100
                 self.proc(self.udp_make_b_info(key_val))
 
-        def proc(self, info):
+        def make(self, info):
                 addr_list = []
                 self.lock_addr.acquire()
                 for addr in self.addr_list :
@@ -307,12 +190,6 @@ class info_maker(pp_subthread, proto_udp):
                 self.lock_addr.release()
                 for addr in addr_list :
                         daemon_bs.put((info, addr))
-
-        def do_a_info(self):
-                pass
-
-        def do_b_info(self):
-                pass
 
         def reg(self, addr):
                 self.lock_addr.acquire()
@@ -328,23 +205,21 @@ class info_maker(pp_subthread, proto_udp):
                                 break
                 self.lock_addr.release()
 
-#----------------------------
+#------------------------------------------------------
 
 class buff_sender(pp_sender):
-
         def proc(self, buff):  # buff 为 (info, addr)
+                global server_udp, daemon_im
                 info, addr = buff
-                data = proto_udp.encode(info)
+                data = daemon_im.encode(info)
                 server_udp.socket.sendto(data, addr)
 
 #------------------------------------------------------
 
 class udp_handle(BaseRequestHandler):
-
         def handle(self):
                 proto_dict = {
                         'FORMAT' : self.proc_format ,
-                        'CLIENT' : self.proc_client ,
                         'LOGOFF' : self.proc_logoff ,
                         }
                 string = self.get()
@@ -352,7 +227,7 @@ class udp_handle(BaseRequestHandler):
                 key_val['addr'] = self.client_address
                 try:
                         proc = proto_dict[key_val['TYPE']]
-                except KeyError:
+                except  KeyError:
                         pass
                 except:
                         print_exc()
@@ -363,28 +238,36 @@ class udp_handle(BaseRequestHandler):
                 return proto_udp.decode(self.request[0]).decode('gb18030')
 
         def proc_logoff(self, key_val):
+                global daemon_im
                 daemon_im.unreg(key_val['addr'])
 
         def proc_format(self, key_val):
+                global daemon_im, daemon_bs
                 daemon_im.reg(key_val['addr'])
-                daemon_bs.put(proto_udp.udp_make_format_ack(key_val))
-
-        def proc_client(self, key_val):
-                daemon_bs.put(proto_udp.udp_make_client_ack(key_val))
-
-#-------------------------------------------------------------------------------
-
-daemon_im = info_maker()
-daemon_bs = buff_sender()
+                daemon_bs.put(daemon_im.udp_make_format_ack(key_val))
 
 #================================================================================
 
-if __name__ == "__main__":
+def main():
+        global daemon_im, daemon_bs, server_udp
+        daemon_im = info_maker()
         daemon_im.start()
-        daemon_im.started()
+        daemon_im.wait_for_start()
+        daemon_bs = buff_sender()
         daemon_bs.start()
-        daemon_bs.started()
+        daemon_bs.wait_for_start()
         server_udp = UDPServer(UDP_SERVER, udp_handle)
+        logger.debug('UDP Server start at %s : %d' % (UDP_SERVER[0], UDP_SERVER[1]))
         server_udp.serve_forever()
+
+if __name__ == "__main__":
+        try:
+                main()
+        except  KeyboardInterrupt:
+                pass
+        except:
+                print_exc()
+        finally:
+                print()
 
 
