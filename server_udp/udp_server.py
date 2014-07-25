@@ -192,19 +192,17 @@ class info_maker(pp_thread, proto_udp):
                 while True:
                         count = 0
                         while count < self.time_a :
-                                self.make_a(count)
-                                count += 1
+                                if self.make_a(count) == True : count += 1
                                 sleep(getsleeptime(1))
                         count = 0
                         while count < self.time_b :
-                                self.make_b(count)
-                                count += 1
+                                if self.make_b(count) == True : count += 1
                                 sleep(getsleeptime(1))
 
         def make_a(self, count):
                 global price_limit, number_limit
                 if len(self.addr_list) == 0 :
-                        return
+                        return False
                 key_val = {}
                 key_val['systime']  = self.list_data_a[count][0]
                 key_val['lowtime']  = self.list_data_a[count][0]
@@ -214,11 +212,12 @@ class info_maker(pp_thread, proto_udp):
                 key_val['number_limit'] = number_limit
                 key_val['price_limit']  = price_limit
                 self.make(self.udp_make_a_info(key_val))
+                return True
 
         def make_b(self, count):
                 global number_people, number_limit
                 if len(self.addr_list) == 0 :
-                        return
+                        return False
                 key_val = {}
                 key_val['systime']  = self.list_data_b[count][0]
                 key_val['lowtime']  = self.list_data_b[count][0]
@@ -227,6 +226,7 @@ class info_maker(pp_thread, proto_udp):
                 key_val['date']     = self.date
                 key_val['number_limit'] = number_limit
                 self.make(self.udp_make_b_info(key_val))
+                return True
 
         def make(self, info):
                 addr_list = []
