@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from socketserver       import UDPServer, BaseRequestHandler
-from time               import time, localtime, strftime, sleep
+from time               import time, sleep, localtime, mktime, strptime, strftime
 from struct             import pack, unpack
 from traceback          import print_exc
 from hashlib            import md5
@@ -21,7 +21,43 @@ Thread.daemon  = True
 UDPServer.allow_reuse_address = True
 UDPServer.request_queue_size  = 100
 
+price_limit   = 72600
+number_limit  = 7400
+number_people = 135000
+
 #================================================================================
+
+def time_sub(end, begin):
+        return int(mktime(strptime('1970-01-01 '+end, '%Y-%m-%d %H:%M:%S'))) - int(mktime(strptime('1970-01-01 '+begin, '%Y-%m-%d %H:%M:%S')))
+
+def getsleeptime(itime):
+        return itime - time()%itime
+
+def read_mysql2list(date, begin, end, mode):
+        global pp_config
+        mysql = mysql_db(pp_config['mysql_format_db'])
+        if mode == 'price':
+                prefix = 'format_price_'
+        elif mode == 'number':
+                prefix = 'format_number_'
+        else:
+                return None
+        table = prefix + date.replace('-','_')
+        list_data = mysql.read(table)
+        list_out = []
+        for data in list_data:
+                time = str(data[1]).split()[1]
+                if time_sub(time, begin) >= 0 and time_sub(end, time) >= 0:
+                        list_out.append(data)
+        mysql.close()
+        return list_out
+
+def format_data(list_data):
+        list_out = []
+        for data in list_data :
+                list_out.append((str(data[1]).split()[1], str(data[2])))
+        return list_out
+
 #================================================================================
 
 class proto_udp():
@@ -93,10 +129,10 @@ class proto_udp():
                         for child in root:
                                 key_val[child.tag] = child.text
                 except :
-                        printer.error(string)
-                printer.info(string)
-                printer.error(sorted(key_val.items()))
-                printer.error('')
+                        print(string)
+                print(string)
+                #print(sorted(key_val.items()))
+                #print('')
                 return key_val
 
         def udp_make_a_info(self, key_val):
@@ -104,8 +140,11 @@ class proto_udp():
                 <TYPE>INFO</TYPE><INFO>A2014年5月24日上海市个人非营业性客车额度投标拍卖会^7400^72600^10:30^11:30^10:30^11:00^11:00^11:30^10:30:13^8891^72600^10:30:13</INFO>
                 '''
                 info = ( (
-                        '<TYPE>INFO</TYPE><INFO>A2014年5月24日上海市个人非营业性客车额度投标拍卖会^7400^72600^10:30^11:30^10:30^11:00^11:00^11:30^%s^%s^%s^%s</INFO>'
+                        '<TYPE>INFO</TYPE><INFO>A%s上海市个人非营业性客车额度投标拍卖会^%s^%s^10:30^11:30^10:30^11:00^11:00^11:30^%s^%s^%s^%s</INFO>'
                         ) % (
+                        key_val['date'],
+                        key_val['number_limit'],
+                        key_val['price_limit'],
                         key_val['systime'],
                         key_val['number'],
                         key_val['price'],
@@ -119,8 +158,10 @@ class proto_udp():
                 <TYPE>INFO</TYPE><INFO>B2014年5月24日上海市个人非营业性客车额度投标拍卖会^7400^114121^10:30^11:30^10:30^11:00^11:00^11:30^11:00:14^72600^10:30:12^72300^72900</INFO>
                 '''
                 info = ( (
-                        '<TYPE>INFO</TYPE><INFO>B2014年5月24日上海市个人非营业性客车额度投标拍卖会^7400^%s^10:30^11:30^10:30^11:00^11:00^11:30^%s^%s^%s^%s^%s</INFO>'
+                        '<TYPE>INFO</TYPE><INFO>B%s上海市个人非营业性客车额度投标拍卖会^%s^%s^10:30^11:30^10:30^11:00^11:00^11:30^%s^%s^%s^%s^%s</INFO>'
                         ) % (
+                        key_val['date'],
+                        key_val['number_limit'],
                         key_val['number'],
                         key_val['systime'],
                         key_val['price'],
@@ -136,51 +177,56 @@ class proto_udp():
 class info_maker(pp_thread, proto_udp):
         #strftime('%H:%M:%S',localtime(time()))
         def __init__(self, info = ''):
+                global pp_config
                 pp_thread.__init__(self, info)
                 proto_udp.__init__(self)
                 self.addr_list = []
                 self.lock_addr = Lock()
-                self.number = 0
-                self.price  = 100
+                self.time_a = time_sub(pp_config['udp_first_end'], pp_config['udp_first_begin'])
+                self.time_b = time_sub(pp_config['udp_second_end'], pp_config['udp_second_begin'])
+                self.list_data_a = format_data(read_mysql2list(pp_config['udp_date'], pp_config['udp_first_begin'], pp_config['udp_first_end'], 'number'))
+                self.list_data_b = format_data(read_mysql2list(pp_config['udp_date'], pp_config['udp_second_begin'], pp_config['udp_second_end'], 'price'))
+                self.date   = '%s年%s月%s日' % tuple(pp_config['udp_date'].split('-'))
 
         def main(self):
-                time_a = 600            # 上半场持续时间（秒）
-                time_b = 600            # 下半场持续时间（秒）
                 while True:
                         count = 0
-                        while count < time_a :
+                        while count < self.time_a :
                                 self.make_a(count)
                                 count += 1
-                                sleep(1)
+                                sleep(getsleeptime(1))
                         count = 0
-                        while count < time_b :
+                        while count < self.time_b :
                                 self.make_b(count)
                                 count += 1
-                                sleep(1)
+                                sleep(getsleeptime(1))
 
         def make_a(self, count):
+                global price_limit, number_limit
                 if len(self.addr_list) == 0 :
                         return
                 key_val = {}
-                key_val['systime']   = strftime('%H:%M:%S',localtime(time()))
-                key_val['lowtime']   = strftime('%H:%M:%S',localtime(time()))
-                key_val['number']    = self.number
-                key_val['price']     = self.price
-                self.number += 1
-                self.price  += 100
-                self.proc(self.udp_make_a_info(key_val))
+                key_val['systime']  = self.list_data_a[count][0]
+                key_val['lowtime']  = self.list_data_a[count][0]
+                key_val['number']   = self.list_data_a[count][1]
+                key_val['price']    = price_limit
+                key_val['date']     = self.date
+                key_val['number_limit'] = number_limit
+                key_val['price_limit']  = price_limit
+                self.make(self.udp_make_a_info(key_val))
 
         def make_b(self, count):
+                global number_people, number_limit
                 if len(self.addr_list) == 0 :
                         return
                 key_val = {}
-                key_val['systime']   = strftime('%H:%M:%S',localtime(time()))
-                key_val['lowtime']   = strftime('%H:%M:%S',localtime(time()))
-                key_val['number']    = self.number
-                key_val['price']     = self.price
-                self.number += 1
-                self.price  += 100
-                self.proc(self.udp_make_b_info(key_val))
+                key_val['systime']  = self.list_data_b[count][0]
+                key_val['lowtime']  = self.list_data_b[count][0]
+                key_val['number']   = number_people
+                key_val['price']    = self.list_data_b[count][1]
+                key_val['date']     = self.date
+                key_val['number_limit'] = number_limit
+                self.make(self.udp_make_b_info(key_val))
 
         def make(self, info):
                 addr_list = []
@@ -218,12 +264,13 @@ class buff_sender(pp_sender):
 
 class udp_handle(BaseRequestHandler):
         def handle(self):
+                global daemon_im
                 proto_dict = {
                         'FORMAT' : self.proc_format ,
                         'LOGOFF' : self.proc_logoff ,
                         }
                 string = self.get()
-                key_val = proto_udp.parse_ack(string)
+                key_val = daemon_im.parse_ack(string)
                 key_val['addr'] = self.client_address
                 try:
                         proc = proto_dict[key_val['TYPE']]
@@ -235,7 +282,8 @@ class udp_handle(BaseRequestHandler):
                         proc(key_val)
 
         def get(self):
-                return proto_udp.decode(self.request[0]).decode('gb18030')
+                global daemon_im
+                return daemon_im.decode(self.request[0]).decode('gb18030')
 
         def proc_logoff(self, key_val):
                 global daemon_im
