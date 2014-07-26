@@ -128,7 +128,7 @@ class pp_client():
 
         def cb_trigger_image(self, n):
                 global current_price
-                self.console.update_image_price(self.list_trigger_delta[n]+current_price.get())
+                self.console.update_image_price(self.list_trigger_delta[n]+current_price.get(), n)
                 #print(self.list_trigger_time[n], self.list_trigger_delta[n]+current_price.get())
 
         def reg_udp_trigger(self):
@@ -356,6 +356,8 @@ class cmd_proc(pp_sender):
 class Console(Console):
         def __init__(self, master=None):
                 super(Console, self).__init__(master)
+
+                self.list_image_price_button = ['red','blue','green','black']
 
                 self.dict_image_button = {'C' : ('连图片通道','blue'), 'S' : ('停图片通道','red')}
                 self.dict_price_button = {'C' : ('连价格通道','blue'), 'S' : ('停价格通道','red')}
@@ -595,10 +597,12 @@ class Console(Console):
                 self.output_bid_status.update_idletasks()
                 self.lock_bid_status.release()
 
-        def update_image_price(self, price):
+        def update_image_price(self, price, color):
                 self.lock_image_price.acquire()
                 self.input_image_price.delete(0, 'end')
                 self.input_image_price.insert(0, price)
+                self.button_image_price['foreground']         = self.list_image_price_button[color]
+                self.button_image_price['activeforeground']   = self.list_image_price_button[color]
                 self.input_image_price.update_idletasks()
                 self.lock_image_price.release()
 
@@ -681,6 +685,13 @@ class Console(Console):
                         self.output_image.update_idletasks()
                         self.lock_image.release()
                         #self.output_last_price.update_idletasks()
+
+                        self.lock_image_price.acquire()
+                        self.button_image_price['foreground']         = self.list_image_price_button[-1]
+                        self.button_image_price['activeforeground']   = self.list_image_price_button[-1]
+                        self.input_image_price.update_idletasks()
+                        self.lock_image_price.release()
+
 
         def save_jpg(self,jpg):
                 f = open('bad.jpg','wb')
