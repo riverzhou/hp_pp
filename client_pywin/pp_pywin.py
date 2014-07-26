@@ -66,7 +66,7 @@ class pp_udp():
                 self.udp[1] = None
 
 class pp_trigger_daemon(pp_thread):
-        intertime = 0.25
+        intertime = 0.1
         def __init__(self, list_event, cb_trigger, info = ''):
                 pp_thread.__init__(self, info)
                 self.list_event = list_event
@@ -78,7 +78,7 @@ class pp_trigger_daemon(pp_thread):
         def main(self):
                 while True:
                         for n in range(len(self.list_event)) :
-                                if self.list_event[n].wait(0) == True :
+                                if self.list_event[n] == True :
                                         if self.list_flag[n] == False :
                                                 self.cb_trigger(n)
                                         self.list_flag[n] = True
@@ -93,8 +93,6 @@ class pp_client():
                 self.console                    = console
                 self.commander                  = commander
                 self.machine                    = proto_machine()
-                #self.udp                        = None
-                #self.udp2                       = None
                 self.info_val                   = {}
                 self.info_val['bidno']          = key_val['bidno']
                 self.info_val['passwd']         = key_val['passwd']
@@ -122,7 +120,7 @@ class pp_client():
 
                 self.list_trigger_event         = []
                 for n in range(len(self.list_trigger_time)):
-                        self.list_trigger_event.append(Event())
+                        self.list_trigger_event.append(False)
 
                 self.trigger_daemon = pp_trigger_daemon(self.list_trigger_event, self.cb_trigger_image)
                 self.trigger_daemon.start()
@@ -130,7 +128,8 @@ class pp_client():
 
         def cb_trigger_image(self, n):
                 global current_price
-                print(self.list_trigger_time[n], self.list_trigger_delta[n]+current_price.get())
+                self.console.update_image_price(self.list_trigger_delta[n]+current_price.get())
+                #print(self.list_trigger_time[n], self.list_trigger_delta[n]+current_price.get())
 
         def reg_udp_trigger(self):
                 self.commander.udp.reg_trigger(self.list_trigger_time, self.list_trigger_event)
@@ -384,6 +383,7 @@ class Console(Console):
                 self.lock_image         = Lock()
                 self.lock_image_button  = Lock()
                 self.lock_price_button  = Lock()
+                self.lock_image_price   = Lock()
 
         def load_database(self):
                 global database
@@ -594,6 +594,13 @@ class Console(Console):
                 self.output_bid_status['text']      = info
                 self.output_bid_status.update_idletasks()
                 self.lock_bid_status.release()
+
+        def update_image_price(self, price):
+                self.lock_image_price.acquire()
+                self.input_image_price.delete(0, 'end')
+                self.input_image_price.insert(0, price)
+                self.input_image_price.update_idletasks()
+                self.lock_image_price.release()
 
         def update_udp_input(self, bidno, pid):
                 self.lock_udp_input.acquire()

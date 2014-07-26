@@ -207,7 +207,7 @@ class udp_worker(pp_thread):
                 list_t = list(map(lambda t: time_sub(cur_time, t), self.list_trigger_time))
                 for n in range(len(list_t)):
                         if list_t[n] > 0 and list_t[n] <= 3 :
-                                self.list_trigger_event[n].set()
+                                self.list_trigger_event[n] = True
 
         def recv_udp(self):
                 while True:
