@@ -7,14 +7,16 @@ from PIL                import Image, ImageTk
 from io                 import BytesIO
 from base64             import b64decode
 from threading          import Event, Lock
+from time               import sleep, time
 
 from pp_log             import logger, printer
-from pp_baseclass       import pp_sender
+from pp_baseclass       import pp_sender, pp_thread
 from pp_udpworker       import udp_worker
 from pp_sslproto        import proto_machine
 from pp_sslworker       import proc_ssl_login, proc_ssl_image, proc_ssl_price
 from MainWin            import Console
 from pp_config          import pp_config
+from pp_udpworker       import current_price
 
 #===========================================================
 
@@ -63,14 +65,36 @@ class pp_udp():
                 self.udp[0] = None
                 self.udp[1] = None
 
+class pp_trigger_daemon(pp_thread):
+        intertime = 0.25
+        def __init__(self, list_event, cb_trigger, info = ''):
+                pp_thread.__init__(self, info)
+                self.list_event = list_event
+                self.cb_trigger = cb_trigger
+                self.list_flag  = []
+                for n in range(len(self.list_event)):
+                        self.list_flag.append(False)
+
+        def main(self):
+                while True:
+                        for n in range(len(self.list_event)) :
+                                if self.list_event[n].wait(0) == True :
+                                        if self.list_flag[n] == False :
+                                                self.cb_trigger(n)
+                                        self.list_flag[n] = True
+                        sleep(self.getsleeptime(self.intertime))
+
+        def getsleeptime(self, itime):
+                return itime - time()%itime
+
 class pp_client():
         def __init__(self, console, commander, key_val):
                 global pp_config
                 self.console                    = console
                 self.commander                  = commander
                 self.machine                    = proto_machine()
-                self.udp                        = None
-                self.udp2                       = None
+                #self.udp                        = None
+                #self.udp2                       = None
                 self.info_val                   = {}
                 self.info_val['bidno']          = key_val['bidno']
                 self.info_val['passwd']         = key_val['passwd']
@@ -91,9 +115,25 @@ class pp_client():
                 if pp_config['trigger_time_second'] != '' : self.list_trigger_time.append(pp_config['trigger_time_second'])
                 if pp_config['trigger_time_third']  != '' : self.list_trigger_time.append(pp_config['trigger_time_third'])
 
+                self.list_trigger_delta         = []
+                if pp_config['trigger_delta_first']  != '' : self.list_trigger_delta.append(int(pp_config['trigger_delta_first']))
+                if pp_config['trigger_delta_second'] != '' : self.list_trigger_delta.append(int(pp_config['trigger_delta_second']))
+                if pp_config['trigger_delta_third']  != '' : self.list_trigger_delta.append(int(pp_config['trigger_delta_third']))
+
                 self.list_trigger_event         = []
                 for n in range(len(self.list_trigger_time)):
                         self.list_trigger_event.append(Event())
+
+                self.trigger_daemon = pp_trigger_daemon(self.list_trigger_event, self.cb_trigger_image)
+                self.trigger_daemon.start()
+                self.trigger_daemon.wait_for_start()
+
+        def cb_trigger_image(self, n):
+                global current_price
+                print(self.list_trigger_time[n], self.list_trigger_delta[n]+current_price.get())
+
+        def reg_udp_trigger(self):
+                self.commander.udp.reg_trigger(self.list_trigger_time, self.list_trigger_event)
 
         def price_worker_in(self, group):
                 worker = [0,0]
@@ -292,6 +332,8 @@ class cmd_proc(pp_sender):
                         self.client = pp_client(self.console, self, key_val)
                 if self.client != None :
                         self.client.login(key_val)
+                if self.udp != None and self.client != None :
+                        self.client.reg_udp_trigger()
 
         def proc_udp_login(self, key_val):
                 if self.udp == None :
@@ -301,6 +343,8 @@ class cmd_proc(pp_sender):
                         self.udp = pp_udp(self.console, self, key_val)
                 if self.udp != None :
                         self.udp.login(key_val)
+                if self.udp != None and self.client != None :
+                        self.client.reg_udp_trigger()
 
         def proc_image_price(self, key_val):
                 if self.client != None :
