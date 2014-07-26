@@ -10,6 +10,7 @@ def parse_ini():
 
         thread_pool  = config['thread_pool']    if 'thread_pool'  in config     else None
         redis_server = config['redis_server']   if 'redis_server' in config     else None
+        trigger_time = config['trigger_time']   if 'trigger_time' in config     else None
 
         key_val = {}
         if thread_pool != None :
@@ -18,6 +19,9 @@ def parse_ini():
         if redis_server != None :
                 for key in redis_server:
                         key_val['redis_'+key]   = redis_server[key]
+        if trigger_time != None :
+                for key in trigger_time:
+                        key_val['trigger_'+key] = trigger_time[key]
 
         return key_val
 

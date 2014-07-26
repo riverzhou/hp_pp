@@ -4,12 +4,21 @@ from datetime       import datetime
 from traceback      import print_exc
 from socket         import socket, AF_INET, SOCK_DGRAM
 from threading      import Lock
+from time           import time, sleep, localtime, mktime, strptime, strftime
 
 from pp_baseclass   import pp_thread
 from pp_udpproto    import udp_proto
 from pp_server      import server_dict
 
 from pp_log         import logger, printer
+
+#=============================================================
+
+def time_sub(end, begin):
+        return int(mktime(strptime('1970-01-01 '+end, '%Y-%m-%d %H:%M:%S'))) - int(mktime(strptime('1970-01-01 '+begin, '%Y-%m-%d %H:%M:%S')))
+
+def getsleeptime(itime):
+        return itime - time()%itime
 
 #=============================================================
 
@@ -69,6 +78,9 @@ class udp_worker(pp_thread):
                 self.event_shot  = None
                 self.price_shot  = 0
 
+                self.list_trigger_time  = None
+                self.list_trigger_event = None
+
                 self.udp_format  = None
 
                 self.bidno       = key_val['bidno']
@@ -91,6 +103,10 @@ class udp_worker(pp_thread):
                 while True:
                         if self.flag_stop == True: break
                         self.update_status()
+
+        def reg_trigger(self, list_time, list_event):
+                self.list_trigger_time  = list_time
+                self.list_trigger_event = list_event
 
         def reg(self, price, event):
                 try:
@@ -170,17 +186,28 @@ class udp_worker(pp_thread):
                 global current_price
                 current_price.set(int_price)
 
-                if self.price_shot != 0 and self.event_shot != None and self.price_shot <= int_price  + 300 and self.price_shot >= int_price - 300:
+                self.check_shot_price(int_price)
+                self.check_image_price(int_price, stime)
+
+                if self.console != None :
+                        self.console.update_udp_info(ctime, stime, price)
+                        self.console.update_bid_status(bidinfo)
+
+                printer.warning(info_val, True)
+
+        def check_shot_price(self, cur_price):
+                if self.price_shot != 0 and self.event_shot != None and self.price_shot <= cur_price + 300 and self.price_shot >= cur_price - 300:
                         try:
                                 self.event_shot.set()
                         except:
                                 print_exc()
 
-                if self.console != None : self.console.update_udp_info(ctime, stime, price)
-
-                if self.console != None : self.console.update_bid_status(bidinfo)
-
-                printer.warning(info_val, True)
+        def check_image_price(self, cur_price, cur_time):
+                if self.list_trigger_time == None or self.list_trigger_event == None : return
+                list_t = list(map(lambda t: time_sub(cur_time, t), self.list_trigger_time))
+                for n in range(len(list_t)):
+                        if list_t[n] > 0 and list_t[n] <= 3 :
+                                self.list_trigger_event[n].set()
 
         def recv_udp(self):
                 while True:

@@ -14,6 +14,7 @@ from pp_udpworker       import udp_worker
 from pp_sslproto        import proto_machine
 from pp_sslworker       import proc_ssl_login, proc_ssl_image, proc_ssl_price
 from MainWin            import Console
+from pp_config          import pp_config
 
 #===========================================================
 
@@ -48,6 +49,10 @@ class pp_udp():
                 self.udp[0].reg(price_shot, event_shot)
                 self.udp[1].reg(price_shot, event_shot)
 
+        def reg_trigger(self, list_time, list_event):
+                self.udp[0].reg_trigger(list_time, list_event)
+                self.udp[1].reg_trigger(list_time, list_event)
+
         def start(self):
                 if self.udp[0] != None :        self.udp[0].start()
                 if self.udp[1] != None :        self.udp[1].start()
@@ -60,6 +65,7 @@ class pp_udp():
 
 class pp_client():
         def __init__(self, console, commander, key_val):
+                global pp_config
                 self.console                    = console
                 self.commander                  = commander
                 self.machine                    = proto_machine()
@@ -79,6 +85,15 @@ class pp_client():
                 self.lock_price_worker          = Lock()
                 self.lock_login_cb              = Lock()
                 self.lock_image_cb              = Lock()
+
+                self.list_trigger_time          = []
+                if pp_config['trigger_time_first']  != '' : self.list_trigger_time.append(pp_config['trigger_time_first'])
+                if pp_config['trigger_time_second'] != '' : self.list_trigger_time.append(pp_config['trigger_time_second'])
+                if pp_config['trigger_time_third']  != '' : self.list_trigger_time.append(pp_config['trigger_time_third'])
+
+                self.list_trigger_event         = []
+                for n in range(len(self.list_trigger_time)):
+                        self.list_trigger_event.append(Event())
 
         def price_worker_in(self, group):
                 worker = [0,0]
