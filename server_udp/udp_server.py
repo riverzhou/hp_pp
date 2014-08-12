@@ -30,6 +30,10 @@ number_people = 135000
 def time_sub(end, begin):
         return int(mktime(strptime('1970-01-01 '+end, '%Y-%m-%d %H:%M:%S'))) - int(mktime(strptime('1970-01-01 '+begin, '%Y-%m-%d %H:%M:%S')))
 
+def time_add(time, second):
+        ret = strftime('%Y-%m-%d %H:%M:%S', localtime(int(mktime(strptime('1970-01-01 '+time, "%Y-%m-%d %H:%M:%S"))) + second))
+        return ret.split()[1]
+
 def getsleeptime(itime):
         return itime - time()%itime
 
@@ -50,6 +54,14 @@ def read_mysql2list(date, begin, end, mode):
                 if time_sub(time, begin) >= 0 and time_sub(end, time) >= 0:
                         list_out.append(data)
         mysql.close()
+        return list_out
+
+def create_time(begin, end):
+        list_out = []
+        number = time_sub(end, begin)
+        for i in range(number):
+                time = time_add(begin, i)
+                list_out.append(time)
         return list_out
 
 def format_data(list_data):
@@ -135,6 +147,42 @@ class proto_udp():
                 #print('')
                 return key_val
 
+
+        def udp_make_x_info(self, key_val):
+                '''
+                <TYPE>INFO</TYPE><INFO>C2014年5月24日上海市个人非营业性客车额度投标拍卖会尚未开始。
+                起止时间为：
+                2014年5月24日10时30分0秒
+                到2014年5月24日11时30分0秒
+
+                系统目前时间：10:20:06</INFO>
+                '''
+                info = ( (
+                        '<TYPE>INFO</TYPE><INFO>C%s上海市个人非营业性客车额度投标拍卖会尚未开始。\r\n起止时间为：\r\n%s10时30分0秒\r\n到%s11时30分0秒\r\n\r\n系统目前时间：%s</INFO>'
+                        ) % (
+                        key_val['date'],
+                        key_val['date'],
+                        key_val['date'],
+                        key_val['systime']
+                        ) )
+                print(info)
+                return info.encode('gb18030')
+
+        def udp_make_y_info(self, key_val):
+                '''
+                <TYPE>INFO</TYPE><INFO>C2014年5月24日上海市个人非营业性客车额度投标拍卖会已经结束，稍后发布拍卖会结果，请等待！
+
+
+                拍卖会结果也可通过本公司网站WWW.ALLTOBID.COM进行查询。</INFO>
+                '''
+                info = ( (
+                        '<TYPE>INFO</TYPE><INFO>C%s上海市个人非营业性客车额度投标拍卖会已经结束，稍后发布拍卖会结果，请等待！\r\n\r\n拍卖会结果也可通过本公司网站WWW.ALLTOBID.COM进行查询。</INFO>'
+                        ) % (
+                        key_val['date']
+                        ) )
+                print(info)
+                return info.encode('gb18030')
+
         def udp_make_a_info(self, key_val):
                 '''
                 <TYPE>INFO</TYPE><INFO>A2014年5月24日上海市个人非营业性客车额度投标拍卖会^7400^72600^10:30^11:30^10:30^11:00^11:00^11:30^10:30:13^8891^72600^10:30:13</INFO>
@@ -182,8 +230,12 @@ class info_maker(pp_thread, proto_udp):
                 proto_udp.__init__(self)
                 self.addr_list = []
                 self.lock_addr = Lock()
+                self.time_x = time_sub(pp_config['udp_before_end'], pp_config['udp_before_begin'])
+                self.time_y = time_sub(pp_config['udp_after_end'], pp_config['udp_after_begin'])
                 self.time_a = time_sub(pp_config['udp_first_end'], pp_config['udp_first_begin'])
                 self.time_b = time_sub(pp_config['udp_second_end'], pp_config['udp_second_begin'])
+                self.list_data_x = create_time(pp_config['udp_before_begin'], pp_config['udp_before_end'])
+                self.list_data_y = create_time(pp_config['udp_after_begin'], pp_config['udp_after_end'])
                 self.list_data_a = format_data(read_mysql2list(pp_config['udp_date'], pp_config['udp_first_begin'], pp_config['udp_first_end'], 'number'))
                 self.list_data_b = format_data(read_mysql2list(pp_config['udp_date'], pp_config['udp_second_begin'], pp_config['udp_second_end'], 'price'))
                 self.date   = '%s年%s月%s日' % tuple(pp_config['udp_date'].split('-'))
@@ -191,13 +243,44 @@ class info_maker(pp_thread, proto_udp):
         def main(self):
                 while True:
                         count = 0
+                        while count < self.time_x :
+                                if self.make_x(count) == True : count += 1
+                                sleep(getsleeptime(1))
+
+                        count = 0
                         while count < self.time_a :
                                 if self.make_a(count) == True : count += 1
                                 sleep(getsleeptime(1))
+
                         count = 0
                         while count < self.time_b :
                                 if self.make_b(count) == True : count += 1
                                 sleep(getsleeptime(1))
+
+                        count = 0
+                        while count < self.time_y :
+                                if self.make_y(count) == True : count += 1
+                                sleep(getsleeptime(1))
+
+                        break
+
+        def make_x(self, count):
+                if len(self.addr_list) == 0 :
+                        return False
+                key_val = {}
+                key_val['systime']  = self.list_data_x[count]
+                key_val['date']     = self.date
+                self.make(self.udp_make_x_info(key_val))
+                return True
+
+        def make_y(self, count):
+                if len(self.addr_list) == 0 :
+                        return False
+                key_val = {}
+                key_val['systime']  = self.list_data_y[count]
+                key_val['date']     = self.date
+                self.make(self.udp_make_y_info(key_val))
+                return True
 
         def make_a(self, count):
                 global price_limit, number_limit
