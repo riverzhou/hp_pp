@@ -262,8 +262,6 @@ class info_maker(pp_thread, proto_udp):
                                 if self.make_y(count) == True : count += 1
                                 sleep(getsleeptime(1))
 
-                        break
-
         def make_x(self, count):
                 if len(self.addr_list) == 0 :
                         return False
