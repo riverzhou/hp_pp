@@ -1,43 +1,34 @@
 #!/usr/bin/env python3
 
-from pp_udpworker   import udp_worker
+from pp_udpworker   import fd_udp_init, daemon_udp
 
 from pp_log         import logger
 from pp_config      import pp_config
 
+from pp_server      import pp_dns_init
+
+
 #=============================================================
 
 def main():
-        global pp_config
+        global pp_config, daemon_udp
 
-        arg_val =({},{})
-        udp =[None,None]
+        pp_dns_init()
+        fd_udp_init()
 
-        arg_val[0]['bidno'] = pp_config['udp_bidno']
-        arg_val[0]['pid']   = pp_config['udp_pid']
-        arg_val[0]['group'] = 0
-        arg_val[1]['bidno'] = pp_config['udp_bidno']
-        arg_val[1]['pid']   = pp_config['udp_pid']
-        arg_val[1]['group'] = 1
+        account = (pp_config['udp_bidno'], pp_config['udp_pid'])
 
-        udp[0] = udp_worker(None, arg_val[0])
-        udp[1] = udp_worker(None, arg_val[1])
-
-        udp[0].start()
-        udp[1].start()
-
-        udp[0].wait_for_start()
-        udp[1].wait_for_start()
+        daemon_udp.add(account)
+        daemon_udp.add(account)
 
         logger.debug('UDP threads init finished.')
 
-        udp[0].join()
-        udp[1].join()
+        daemon_udp.wait_for_stop()
 
 if __name__ == '__main__' :
         try:
                 main()
-        except KeyboardInterrupt:
+        except  KeyboardInterrupt:
                 pass
         except:
                 print_exc()

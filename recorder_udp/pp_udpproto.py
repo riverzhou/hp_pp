@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
 
-from struct                     import pack, unpack, pack_into, unpack_from
-from traceback                  import print_exc
-from hashlib                    import md5
-
-from pp_log                     import logger, printer
+from struct                 import pack, unpack, pack_into, unpack_from
+from hashlib                import md5
 
 #==================================================================================================================
 
@@ -39,9 +36,17 @@ class udp_proto():
                 return  key_val
 
         def parse_info_c(self, info):
+                p1 = info.find('<INFO>') + len('<INFO>')
+                p2 = info.find('</INFO>')
+                info = info[p1:p2]
+                if '系统目前时间' not in info:
+                        time = None
+                else :
+                        time = info.split('：')[-1]
                 key_val = {}
                 key_val['code']         = 'C'
                 key_val['bidinfo']      = '无拍卖会'
+                key_val['systime']      = time
                 return  key_val
 
         def parse_info_f(self, info):
@@ -73,7 +78,6 @@ class udp_proto():
                         bidno,
                         self.get_vcode(pid, bidno)
                         ))
-                #printer.debug(format_req)
                 return format_req.encode('gb18030')
 
         def do_logoff_req(self, bidno, pid):
@@ -85,7 +89,6 @@ class udp_proto():
                         bidno,
                         self.get_vcode(pid, bidno)
                         ))
-                #printer.debug(logoff_req)
                 return logoff_req.encode('gb18030')
 
         def do_client_req(self, bidno, pid):
@@ -97,7 +100,6 @@ class udp_proto():
                         bidno,
                         self.get_vcode(pid, bidno)
                         ))
-                #printer.debug(client_req)
                 return client_req.encode('gb18030')
 
         def make_format_req(self, bidno, pid):
