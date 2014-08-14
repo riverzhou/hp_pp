@@ -11,7 +11,6 @@ from pp_server          import server_dict
 
 wget_user_dict    = {
                      '52219990' : '3319' ,
-                     '52131206' : '1706' ,
                     }
 
 wget_server_group = 0                   # 0/1 , 选择服务器组
