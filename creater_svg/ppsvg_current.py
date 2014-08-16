@@ -25,7 +25,7 @@ def time_sub(end, begin):
 
 def read_redis_data(db, key):
         global source_data
-        data = loads(db.blk_get_one(key))[1]
+        data = db.blk_get_one(key)[1]
         print(data)
         if data['code'] == 'A':
                 return False
