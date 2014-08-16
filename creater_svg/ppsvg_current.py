@@ -14,6 +14,8 @@ from svg_mysql2dict import read_mysql2dict
 from svg_createline import draw_price_line
 from fmt_date       import *
 
+from pp_udpproto    import udp_proto
+
 from pp_config      import pp_config
 
 #==============================================
@@ -23,9 +25,10 @@ source_data = OrderedDict()
 def time_sub(end, begin):
         return int(mktime(strptime('1970-01-01 '+end, '%Y-%m-%d %H:%M:%S'))) - int(mktime(strptime('1970-01-01 '+begin, '%Y-%m-%d %H:%M:%S')))
 
-def read_redis_data(db, key):
+def read_redis_data(db, key, proto):
         global source_data
-        data = db.blk_get_one(key)[1]
+        info = db.blk_get_one(key).decode().split(',')[1].strip().strip('\)').strip('\'')
+        data = proto.parse_ack(info)
         print(data)
         if data['code'] == 'A':
                 return False
@@ -55,6 +58,8 @@ def create_list_x():
 def main():
         global pp_config, source_data
 
+        proto = udp_proto()
+
         source_redis = redis_db(pp_config['redis_source_db'])
         redis = redis_db()
 
@@ -66,7 +71,7 @@ def main():
         line = draw_price_line(name, list_x, list_y)
         redis.set(name, line)
         while True :
-                if read_redis_data(source_redis, pp_config['redis_source_key']) == False : continue
+                if read_redis_data(source_redis, pp_config['redis_source_key'], proto) == False : continue
                 list_y = create_list_y(source_data)
                 name = 'current:price:%s:60' % date
                 line = draw_price_line(name, list_x, list_y)
