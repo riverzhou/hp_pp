@@ -15,6 +15,8 @@ from pp_log             import logger, printer
 
 #-------------------------------------------
 
+flag_use_iis = True
+
 UDP_SERVER =('0.0.0.0', 999)
 
 Thread.daemon  = True
@@ -240,8 +242,20 @@ class info_maker(pp_thread, proto_udp):
                 self.list_data_b = format_data(read_mysql2list(pp_config['udp_date'], pp_config['udp_second_begin'], pp_config['udp_second_end'], 'price'))
                 self.date   = '%s年%s月%s日' % tuple(pp_config['udp_date'].split('-'))
 
+                global use_iss
+                if flag_use_iis == True:
+                        from udp_iis import iis
+                        self.iis    = iis()
+                        self.iis.start()
+                        self.iis.wait_for_start()
+                else:
+                        self.iis    = None
+
         def main(self):
                 while True:
+                        self.iis_reset()
+                        sleep(getsleeptime(1))
+
                         count = 0
                         while count < self.time_x :
                                 if self.make_x(count) == True : count += 1
@@ -269,6 +283,7 @@ class info_maker(pp_thread, proto_udp):
                 key_val['systime']  = self.list_data_x[count]
                 key_val['date']     = self.date
                 self.make(self.udp_make_x_info(key_val))
+                self.iis_sync(0, key_val['systime'])
                 return True
 
         def make_y(self, count):
@@ -278,6 +293,7 @@ class info_maker(pp_thread, proto_udp):
                 key_val['systime']  = self.list_data_y[count]
                 key_val['date']     = self.date
                 self.make(self.udp_make_y_info(key_val))
+                self.iis_sync(0, key_val['systime'])
                 return True
 
         def make_a(self, count):
@@ -293,6 +309,7 @@ class info_maker(pp_thread, proto_udp):
                 key_val['number_limit'] = number_limit
                 key_val['price_limit']  = price_limit
                 self.make(self.udp_make_a_info(key_val))
+                self.iis_sync(key_val['price'], key_val['systime'])
                 return True
 
         def make_b(self, count):
@@ -307,6 +324,7 @@ class info_maker(pp_thread, proto_udp):
                 key_val['date']     = self.date
                 key_val['number_limit'] = number_limit
                 self.make(self.udp_make_b_info(key_val))
+                self.iis_sync(key_val['price'], key_val['systime'])
                 return True
 
         def make(self, info):
@@ -317,6 +335,14 @@ class info_maker(pp_thread, proto_udp):
                 self.lock_addr.release()
                 for addr in addr_list :
                         daemon_bs.put((info, addr))
+
+        def iis_sync(self, price, time):
+                if self.iis != None:
+                        self.iis.sync(price, time)
+
+        def iis_reset(self):
+                if self.iis != None:
+                        self.iis.reset()
 
         def reg(self, addr):
                 self.lock_addr.acquire()
