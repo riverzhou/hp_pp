@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 
 from http.client        import HTTPSConnection, HTTPConnection
+from traceback          import print_exc
+
 from pp_baseclass       import pp_sender
 
-ip_iis_server = '127.0.0.1'
+ip_iis_server = '222.73.215.239'
 
 class iis(pp_sender):
         def send(self, req):
                 print('iis send req : ', req)
                 global ip_iis_server
-                handler = HTTPConnection(ip_iis_server)
+                handler = HTTPSConnection(ip_iis_server)
                 handler._http_vsn = 10
                 handler._http_vsn_str = 'HTTP/1.0'
                 try:
