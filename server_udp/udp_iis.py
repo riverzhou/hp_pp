@@ -5,7 +5,7 @@ from traceback          import print_exc
 
 from pp_baseclass       import pp_sender
 
-ip_iis_server = '222.73.215.239'
+ip_iis_server = '192.168.1.206'
 
 class iis(pp_sender):
         def send(self, req):
