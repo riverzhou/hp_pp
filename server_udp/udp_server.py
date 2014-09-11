@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import sys
+
 from socketserver       import UDPServer, BaseRequestHandler
 from time               import time, sleep, localtime, mktime, strptime, strftime
 from struct             import pack, unpack
@@ -276,7 +278,7 @@ class info_maker(pp_thread, proto_udp):
                                 if self.make_y(count) == True : count += 1
                                 sleep(getsleeptime(1))
 
-                        raise KeyboardInterrupt
+                        break
 
         def make_x(self, count):
                 if len(self.addr_list) == 0 :
@@ -403,19 +405,29 @@ class udp_handle(BaseRequestHandler):
                 daemon_im.reg(key_val['addr'])
                 daemon_bs.put(daemon_im.udp_make_format_ack(key_val))
 
+class udp_server(pp_thread):
+        def main(self):
+                global server_udp
+                server_udp.serve_forever()
+
 #================================================================================
 
 def main():
-        global daemon_im, daemon_bs, server_udp
+        global daemon_im, daemon_bs, server_udp, UDP_SERVER
+        server_udp = UDPServer(UDP_SERVER, udp_handle)
+
         daemon_im = info_maker()
         daemon_im.start()
         daemon_im.wait_for_start()
         daemon_bs = buff_sender()
         daemon_bs.start()
         daemon_bs.wait_for_start()
-        server_udp = UDPServer(UDP_SERVER, udp_handle)
+        daemon_us = udp_server()
+        daemon_us.start()
+        daemon_us.wait_for_start()
+
         logger.debug('UDP Server start at %s : %d' % (UDP_SERVER[0], UDP_SERVER[1]))
-        server_udp.serve_forever()
+        daemon_im.join()
 
 if __name__ == "__main__":
         try:
