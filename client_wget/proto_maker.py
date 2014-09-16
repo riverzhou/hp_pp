@@ -15,8 +15,8 @@ wget_user_dict    = {
 
 wget_server_group = 0                   # 0/1 , 选择服务器组
 
-wget_machinecode  = 'ABCDEFGHI'         
-#wget_machinecode = ''                  # 为空串表示自动生成随机特征码
+#wget_machinecode  = 'ABCDEFGHI'         
+wget_machinecode = ''                  # 为空串表示自动生成随机特征码
 wget_loginimage   = ''
 
 wget_agent        = 'Mozilla/3.0 (compatible; Indy Library)'
