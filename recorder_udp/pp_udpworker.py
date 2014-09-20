@@ -131,6 +131,7 @@ class udp_worker(pp_thread):
 
                 if code == 'A' or code == 'B':
                         printer.warning(udp_recv)
+                        printer.debug(udp_recv)
                         return
 
                 printer.error(udp_recv)
