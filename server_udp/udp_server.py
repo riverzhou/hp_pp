@@ -162,7 +162,7 @@ class proto_udp():
                 系统目前时间：10:20:06</INFO>
                 '''
                 info = ( (
-                        '<TYPE>INFO</TYPE><INFO>C%s上海市个人非营业性客车额度投标拍卖会尚未开始。\r\n起止时间为：\r\n%s10时30分0秒\r\n到%s11时30分0秒\r\n\r\n系统目前时间：%s</INFO>'
+                        '\n<TYPE>INFO</TYPE><INFO>C%s上海市个人非营业性客车额度投标拍卖会尚未开始。\r\n起止时间为：\r\n%s10时30分0秒\r\n到%s11时30分0秒\r\n\r\n系统目前时间：%s</INFO>\n\n\n\n\n\n\t\t\t'
                         ) % (
                         key_val['date'],
                         key_val['date'],
@@ -180,7 +180,7 @@ class proto_udp():
                 拍卖会结果也可通过本公司网站WWW.ALLTOBID.COM进行查询。</INFO>
                 '''
                 info = ( (
-                        '<TYPE>INFO</TYPE><INFO>C%s上海市个人非营业性客车额度投标拍卖会已经结束，稍后发布拍卖会结果，请等待！\r\n\r\n拍卖会结果也可通过本公司网站WWW.ALLTOBID.COM进行查询。</INFO>'
+                        '\n<TYPE>INFO</TYPE><INFO>C%s上海市个人非营业性客车额度投标拍卖会已经结束，稍后发布拍卖会结果，请等待！\r\n\r\n拍卖会结果也可通过本公司网站WWW.ALLTOBID.COM进行查询。</INFO>\n\n\n\n\n\n\t\t\t'
                         ) % (
                         key_val['date']
                         ) )
@@ -192,7 +192,7 @@ class proto_udp():
                 <TYPE>INFO</TYPE><INFO>A2014年5月24日上海市个人非营业性客车额度投标拍卖会^7400^72600^10:30^11:30^10:30^11:00^11:00^11:30^10:30:13^8891^72600^10:30:13</INFO>
                 '''
                 info = ( (
-                        '<TYPE>INFO</TYPE><INFO>A%s上海市个人非营业性客车额度投标拍卖会^%s^%s^10:30^11:30^10:30^11:00^11:00^11:30^%s^%s^%s^%s</INFO>'
+                        '\n<TYPE>INFO</TYPE><INFO>A%s上海市个人非营业性客车额度投标拍卖会^%s^%s^10:30^11:30^10:30^11:00^11:00^11:30^%s^%s^%s^%s</INFO>\n\n\n\n\n\n\t\t\t'
                         ) % (
                         key_val['date'],
                         key_val['number_limit'],
@@ -210,7 +210,7 @@ class proto_udp():
                 <TYPE>INFO</TYPE><INFO>B2014年5月24日上海市个人非营业性客车额度投标拍卖会^7400^114121^10:30^11:30^10:30^11:00^11:00^11:30^11:00:14^72600^10:30:12^72300^72900</INFO>
                 '''
                 info = ( (
-                        '<TYPE>INFO</TYPE><INFO>B%s上海市个人非营业性客车额度投标拍卖会^%s^%s^10:30^11:30^10:30^11:00^11:00^11:30^%s^%s^%s^%s^%s</INFO>'
+                        '\n<TYPE>INFO</TYPE><INFO>B%s上海市个人非营业性客车额度投标拍卖会^%s^%s^10:30^11:30^10:30^11:00^11:00^11:30^%s^%s^%s^%s^%s</INFO>\n\n\n\n\n\n\t\t\t'
                         ) % (
                         key_val['date'],
                         key_val['number_limit'],
