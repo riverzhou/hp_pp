@@ -12,8 +12,8 @@ from pp_udpproto        import udp_proto
 
 #====================================================
 
-date = '2014-08-16'
-month = '8月'
+date  = pp_config['date_day']
+month = pp_config['date_month']
 
 #----------------------------------------------------
 

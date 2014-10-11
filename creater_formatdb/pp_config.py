@@ -11,6 +11,7 @@ def parse_ini():
         mysql_server = config['mysql_server']   if 'mysql_server' in config     else None
         redis_server = config['redis_server']   if 'redis_server' in config     else None
         excel_file   = config['excel_file']     if 'excel_file'   in config     else None
+        date         = config['date']           if 'date'         in config     else None
 
         key_val = {}
         if mysql_server != None :
@@ -23,6 +24,10 @@ def parse_ini():
         if excel_file   != None :
                 for key in excel_file:
                         key_val['excel_'+key]   = excel_file[key]
+
+        if date         != None :
+                for key in date:
+                        key_val['date_'+key]    = date[key]
 
         return key_val
 

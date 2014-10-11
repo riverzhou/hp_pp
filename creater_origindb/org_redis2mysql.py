@@ -30,6 +30,7 @@ def main():
                 date = date.strip('\'')
                 day, time = date.split(' ', 1)
                 time = time.split('.', 1)[0]
+                day = redis_day # XXX XXX XXX
                 if day == redis_day :
                         datetime = day + ' ' + time
                         list_data.append((datetime, info))
