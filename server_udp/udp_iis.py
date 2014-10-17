@@ -11,7 +11,7 @@ class iis(pp_sender):
         def send(self, req):
                 print('iis send req : ', req)
                 global ip_iis_server
-                handler = HTTPSConnection(ip_iis_server)
+                handler = HTTPConnection(ip_iis_server)
                 handler._http_vsn = 10
                 handler._http_vsn_str = 'HTTP/1.0'
                 try:
