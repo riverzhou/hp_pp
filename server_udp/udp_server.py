@@ -151,6 +151,17 @@ class proto_udp():
                 #print('')
                 return key_val
 
+        def udp_make_o_info(self, key_val):
+                '''
+                <TYPE>INFO</TYPE><INFO>C2014年5月24日上海市个人非营业性客车额度投标拍卖会已经结束！
+                '''
+                info = ( (
+                        '\n<TYPE>INFO</TYPE><INFO>C%s上海市个人非营业性客车额度投标拍卖会已经结束！\r\n\r\n</INFO>\n\n\n\n\n\n\t\t\t'
+                        ) % (
+                        key_val['date']
+                        ) )
+                print(info)
+                return info.encode('gb18030')
 
         def udp_make_x_info(self, key_val):
                 '''
@@ -234,10 +245,12 @@ class info_maker(pp_thread, proto_udp):
                 proto_udp.__init__(self)
                 self.addr_list = []
                 self.lock_addr = Lock()
+                self.time_o = time_sub(pp_config['udp_before_over'], pp_config['udp_before_start'])
                 self.time_x = time_sub(pp_config['udp_before_end'], pp_config['udp_before_begin'])
                 self.time_y = time_sub(pp_config['udp_after_end'], pp_config['udp_after_begin'])
                 self.time_a = time_sub(pp_config['udp_first_end'], pp_config['udp_first_begin'])
                 self.time_b = time_sub(pp_config['udp_second_end'], pp_config['udp_second_begin'])
+                self.list_data_y = create_time(pp_config['udp_before_start'], pp_config['udp_before_over'])
                 self.list_data_x = create_time(pp_config['udp_before_begin'], pp_config['udp_before_end'])
                 self.list_data_y = create_time(pp_config['udp_after_begin'], pp_config['udp_after_end'])
                 self.list_data_a = format_data(read_mysql2list(pp_config['udp_date'], pp_config['udp_first_begin'], pp_config['udp_first_end'], 'number'))
@@ -257,6 +270,11 @@ class info_maker(pp_thread, proto_udp):
                 while True:
                         self.iis_reset()
                         sleep(getsleeptime(1))
+
+                        count = 0
+                        while count < self.time_o :
+                                if self.make_o(count) == True : count += 1
+                                sleep(getsleeptime(1))
 
                         count = 0
                         while count < self.time_x :
@@ -279,6 +297,16 @@ class info_maker(pp_thread, proto_udp):
                                 sleep(getsleeptime(1))
 
                         break
+
+        def make_o(self, count):
+                if len(self.addr_list) == 0 :
+                        return False
+                key_val = {}
+                key_val['systime']  = self.list_data_o[count]
+                key_val['date']     = self.date
+                self.make(self.udp_make_o_info(key_val))
+                self.iis_sync(0, key_val['systime'])
+                return True
 
         def make_x(self, count):
                 if len(self.addr_list) == 0 :
