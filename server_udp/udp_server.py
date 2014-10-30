@@ -250,7 +250,7 @@ class info_maker(pp_thread, proto_udp):
                 self.time_y = time_sub(pp_config['udp_after_end'], pp_config['udp_after_begin'])
                 self.time_a = time_sub(pp_config['udp_first_end'], pp_config['udp_first_begin'])
                 self.time_b = time_sub(pp_config['udp_second_end'], pp_config['udp_second_begin'])
-                self.list_data_y = create_time(pp_config['udp_before_start'], pp_config['udp_before_over'])
+                self.list_data_o = create_time(pp_config['udp_before_start'], pp_config['udp_before_over'])
                 self.list_data_x = create_time(pp_config['udp_before_begin'], pp_config['udp_before_end'])
                 self.list_data_y = create_time(pp_config['udp_after_begin'], pp_config['udp_after_end'])
                 self.list_data_a = format_data(read_mysql2list(pp_config['udp_date'], pp_config['udp_first_begin'], pp_config['udp_first_end'], 'number'))
