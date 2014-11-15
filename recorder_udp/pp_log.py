@@ -357,7 +357,7 @@ logger     = make_log(name = None,          log = 'logger',     level = 'debug',
 
 #-----------------------------------------------------------------------------------------
 
-printer    = redis_logger('info')
+printer    = redis_logger()
 if printer.redis == None : printer = foobar_logger()
 
 '''
