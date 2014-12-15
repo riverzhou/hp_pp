@@ -45,7 +45,7 @@ class iis(pp_sender):
 
         def proto_sync(self, key_val):
                 code    = key_val['code']
-                date    = key_val['date']
+                date    = key_val['date'].replace('年','-').replace('月','-').replace('日','-')
                 try:
                         limit   = key_val['number_limit']
                 except:
