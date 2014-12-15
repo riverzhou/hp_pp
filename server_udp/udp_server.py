@@ -302,9 +302,10 @@ class info_maker(pp_thread, proto_udp):
                 if len(self.addr_list) == 0 :
                         return False
                 key_val = {}
+                key_val['code']     = 'C'
                 key_val['systime']  = self.list_data_o[count]
                 key_val['date']     = self.date
-                self.iis_sync(0, key_val['systime'])
+                self.iis_sync(key_val)
                 sleep(0.3)
                 self.make(self.udp_make_o_info(key_val))
                 return True
@@ -313,9 +314,10 @@ class info_maker(pp_thread, proto_udp):
                 if len(self.addr_list) == 0 :
                         return False
                 key_val = {}
+                key_val['code']     = 'C'
                 key_val['systime']  = self.list_data_x[count]
                 key_val['date']     = self.date
-                self.iis_sync(0, key_val['systime'])
+                self.iis_sync(key_val)
                 sleep(0.3)
                 self.make(self.udp_make_x_info(key_val))
                 return True
@@ -324,9 +326,10 @@ class info_maker(pp_thread, proto_udp):
                 if len(self.addr_list) == 0 :
                         return False
                 key_val = {}
+                key_val['code']     = 'C'
                 key_val['systime']  = self.list_data_y[count]
                 key_val['date']     = self.date
-                self.iis_sync(0, key_val['systime'])
+                self.iis_sync(key_val)
                 sleep(0.3)
                 self.make(self.udp_make_y_info(key_val))
                 return True
@@ -336,6 +339,7 @@ class info_maker(pp_thread, proto_udp):
                 if len(self.addr_list) == 0 :
                         return False
                 key_val = {}
+                key_val['code']     = 'A'
                 key_val['systime']  = self.list_data_a[count][0]
                 key_val['lowtime']  = self.list_data_a[count][0]
                 key_val['number']   = self.list_data_a[count][1]
@@ -343,7 +347,7 @@ class info_maker(pp_thread, proto_udp):
                 key_val['date']     = self.date
                 key_val['number_limit'] = number_limit
                 key_val['price_limit']  = price_limit
-                self.iis_sync(key_val['price'], key_val['systime'])
+                self.iis_sync(key_val)
                 sleep(0.3)
                 self.make(self.udp_make_a_info(key_val))
                 return True
@@ -353,13 +357,14 @@ class info_maker(pp_thread, proto_udp):
                 if len(self.addr_list) == 0 :
                         return False
                 key_val = {}
+                key_val['code']     = 'B'
                 key_val['systime']  = self.list_data_b[count][0]
                 key_val['lowtime']  = self.list_data_b[count][0]
                 key_val['number']   = number_people
                 key_val['price']    = self.list_data_b[count][1]
                 key_val['date']     = self.date
                 key_val['number_limit'] = number_limit
-                self.iis_sync(key_val['price'], key_val['systime'])
+                self.iis_sync(key_val)
                 sleep(0.3)
                 self.make(self.udp_make_b_info(key_val))
                 return True
@@ -373,9 +378,9 @@ class info_maker(pp_thread, proto_udp):
                 for addr in addr_list :
                         daemon_bs.put((info, addr))
 
-        def iis_sync(self, price, time):
+        def iis_sync(self, key_val):
                 if self.iis != None:
-                        self.iis.sync(price, time)
+                        self.iis.sync(key_val)
 
         def iis_reset(self):
                 if self.iis != None:
