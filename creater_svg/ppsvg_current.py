@@ -105,7 +105,7 @@ def main():
                         continue
                 if code == 'A':
                         list_ay     = create_list_y(source_data_a)
-                        line_number = draw_price_line(name_number, list_ax, list_ay)
+                        line_number = draw_number_line(name_number, list_ax, list_ay)
                         redis.set(name_number, line_number)
                         continue
 
