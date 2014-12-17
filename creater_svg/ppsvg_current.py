@@ -11,7 +11,7 @@ from pygal          import Line, Config
 from pp_db          import redis_db
 
 from svg_mysql2dict import read_mysql2dict
-from svg_createline import draw_price_line
+from svg_createline import draw_price_line, draw_number_line
 from fmt_date       import *
 
 from pp_udpproto    import udp_proto
@@ -20,22 +20,28 @@ from pp_config      import pp_config
 
 #==============================================
 
-source_data = OrderedDict()
+source_data_a = OrderedDict()
+source_data_b = OrderedDict()
 
 def time_sub(end, begin):
         return int(mktime(strptime('1970-01-01 '+end, '%Y-%m-%d %H:%M:%S'))) - int(mktime(strptime('1970-01-01 '+begin, '%Y-%m-%d %H:%M:%S')))
 
+def time_add(time, second):
+        ret = strftime('%Y-%m-%d %H:%M:%S', localtime(int(mktime(strptime('1970-01-01 '+time, "%Y-%m-%d %H:%M:%S"))) + second))
+        return ret.split()[1]
+
 def read_redis_data(db, key, proto):
-        global source_data
+        global source_data_a, source_data_b
         info = db.blk_get_one(key).decode().split(',')[1].strip().strip('\)').strip('\'')
         data = proto.parse_ack(info)
         print(data)
         if data['code'] == 'A':
-                return False
-        if time_sub('11:29:00', data['systime']) > 0 or time_sub(data['systime'], '11:30:00') > 0 : 
-                return False
-        source_data[data['systime']] = int(data['price'])
-        return True
+                source_data_a[data['systime']] = int(data['number'])
+                return 'A'
+        if data['code'] == 'B' and time_sub(data['systime'], '11:29:00') >= 0 and time_sub(data['systime'], '11:30:00') <= 0:
+                source_data_b[data['systime']] = int(data['price'])
+                return 'B'
+        return  False
 
 def create_list_y(source_data):
         list_y = []
@@ -43,16 +49,28 @@ def create_list_y(source_data):
                 list_y.append(source_data[key])
         return list_y
 
-def create_list_x():
+def create_list_ax():
+        global source_data
+        list_y = []
+        for i in range(1800):
+                y = time_add('10:30:00', i)
+                list_y.append(y)
+                source_data_a[y] = None
+        y = '11:00:00'
+        list_y.append(y)
+        source_data_a[y] = None
+        return list_y
+
+def create_list_bx():
         global source_data
         list_y = []
         for i in range(60):
                 y = '11:29:%.2d' % i
                 list_y.append(y)
-                source_data[y] = None
+                source_data_b[y] = None
         y = '11:30:00'
         list_y.append(y)
-        source_data[y] = None
+        source_data_b[y] = None
         return list_y
 
 def main():
@@ -63,19 +81,33 @@ def main():
         source_redis = redis_db(pp_config['redis_source_db'])
         redis = redis_db()
 
-        list_y = [None]
-        list_x = create_list_x()
+        list_ay = [None]
+        list_ax = create_list_ax()
+        list_by = [None]
+        list_bx = create_list_bx()
+
         date = pp_config['redis_date']
 
-        name = 'current:price:%s:60' % date
-        line = draw_price_line(name, list_x, list_y)
-        redis.set(name, line)
+        name_number = 'current:number:%s:full' % date
+        line_number = draw_number_line(name_number, list_ax, list_ay)
+        redis.set(name_number, line_number)
+
+        name_price  = 'current:price:%s:60' % date
+        line_price  = draw_price_line(name_price, list_bx, list_by)
+        redis.set(name_price, line_price)
+
         while True :
-                if read_redis_data(source_redis, pp_config['redis_source_key'], proto) == False : continue
-                list_y = create_list_y(source_data)
-                name = 'current:price:%s:60' % date
-                line = draw_price_line(name, list_x, list_y)
-                redis.set(name, line)
+                code = read_redis_data(source_redis, pp_config['redis_source_key'], proto)
+                if code == 'B':
+                        list_by     = create_list_y(source_data_b)
+                        line_price  = draw_price_line(name_price, list_bx, list_by)
+                        redis.set(name_price, line_price)
+                        continue
+                if code == 'A':
+                        list_ay     = create_list_y(source_data_a)
+                        line_number = draw_price_line(name_number, list_ax, list_ay)
+                        redis.set(name_number, line_number)
+                        continue
 
 #------------------------------------------------------------------
 
