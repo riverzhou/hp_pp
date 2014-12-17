@@ -23,6 +23,8 @@ from pp_config      import pp_config
 source_data_a = OrderedDict()
 source_data_b = OrderedDict()
 
+MAX_Y = 100000
+
 def time_sub(end, begin):
         return int(mktime(strptime('1970-01-01 '+end, '%Y-%m-%d %H:%M:%S'))) - int(mktime(strptime('1970-01-01 '+begin, '%Y-%m-%d %H:%M:%S')))
 
@@ -50,7 +52,7 @@ def create_list_y(source_data):
         return list_y
 
 def create_list_ax():
-        global source_data
+        global source_data_a
         list_y = []
         for i in range(1800):
                 y = time_add('10:30:00', i)
@@ -62,7 +64,7 @@ def create_list_ax():
         return list_y
 
 def create_list_bx():
-        global source_data
+        global source_data_b
         list_y = []
         for i in range(60):
                 y = time_add('11:29:00', i)
@@ -74,7 +76,7 @@ def create_list_bx():
         return list_y
 
 def main():
-        global pp_config, source_data
+        global source_data_a, source_data_b, MAX_Y
 
         proto = udp_proto()
 
@@ -89,7 +91,7 @@ def main():
         #date = pp_config['redis_date']
 
         name_number = 'current:number'
-        line_number = draw_number_line(name_number, list_ax, list_ay)
+        line_number = draw_number_line(name_number, list_ax, list_ay, MAX_Y)
         redis.set(name_number, line_number)
 
         name_price  = 'current:price'
@@ -105,7 +107,7 @@ def main():
                         continue
                 if code == 'A':
                         list_ay     = create_list_y(source_data_a)
-                        line_number = draw_number_line(name_number, list_ax, list_ay)
+                        line_number = draw_number_line(name_number, list_ax, list_ay, MAX_Y)
                         redis.set(name_number, line_number)
                         continue
 

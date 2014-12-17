@@ -94,7 +94,7 @@ def create_multi_price_line(name, dict_data):
 
 #------------------------------------------------------------------
 
-def draw_number_line(name, list_x, list_y):
+def draw_number_line(name, list_x, list_y, max_y = 0):
         line = Line()
         line.disable_xml_declaration = True
         line.js = []
@@ -116,7 +116,11 @@ def draw_number_line(name, list_x, list_y):
         #line.interpolate = 'hermite'
 
         line.title = name
-        #line.range = (min(list_y)-100, max(list_y)+300)
+        list_int_y = [0]
+        for y in list_y:
+                if y != None:
+                        list_int_y.append(y)
+        line.range = (0, max(int(max(list_int_y)*1.1), max_y))
         line.x_labels = list_x
         #line.y_labels = map(lambda x:x*100, range(int((min(list_y)/100)-1), int((max(list_y)/100+4))))
         line.add(name, list_y)
