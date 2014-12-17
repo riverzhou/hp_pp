@@ -12,7 +12,7 @@ from pp_db          import redis_db
 
 from svg_mysql2dict import read_mysql2dict
 from svg_createline import draw_price_line, draw_number_line
-from fmt_date       import *
+#from fmt_date       import *
 
 from pp_udpproto    import udp_proto
 
@@ -65,7 +65,7 @@ def create_list_bx():
         global source_data
         list_y = []
         for i in range(60):
-                y = '11:29:%.2d' % i
+                y = time_add('11:29:00', i)
                 list_y.append(y)
                 source_data_b[y] = None
         y = '11:30:00'
@@ -86,13 +86,13 @@ def main():
         list_by = [None]
         list_bx = create_list_bx()
 
-        date = pp_config['redis_date']
+        #date = pp_config['redis_date']
 
-        name_number = 'current:number:%s:full' % date
+        name_number = 'current:number'
         line_number = draw_number_line(name_number, list_ax, list_ay)
         redis.set(name_number, line_number)
 
-        name_price  = 'current:price:%s:60' % date
+        name_price  = 'current:price'
         line_price  = draw_price_line(name_price, list_bx, list_by)
         redis.set(name_price, line_price)
 
