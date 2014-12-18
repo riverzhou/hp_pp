@@ -3,7 +3,7 @@
 from traceback              import print_exc, format_exc
 from time                   import sleep, time
 
-from pp_server              import pp_dns_init
+from pp_server              import pp_dns_init, pp_server_dict, pp_server_dict_2
 from pp_baseredis           import pp_redis, pp_redis_init, pp_redis_connect_print
 from pp_global              import pp_global_info
 from pp_log                 import printer
@@ -56,6 +56,9 @@ def get_channel_init():
         get_channel[0].start()
         get_channel[1].start()
 
+        printer.info(str(pp_server_dict))
+        printer.info(str(pp_server_dict_2))
+
         get_channel[0].wait_for_start()
         get_channel[1].wait_for_start()
 
@@ -70,6 +73,8 @@ def main():
         fd_channel_init()
 
         get_channel_init()
+
+        sleep(1)
 
         print('worker [%d] started' % redis_dbid)
         pp_global_info.event_gameover.wait()
