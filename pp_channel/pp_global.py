@@ -5,7 +5,7 @@ from threading      import Event, Lock
 
 
 timeout_channel     = 110
-interval_channel    = 1
+interval_channel    = 0.5
 
 #========================================================================
 
