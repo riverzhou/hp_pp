@@ -23,6 +23,11 @@ def time_sub(end, begin):
         except:
                 return -1
 
+def getsleeptime(interval):
+        if interval == 0:
+                return interval
+        return  interval - time()%interval
+
 class fd_channel():
         timeout_find_channel = 0.3
 
@@ -160,9 +165,6 @@ class fd_channel():
                 return key_val
 
 #===================================
-
-def getsleeptime(interval):
-        return  interval - time()%interval
 
 class pp_channel_maker(pp_thread):
         def __init__(self, manager, server, group, channel):
