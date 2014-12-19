@@ -3,6 +3,10 @@
 from time           import sleep
 from threading      import Event, Lock
 
+
+timeout_channel     = 110
+interval_channel    = 1
+
 #========================================================================
 
 def time_sub(end, begin):
@@ -15,11 +19,12 @@ def time_sub(end, begin):
 
 class pp_global():
         def __init__(self):
+                global timeout_channel, interval_channel
                 self.event_config_init  = Event()
                 self.flag_create_toubiao= [False, False]
                 self.flag_gameover      = False
                 self.event_gameover     = Event()
-                self.timeout_channel    = [110, 1]
+                self.timeout_channel    = [timeout_channel, interval_channel]
 
         def set_game_over(self):
                 self.flag_gameover = True
