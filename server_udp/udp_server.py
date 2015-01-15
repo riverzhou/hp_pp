@@ -25,7 +25,7 @@ Thread.daemon  = True
 UDPServer.allow_reuse_address = True
 UDPServer.request_queue_size  = 100
 
-price_limit   = 72600
+price_limit   = 73700
 number_limit  = 7400
 number_people = 135000
 
