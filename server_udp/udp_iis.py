@@ -69,5 +69,6 @@ class iis(pp_sender):
 
         def sync(self, key_val):
                 return self.put(self.proto_sync(key_val))
+                #return self.send(self.proto_sync(key_val))
 
 
