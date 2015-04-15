@@ -25,7 +25,7 @@ Thread.daemon  = True
 UDPServer.allow_reuse_address = True
 UDPServer.request_queue_size  = 100
 
-price_limit   = 75200
+price_limit   = pp_config['udp_price_limit']
 number_limit  = 7400
 number_people = 135000
 
@@ -306,7 +306,6 @@ class info_maker(pp_thread, proto_udp):
                 key_val['systime']  = self.list_data_o[count]
                 key_val['date']     = self.date
                 self.iis_sync(key_val)
-                sleep(0.3)
                 self.make(self.udp_make_o_info(key_val))
                 return True
 
@@ -318,7 +317,6 @@ class info_maker(pp_thread, proto_udp):
                 key_val['systime']  = self.list_data_x[count]
                 key_val['date']     = self.date
                 self.iis_sync(key_val)
-                sleep(0.3)
                 self.make(self.udp_make_x_info(key_val))
                 return True
 
@@ -330,7 +328,6 @@ class info_maker(pp_thread, proto_udp):
                 key_val['systime']  = self.list_data_y[count]
                 key_val['date']     = self.date
                 self.iis_sync(key_val)
-                sleep(0.3)
                 self.make(self.udp_make_y_info(key_val))
                 return True
 
@@ -348,7 +345,6 @@ class info_maker(pp_thread, proto_udp):
                 key_val['number_limit'] = number_limit
                 key_val['price_limit']  = price_limit
                 self.iis_sync(key_val)
-                sleep(0.3)
                 self.make(self.udp_make_a_info(key_val))
                 return True
 
@@ -365,7 +361,6 @@ class info_maker(pp_thread, proto_udp):
                 key_val['date']     = self.date
                 key_val['number_limit'] = number_limit
                 self.iis_sync(key_val)
-                sleep(0.3)
                 self.make(self.udp_make_b_info(key_val))
                 return True
 
