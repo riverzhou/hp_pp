@@ -70,6 +70,8 @@ class udp_proto():
         #-----------------------------------------------------
 
         def do_format_req(self, bidno, pid):
+                format_req  = '<TYPE>FORMAT</TYPE><BIDNO>80618987</BIDNO><VCODE>B67A278D2A3E78190F2128324860F3A0</VCODE>'
+                '''
                 format_req = ((
                         '<TYPE>FORMAT</TYPE>'+
                         '<BIDNO>%s</BIDNO>'+
@@ -78,6 +80,7 @@ class udp_proto():
                         bidno,
                         self.get_vcode(pid, bidno)
                         ))
+                '''
                 return format_req.encode('gb18030')
 
         def do_logoff_req(self, bidno, pid):

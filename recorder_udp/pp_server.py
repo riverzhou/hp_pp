@@ -9,7 +9,7 @@ pp_server_dict = {
         'toubiao'  : ('toubiao.alltobid.com',   443),
         'result'   : ('tbresult.alltobid.com',  443),
         'query'    : ('tbquery.alltobid.com',   443),
-        'udp'      : ('tbudp.alltobid.com',     999),
+        'udp'      : ('tbudp.alltobid.com',     998),
         }
 
 pp_server_dict_2 = {
@@ -17,7 +17,7 @@ pp_server_dict_2 = {
         'toubiao'  : ('toubiao2.alltobid.com',  443),
         'result'   : ('tbresult2.alltobid.com', 443),
         'query'    : ('tbquery2.alltobid.com',  443),
-        'udp'      : ('tbudp2.alltobid.com',    999),
+        'udp'      : ('tbudp2.alltobid.com',    998),
         }
 
 server_dict = {

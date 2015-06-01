@@ -38,10 +38,14 @@ def read_redis_data(db, key, proto):
         data = proto.parse_ack(info)
         print(data)
         if data['code'] == 'A':
+                return 'A'
                 source_data_a[data['systime']] = int(data['number'])
                 return 'A'
-        if data['code'] == 'B' and time_sub(data['systime'], '11:29:00') >= 0 and time_sub(data['systime'], '11:30:00') <= 0:
-                source_data_b[data['systime']] = int(data['price'])
+        if data['code'] == 'B':
+                try:
+                        source_data_b[data['systime']] = int(data['price'])
+                except:
+                        source_data_b[data['systime']] = 0
                 return 'B'
         return  False
 
