@@ -6,7 +6,7 @@ static PyObject* add_function(PyObject *self, PyObject *args)
 {
 	int num1, num2;
 	PyObject *result=NULL;
-	if (!PyArg_ParseTuple(args, "nn", &num1, &num2)) {
+	if (!PyArg_ParseTuple(args, "ii", &num1, &num2)) {
 		printf("传入参数错误！\n");
 		return NULL;
 	}
