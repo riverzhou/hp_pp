@@ -255,7 +255,7 @@ class windows_logger():
 
         def warning(self,message):
                 if self.flag_color : self.set_color(self.COLORS['WARNING'])
-                self.logger.warn(message)
+                self.logger.warning(message)
                 if self.flag_color : self.set_color(self.WHITE)
 
         def error(self,message):
@@ -332,7 +332,7 @@ class posix_logger():
                 self.logger.info(message)
 
         def warning(self,message):
-                self.logger.warn(message)
+                self.logger.warning(message)
 
         def error(self,message):
                 self.logger.error(message)
